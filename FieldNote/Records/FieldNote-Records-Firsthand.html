@@ -1,0 +1,167 @@
+<title>FieldNote Records</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  :root{
+    --paper:#F6F7F9;--surface:#FFFFFF;--surface-2:#EEF1F5;--ink:#14181F;--ink-2:#434B57;--ink-3:#6B7482;
+    --line:#DCE1E8;--line-2:#C9D0DA;--slate:#2C4A6E;--slate-soft:#E4EAF1;--signal:#B0761A;--signal-soft:#F6ECD8;
+    --good:#2E6E4E;--good-soft:#DDEEE4;--warn:#9A6410;--warn-soft:#F5E8D2;--crit:#9A3838;--crit-soft:#F2DDDD;--mute:#5C6470;--mute-soft:#E6E9EE;
+    --shadow:0 1px 2px rgba(20,24,31,.05),0 8px 24px -12px rgba(20,24,31,.14);
+    --display:'Newsreader',Georgia,serif;--body:'IBM Plex Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace;
+  }
+  :root:not([data-theme="light"]){@media (prefers-color-scheme:dark){
+    --paper:#0F1216;--surface:#171B21;--surface-2:#1E242C;--ink:#EAEEF3;--ink-2:#B4BDC9;--ink-3:#838E9C;
+    --line:#2A313A;--line-2:#38414C;--slate:#8FB2D6;--slate-soft:#1C2A3A;--signal:#E0A94A;--signal-soft:#2E2513;
+    --good:#6FC095;--good-soft:#16281E;--warn:#DDA043;--warn-soft:#2C2411;--crit:#E28B8B;--crit-soft:#2E1919;--mute:#9AA4B1;--mute-soft:#22272F;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px -14px rgba(0,0,0,.7);
+  }}
+  :root[data-theme="dark"]{
+    --paper:#0F1216;--surface:#171B21;--surface-2:#1E242C;--ink:#EAEEF3;--ink-2:#B4BDC9;--ink-3:#838E9C;
+    --line:#2A313A;--line-2:#38414C;--slate:#8FB2D6;--slate-soft:#1C2A3A;--signal:#E0A94A;--signal-soft:#2E2513;
+    --good:#6FC095;--good-soft:#16281E;--warn:#DDA043;--warn-soft:#2C2411;--crit:#E28B8B;--crit-soft:#2E1919;--mute:#9AA4B1;--mute-soft:#22272F;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px -14px rgba(0,0,0,.7);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.55;-webkit-font-smoothing:antialiased;}
+  a{color:var(--slate);text-decoration-thickness:1px;text-underline-offset:2px;word-break:break-word;}
+  header.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--paper) 90%,transparent);backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line);}
+  .bar-inner{max-width:900px;margin:0 auto;padding:11px 22px;display:flex;align-items:baseline;gap:14px;}
+  .bar-mark{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);}
+  .bar-mark span{color:var(--signal);}
+  .bar-tag{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--ink-3);margin-left:auto;}
+  @media (max-width:620px){.bar-tag{display:none;}}
+  main{max-width:900px;margin:0 auto;padding:0 22px;}
+  .wrap{max-width:760px;}
+  section{padding-block:34px;border-top:1px solid var(--line);}
+  section:first-of-type{border-top:none;}
+  .eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--signal);display:flex;align-items:center;gap:10px;margin:0 0 16px;}
+  .eyebrow::before{content:"";width:22px;height:1.5px;background:var(--signal);display:inline-block;}
+  h1{font-family:var(--display);font-weight:500;font-size:clamp(2rem,5vw,2.8rem);line-height:1.05;letter-spacing:-.015em;margin:0 0 16px;max-width:18ch;}
+  p{margin:0 0 14px;color:var(--ink-2);max-width:72ch;}
+  p.lead{font-family:var(--display);font-size:clamp(1.08rem,2.1vw,1.28rem);line-height:1.44;color:var(--ink);}
+  strong{color:var(--ink);font-weight:600;}em{font-style:italic;}
+  .callout{border-left:3px solid var(--signal);background:var(--signal-soft);padding:14px 18px;border-radius:0 10px 10px 0;margin:18px 0;}
+  .callout p{color:var(--ink);margin:0;max-width:none;font-size:.92rem;}
+  .callout .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--signal);margin-bottom:6px;display:block;}
+
+  .rec{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;margin-top:6px;}
+  .rec-head{padding:16px 20px;border-bottom:1px solid var(--line);background:var(--surface-2);}
+  .rec-head .kick{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);}
+  .rec-head .t{font-family:var(--display);font-size:1.35rem;font-weight:500;color:var(--ink);margin-top:4px;line-height:1.2;}
+  .rec-head .tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px;}
+  .tag{font-family:var(--mono);font-size:10.5px;background:var(--surface);border:1px solid var(--line);color:var(--ink-2);padding:2px 8px;border-radius:6px;}
+  .rec-body{display:grid;grid-template-columns:158px 1fr;gap:1px;background:var(--line);}
+  .rk{background:var(--surface-2);padding:12px 16px;font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);}
+  .rv{background:var(--surface);padding:12px 16px;font-size:.92rem;color:var(--ink);line-height:1.5;}
+  .rv .ev{color:var(--slate);font-family:var(--mono);font-size:10.5px;display:block;margin-top:4px;}
+  .rv .gap{color:var(--crit);}
+  .rv.moat{background:var(--signal-soft);}
+  .rv.moat .ev{color:var(--signal);}
+  @media (max-width:560px){.rec-body{grid-template-columns:1fr;}.rk{padding-bottom:2px;}}
+  .gr{font-family:var(--mono);font-weight:600;font-size:10px;padding:1px 6px;border-radius:5px;white-space:nowrap;}
+  .gr.a{background:var(--good-soft);color:var(--good);}.gr.b{background:var(--slate-soft);color:var(--slate);}.gr.c{background:var(--warn-soft);color:var(--warn);}.gr.d{background:var(--mute-soft);color:var(--mute);}
+  .src{padding:14px 20px;border-top:1px solid var(--line);background:var(--surface);}
+  .src .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);margin-bottom:8px;}
+  .src ol{margin:0;padding-left:18px;}
+  .src li{font-size:.85rem;color:var(--ink-2);margin-bottom:6px;line-height:1.4;}
+  .src li .lab{color:var(--ink);font-weight:500;}
+  .prov{padding:10px 20px;border-top:1px solid var(--line);background:var(--surface-2);font-family:var(--mono);font-size:10px;color:var(--ink-3);letter-spacing:.02em;}
+  footer{padding:26px 22px 44px;max-width:900px;margin:0 auto;}
+  footer p{font-family:var(--mono);font-size:11px;color:var(--ink-3);max-width:none;line-height:1.7;}
+</style>
+
+<header class="bar">
+  <div class="bar-inner">
+    <div class="bar-mark">FIELDNOTE<span>.</span></div>
+    <div class="bar-tag">Records · Customer Support · firsthand</div>
+  </div>
+</header>
+
+<main>
+  <section class="wrap">
+    <div class="eyebrow">Records · in the operators' own words</div>
+    <h1>Three deployments, firsthand.</h1>
+    <p class="lead">A CEO, a COO and a VP of Support — on the record, in their own public talks and interviews — written up as FieldNote records. Every claim sourced to the person who said it, graded, with the gaps kept visible.</p>
+    <div class="callout"><span class="k">Editorial status</span><p>Built only from <strong>firsthand public sources</strong> (the named person's own video/interview/press). These are worked examples at <strong>"candidate"</strong> — each still needs the <strong>scrub</strong> (stream the source, confirm the verbatim quote, log the timestamp) plus a second-reviewer sign-off and a right-of-reply before it's published.</p></div>
+  </section>
+
+  <!-- RECORD 1 · KLARNA -->
+  <section class="wrap">
+    <div class="eyebrow">Record 01 · win + walk-back</div>
+    <div class="rec">
+      <div class="rec-head">
+        <div class="kick">Fintech (BNPL) · Global · Full production → hybrid (reversed)</div>
+        <div class="t">Klarna — OpenAI-powered customer-service assistant</div>
+        <div class="tags"><span class="tag">Tier-1 deflection</span><span class="tag">Order / refund / status</span><span class="tag">LLM assistant</span></div>
+      </div>
+      <div class="rec-body">
+        <div class="rk">What it is</div><div class="rv">An OpenAI-powered assistant handling front-line customer chats (order status, refunds, cancellations, disputes), launched globally Feb 2024.</div>
+        <div class="rk">Reported outcomes</div><div class="rv">2.3M conversations in month one ≈ two-thirds of all support chats, "equivalent to 700 full-time agents"; average resolution time 11 min → under 2 min; repeat inquiries −25%; projected ~$40M profit improvement in 2024.<span class="ev">Company-reported (Klarna press, 27 Feb 2024) · <span class="gr b">Grade B</span> · self-reported, no independent baseline; $40M is a projection</span></div>
+        <div class="rk moatlbl" style="background:var(--signal-soft)"></div><div class="rv moat"><strong>Claim vs. reality (2025):</strong> Klarna reversed course. CEO Siemiatkowski: <em>"we went too far… we focused too much on cost, the result was lower quality."</em> Reported rising complaints and lower satisfaction on complex issues. New model = an "Uber-style" pool of remote human agents + AI tools; AI still handles ~two-thirds (~1.3M/mo).<span class="ev">Firsthand — CEO Siemiatkowski on camera + Klarna's own press · <span class="gr b">Grade B</span></span></div>
+        <div class="rk">Challenge</div><div class="rv">Cost-first automation degraded quality on nuanced/complex cases; customers wanted a human path. Volume ≠ quality.</div>
+        <div class="rk">Lesson</div><div class="rv">Aggressive tier-1 automation can deliver large, fast volume and cost wins — but pushing it into complex/edge cases erodes quality and can force a public reversal. <em>Condition:</em> strong fit for high-volume, simple, repetitive contacts; keep an easy human path for complex ones. The stable end-state was <strong>hybrid, not full automation.</strong></div>
+        <div class="rk">Boundaries &amp; gaps</div><div class="rv"><span class="gap">Feb-2024 metrics are first-party with no independent baseline; the "two-thirds" figure is volume, not quality; post-reversal quality/cost figures not disclosed.</span></div>
+      </div>
+      <div class="src"><div class="k">Evidence &amp; sources</div><ol>
+        <li><span class="lab">Klarna press release</span> — "AI assistant handles two-thirds of chats in its first month," 27 Feb 2024 · company-reported · <a href="https://www.klarna.com/international/press/klarna-ai-assistant-handles-two-thirds-of-customer-service-chats-in-its-first-month/">klarna.com/international/press</a></li>
+        <li><span class="lab">Reversal (firsthand)</span> — CEO Siemiatkowski on camera, "we went too far": <a href="https://www.youtube.com/watch?v=pNd4KlccWAY">youtube.com/watch?v=pNd4KlccWAY</a> · <span class="gr c">timestamp pending scrub</span></li>
+      </ol></div>
+      <div class="prov">Built 22 Sep 2026 · reviewer: pending · v1 · right-of-reply: not yet sought</div>
+    </div>
+  </section>
+
+  <!-- RECORD 2 · CHIME -->
+  <section class="wrap">
+    <div class="eyebrow">Record 02 · firsthand, at scale</div>
+    <div class="rec">
+      <div class="rec-head">
+        <div class="kick">Fintech (neobank) · US · Full production</div>
+        <div class="t">Chime — "Jade" AI support agent</div>
+        <div class="tags"><span class="tag">Tier-1 deflection</span><span class="tag">Agent-assist</span><span class="tag">Fintech</span></div>
+      </div>
+      <div class="rec-body">
+        <div class="rk">What it is</div><div class="rv">Chime's AI support agent, "Jade," fronts customer support at scale (~50M support interactions/year). Described firsthand by the company's COO in a recorded interview.</div>
+        <div class="rk">Reported outcomes</div><div class="rv">Jade handles <strong>~70%</strong> of interactions; resolution up <strong>&gt;40 percentage points</strong>.<span class="ev">Firsthand — Janelle Sallenave, COO (ex-Head of CX), on Fintech Wrap Up (video) · <span class="gr b">Grade B</span> · single firsthand source; exact quote + timestamp to confirm on stream</span></div>
+        <div class="rk moatlbl" style="background:var(--signal-soft)"></div><div class="rv moat"><strong>The design principle:</strong> <em>"Our golden rule: we will never introduce friction to reach a human."</em> The COO says trust — not automation rate — was the hard part for financial cash-flow queries.<span class="ev">Firsthand quote — confirm verbatim + timestamp on stream</span></div>
+        <div class="rk">Lesson</div><div class="rv">In high-trust financial support, automate volume but <strong>never gate the human path</strong> — the guaranteed escape hatch is what makes aggressive automation safe. <em>Condition:</em> high-stakes / regulated support where a wrong automated answer is costly.</div>
+        <div class="rk">Boundaries &amp; gaps</div><div class="rv"><span class="gap">Single firsthand source; exact quotes and timestamps pending the scrub; the baseline behind "+40pp" and the metric definition (resolution vs deflection) to be confirmed from the video.</span></div>
+      </div>
+      <div class="src"><div class="k">Evidence &amp; sources</div><ol>
+        <li><span class="lab">Janelle Sallenave (COO, Chime)</span> — Fintech Wrap Up (Sam Boboev), Jan 2026 · firsthand video · <a href="https://www.youtube.com/watch?v=hNgmlAb-xr8">youtube.com/watch?v=hNgmlAb-xr8</a> · <span class="gr c">timestamp pending scrub</span></li>
+      </ol></div>
+      <div class="prov">Built 23 Sep 2026 · reviewer: pending · v1 · STATUS: candidate — needs scrub (confirm verbatim quote + timestamp before Published)</div>
+    </div>
+  </section>
+
+  <!-- RECORD 3 · LIGHTSPEED -->
+  <section class="wrap">
+    <div class="eyebrow">Record 03 · the candid lesson</div>
+    <div class="rec">
+      <div class="rec-head">
+        <div class="kick">Commerce SaaS · Global · Full production</div>
+        <div class="t">Lightspeed — Fin deflection + copilot agent-assist</div>
+        <div class="tags"><span class="tag">Tier-1 deflection</span><span class="tag">Agent-assist</span><span class="tag">SaaS</span></div>
+      </div>
+      <div class="rec-body">
+        <div class="rk">What it is</div><div class="rv">Lightspeed runs an AI agent for deflection plus an agent-assist copilot across a ~250-person global support org. Described firsthand by its VP of Global Support in a recorded talk.</div>
+        <div class="rk">Reported outcomes</div><div class="rv">Up to <strong>65% AI resolution</strong>; the copilot let agents close <strong>+31% conversations per day</strong>.<span class="ev">Firsthand — Angelo Livanos, VP Global Support, on Intercom's Innovator Spotlight (video) · <span class="gr a">Grade A</span> · clear, specific, on-camera · quote + timestamp to confirm on stream</span></div>
+        <div class="rk moatlbl" style="background:var(--signal-soft)"></div><div class="rv moat"><strong>The candid lesson:</strong> the hard part was <em>not</em> the technology — it was <strong>AI change-management</strong> across a 250-person org: getting agents to trust and adopt the tools.<span class="ev">Firsthand — the operator's own framing</span></div>
+        <div class="rk">Lesson</div><div class="rv">Budget for the <strong>organisational and change work</strong>, not just the tooling — adoption by the support team is the real bottleneck, and it's where most of the effort goes. <em>Condition:</em> mid-to-large support orgs with established agent teams.</div>
+        <div class="rk">Boundaries &amp; gaps</div><div class="rv"><span class="gap">Single firsthand source; baselines behind "65%" and "+31%" to confirm; vendor-hosted setting (Intercom Pioneer) — but the speaker is Lightspeed's own operator, so it passes the firsthand test.</span></div>
+      </div>
+      <div class="src"><div class="k">Evidence &amp; sources</div><ol>
+        <li><span class="lab">Angelo Livanos (VP Global Support, Lightspeed)</span> — Intercom Innovator Spotlight / Pioneer · firsthand video · <a href="https://www.youtube.com/watch?v=WB5km0GCcSE">youtube.com/watch?v=WB5km0GCcSE</a> · <span class="gr c">timestamp pending scrub</span></li>
+      </ol></div>
+      <div class="prov">Built 23 Sep 2026 · reviewer: pending · v1 · STATUS: candidate — needs scrub (confirm verbatim quote + timestamp before Published)</div>
+    </div>
+  </section>
+
+  <section class="wrap">
+    <div class="eyebrow">Why these three</div>
+    <p>Each is the operator's <strong>own public account</strong> — not a vendor's or a journalist's: a CEO on the <strong>walk-back</strong> he'd rather not dwell on (Klarna), a COO on the <strong>design principle</strong> that made scale safe (Chime), and a VP admitting the hard part was <strong>change-management, not tech</strong> (Lightspeed). Firsthand candor is the whole point — it's the evidence a case study never prints.</p>
+    <div class="callout"><span class="k">Next</span><p>These are the standard — and still <em>candidates</em> until scrubbed (verbatim quote + timestamp). Work the firsthand harvest top-down; since each source is a named person, a right-of-reply is a natural next step.</p></div>
+  </section>
+</main>
+
+<footer>
+  <p>FieldNote Records · Customer Support · firsthand — three worked records built only from the named operator's own public words (video / interview / press). Candidates: each needs the scrub (verbatim quote + timestamp) + second-reviewer sign-off + right-of-reply before publication. A Trueinfo Labs product; name not yet cleared.</p>
+</footer>

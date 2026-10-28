@@ -1,0 +1,145 @@
+<title>FieldNote Work Plan</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  :root{
+    --paper:#F6F7F9;--surface:#FFFFFF;--surface-2:#EEF1F5;--ink:#14181F;--ink-2:#434B57;--ink-3:#6B7482;
+    --line:#DCE1E8;--line-2:#C9D0DA;--slate:#2C4A6E;--slate-soft:#E4EAF1;--signal:#B0761A;--signal-soft:#F6ECD8;
+    --good:#2E6E4E;--good-soft:#DDEEE4;--crit:#9A3838;--crit-soft:#F2DDDD;
+    --shadow:0 1px 2px rgba(20,24,31,.05),0 8px 24px -12px rgba(20,24,31,.14);
+    --display:'Newsreader',Georgia,serif;--body:'IBM Plex Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace;
+  }
+  :root:not([data-theme="light"]){@media (prefers-color-scheme:dark){
+    --paper:#0F1216;--surface:#171B21;--surface-2:#1E242C;--ink:#EAEEF3;--ink-2:#B4BDC9;--ink-3:#838E9C;
+    --line:#2A313A;--line-2:#38414C;--slate:#8FB2D6;--slate-soft:#1C2A3A;--signal:#E0A94A;--signal-soft:#2E2513;
+    --good:#6FC095;--good-soft:#16281E;--crit:#E28B8B;--crit-soft:#2E1919;--shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px -14px rgba(0,0,0,.7);
+  }}
+  :root[data-theme="dark"]{
+    --paper:#0F1216;--surface:#171B21;--surface-2:#1E242C;--ink:#EAEEF3;--ink-2:#B4BDC9;--ink-3:#838E9C;
+    --line:#2A313A;--line-2:#38414C;--slate:#8FB2D6;--slate-soft:#1C2A3A;--signal:#E0A94A;--signal-soft:#2E2513;
+    --good:#6FC095;--good-soft:#16281E;--crit:#E28B8B;--crit-soft:#2E1919;--shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px -14px rgba(0,0,0,.7);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:13px;line-height:1.42;-webkit-font-smoothing:antialiased;}
+  .sheet{max-width:920px;margin:0 auto;padding:26px 26px 34px;}
+  .top{display:flex;align-items:baseline;justify-content:space-between;gap:14px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:16px;}
+  .mark{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);}
+  .mark span{color:var(--signal);}
+  .top .meta{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);letter-spacing:.03em;text-align:right;}
+  h1{font-family:var(--display);font-weight:500;font-size:1.7rem;line-height:1.06;margin:0 0 4px;letter-spacing:-.01em;}
+  .sub{color:var(--ink-2);font-size:.9rem;margin:0 0 14px;}
+  .goal{background:var(--signal-soft);border-left:3px solid var(--signal);border-radius:0 8px 8px 0;padding:11px 14px;margin-bottom:16px;}
+  .goal .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--signal);margin-bottom:3px;}
+  .goal p{margin:0;color:var(--ink);font-size:.92rem;}
+  .goal b{color:var(--ink);}
+  h2{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--signal);margin:0 0 8px;display:flex;align-items:center;gap:8px;}
+  h2::after{content:"";flex:1;height:1px;background:var(--line);}
+  table{border-collapse:collapse;width:100%;margin-bottom:16px;}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top;font-size:12px;}
+  thead th{font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);background:var(--surface-2);font-weight:500;}
+  td.s{font-weight:600;color:var(--ink);white-space:nowrap;}
+  td.s span{display:block;font-family:var(--mono);font-size:9px;font-weight:400;color:var(--ink-3);text-transform:uppercase;letter-spacing:.04em;margin-top:2px;}
+  td .tgt{font-family:var(--mono);font-size:11px;color:var(--slate);}
+  tbody tr:nth-child(even) td{background:color-mix(in srgb,var(--surface-2) 45%,transparent);}
+  .cols{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;}
+  @media(max-width:640px){.cols{grid-template-columns:1fr;}}
+  .box{border:1px solid var(--line);border-radius:9px;background:var(--surface);padding:12px 14px;}
+  .box.warn{border-color:var(--crit);}
+  .box .bk{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);margin-bottom:8px;}
+  .box.warn .bk{color:var(--crit);}
+  .box ul{margin:0;padding-left:15px;}
+  .box li{font-size:11.5px;color:var(--ink-2);margin-bottom:5px;line-height:1.35;}
+  .box li b{color:var(--ink);}
+  .foot{border-top:1px solid var(--line);padding-top:11px;display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media(max-width:640px){.foot{grid-template-columns:1fr;}}
+  .foot .fk{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--signal);margin-bottom:5px;}
+  .foot p{margin:0;font-size:11.5px;color:var(--ink-2);}
+  .foot p b{color:var(--ink);}
+  @media print{body{background:#fff;}.sheet{padding:0;max-width:none;}}
+</style>
+
+<div class="sheet">
+  <div class="top">
+    <div class="mark">FIELDNOTE<span>.</span></div>
+    <div class="meta">Two-week work plan · Customer Support<br>Stage 1 → gate for Stage 2 · by Trueinfo Labs</div>
+  </div>
+
+  <h1>Produce the records. Grade the evidence. Don't build software.</h1>
+  <p class="sub">The job for the next two weeks is evidence, not engineering. Layer-1 (public sources) is enough to launch — interviews are optional. Everything ladders to one target.</p>
+
+  <div class="goal">
+    <div class="k">The fortnight target</div>
+    <p><b>~20–25 editorial-grade records · a real measured cost-per-record · right-of-reply sent on every named-company record.</b> Interviews are opportunistic, not required. Hit this and Stage 1 is done and the build-gate opens. Miss it and we diagnose before writing a line of product code.</p>
+  </div>
+
+  <h2>Who does what</h2>
+  <table>
+    <thead><tr><th>Workstream</th><th>Owner</th><th>Key tasks</th><th>2-week target</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="s">A · Record production<span>the engine</span></td>
+        <td>Analyst(s)</td>
+        <td>Work the harvest sheet top-down (B-grade first). Per record: verify each claim against its URL · fill the template · label evidence type · grade A–D · <b>mark missing baselines</b> · write boundary + lesson-with-condition · cluster corroborating sources. Log time per record.</td>
+        <td><span class="tgt">20–25 records that pass review first time; time/record falling</span></td>
+      </tr>
+      <tr>
+        <td class="s">B · Editorial standard<span>the moat</span></td>
+        <td>Editor / lead</td>
+        <td>Sign off <b>every</b> record (second-reviewer). Own the taxonomy, the metric-normalization rules (deflection ≠ resolution ≠ containment), the grade rubric, the source register, and the rights policy (excerpt + link, never reproduce).</td>
+        <td><span class="tgt">Consistent standard; zero unsourced claims ship</span></td>
+      </tr>
+      <tr>
+        <td class="s">C · Outreach &amp; right-of-reply<span>optional primary evidence</span></td>
+        <td>Founder / BD</td>
+        <td>Layer-1 public sources are enough to launch — interviews are a bonus, not a blocker. Send each named company its record for <b>right-of-reply</b> (doubles as a mini-interview). Light design-partner outreach; capture any primary evidence opportunistically. Formal interviews come later, via design partners.</td>
+        <td><span class="tgt">Right-of-reply sent on published records; ≥2 warm design-partner leads (interviews = bonus)</span></td>
+      </tr>
+      <tr>
+        <td class="s">D · Tooling &amp; ops<span>light</span></td>
+        <td>Coordinator</td>
+        <td>Stand up ONE working system — Notion/Airtable mirroring the record schema — plus the tracker &amp; source register. Keep current; dedupe. No custom software.</td>
+        <td><span class="tgt">Everyone in one place; status visible at a glance</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="cols">
+    <div class="box">
+      <div class="bk">Cadence</div>
+      <ul>
+        <li><b>Daily, 15 min:</b> each analyst — records done, blockers, time/record</li>
+        <li><b>Twice weekly:</b> editor reviews the queue &amp; signs off</li>
+        <li><b>End of week 1:</b> gut-check — is a record economically producible?</li>
+        <li><b>End of week 2:</b> gate review against the target</li>
+      </ul>
+    </div>
+    <div class="box">
+      <div class="bk">Track these numbers</div>
+      <ul>
+        <li><b>Records finished</b> / week / analyst</li>
+        <li><b>Minutes per record</b> (the economics)</li>
+        <li><b>Grade mix</b> (aim for real B's, not all C)</li>
+        <li><b>Right-of-reply</b> sent / received</li>
+      </ul>
+    </div>
+    <div class="box warn">
+      <div class="bk">Do NOT yet</div>
+      <ul>
+        <li>Build the app, AWS, or search — <b>gate unmet</b></li>
+        <li>Scrape at scale (rights + quality)</li>
+        <li>Build a marketing site</li>
+        <li>Chase breadth over verified quality</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div>
+      <div class="fk">Founder — don't delegate (yet)</div>
+      <p><b>The editorial standard</b> for the first ~25 records, and <b>the design-partner relationships.</b> Delegate the labour, not the judgment or the relationships.</p>
+    </div>
+    <div>
+      <div class="fk">Day-one handout for every analyst</div>
+      <p>The <b>Starter Kit</b> (template + method + taxonomy + rights) and the <b>Batch-1 records</b> (Klarna · Commonwealth Bank · Intercom Fin) as the reference standard, so "good" is unambiguous.</p>
+    </div>
+  </div>
+</div>

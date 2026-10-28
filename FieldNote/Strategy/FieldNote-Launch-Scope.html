@@ -1,0 +1,258 @@
+<title>FieldNote Launch Scope</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  :root{
+    --paper:#F6F7F9;--surface:#FFFFFF;--surface-2:#EEF1F5;--ink:#14181F;--ink-2:#434B57;--ink-3:#6B7482;
+    --line:#DCE1E8;--line-2:#C9D0DA;--slate:#2C4A6E;--slate-soft:#E4EAF1;--signal:#B0761A;--signal-soft:#F6ECD8;
+    --good:#2E6E4E;--good-soft:#DDEEE4;--warn:#9A6410;--warn-soft:#F5E8D2;--crit:#9A3838;--crit-soft:#F2DDDD;--mute:#5C6470;--mute-soft:#E6E9EE;
+    --display:'Newsreader',Georgia,serif;--body:'IBM Plex Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace;
+  }
+  :root:not([data-theme="light"]){@media (prefers-color-scheme:dark){
+    --paper:#0F1216;--surface:#171B21;--surface-2:#1E242C;--ink:#EAEEF3;--ink-2:#B4BDC9;--ink-3:#838E9C;
+    --line:#2A313A;--line-2:#38414C;--slate:#8FB2D6;--slate-soft:#1C2A3A;--signal:#E0A94A;--signal-soft:#2E2513;
+    --good:#6FC095;--good-soft:#16281E;--warn:#DDA043;--warn-soft:#2C2411;--crit:#E28B8B;--crit-soft:#2E1919;--mute:#9AA4B1;--mute-soft:#22272F;
+  }}
+  :root[data-theme="dark"]{
+    --paper:#0F1216;--surface:#171B21;--surface-2:#1E242C;--ink:#EAEEF3;--ink-2:#B4BDC9;--ink-3:#838E9C;
+    --line:#2A313A;--line-2:#38414C;--slate:#8FB2D6;--slate-soft:#1C2A3A;--signal:#E0A94A;--signal-soft:#2E2513;
+    --good:#6FC095;--good-soft:#16281E;--warn:#DDA043;--warn-soft:#2C2411;--crit:#E28B8B;--crit-soft:#2E1919;--mute:#9AA4B1;--mute-soft:#22272F;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.55;-webkit-font-smoothing:antialiased;}
+  header.bar{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--paper) 90%,transparent);backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line);}
+  .bar-inner{max-width:880px;margin:0 auto;padding:11px 22px;display:flex;align-items:baseline;gap:14px;}
+  .bar-mark{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);}
+  .bar-mark span{color:var(--signal);}
+  .bar-tag{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-left:auto;}
+  @media (max-width:620px){.bar-tag{display:none;}}
+  main{max-width:880px;margin:0 auto;padding:0 22px;}
+  .wrap{max-width:780px;}
+  section{padding-block:34px;border-top:1px solid var(--line);}
+  section:first-of-type{border-top:none;}
+  .eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--signal);display:flex;align-items:center;gap:10px;margin:0 0 15px;}
+  .eyebrow::before{content:"";width:22px;height:1.5px;background:var(--signal);display:inline-block;}
+  h1{font-family:var(--display);font-weight:500;font-size:clamp(2rem,5vw,3rem);line-height:1.05;letter-spacing:-.015em;margin:0 0 16px;text-wrap:balance;max-width:16ch;}
+  h2{font-family:var(--display);font-weight:500;font-size:clamp(1.4rem,3vw,1.9rem);line-height:1.12;margin:0 0 12px;text-wrap:balance;}
+  h3{font-family:var(--body);font-weight:600;font-size:.95rem;margin:18px 0 6px;color:var(--ink);}
+  p{margin:0 0 14px;color:var(--ink-2);max-width:74ch;}
+  p.lead{font-family:var(--display);font-size:clamp(1.1rem,2.1vw,1.32rem);line-height:1.44;color:var(--ink);}
+  strong{color:var(--ink);font-weight:600;}em{font-style:italic;}
+  code{font-family:var(--mono);font-size:.85em;background:var(--surface-2);padding:1px 5px;border-radius:4px;color:var(--ink);}
+
+  .meta{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:22px;}
+  .meta div{background:var(--surface);padding:12px 14px;}
+  .meta .l{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);}
+  .meta .v{font-weight:600;font-size:.9rem;margin-top:4px;color:var(--ink);}
+  @media(max-width:620px){.meta{grid-template-columns:1fr 1fr;}}
+
+  .lockbar{border-left:3px solid var(--slate);background:var(--slate-soft);padding:16px 20px;border-radius:0 10px 10px 0;margin:22px 0;}
+  .lockbar p{color:var(--ink);margin:0;max-width:none;}
+  .lockbar .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--slate);margin-bottom:6px;display:block;}
+
+  .dual{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px;}
+  @media(max-width:640px){.dual{grid-template-columns:1fr;}}
+  .box{border:1px solid var(--line);border-radius:12px;padding:15px 17px;background:var(--surface);}
+  .box .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;margin-bottom:10px;}
+  .box.in{border-top:3px solid var(--good);}.box.in .k{color:var(--good);}
+  .box.out{border-top:3px solid var(--crit);}.box.out .k{color:var(--crit);}
+  .box h3{margin:14px 0 5px;font-size:.82rem;font-family:var(--mono);font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3);}
+  .box h3:first-of-type{margin-top:0;}
+  .box ul{margin:0;padding:0;list-style:none;}
+  .box li{font-size:.89rem;color:var(--ink-2);margin-bottom:7px;line-height:1.4;padding-left:20px;position:relative;}
+  .box li strong{color:var(--ink);}
+  .box.in li::before{content:"✓";position:absolute;left:0;color:var(--good);font-weight:600;}
+  .box.out li::before{content:"✕";position:absolute;left:0;color:var(--crit);}
+
+  ul.check{list-style:none;padding:0;margin:6px 0 0;}
+  ul.check li{padding:9px 0 9px 28px;border-top:1px solid var(--line);position:relative;font-size:.92rem;color:var(--ink-2);}
+  ul.check li:first-child{border-top:none;}
+  ul.check li::before{content:"☐";position:absolute;left:0;top:8px;color:var(--slate);font-size:1.05rem;}
+  ul.check li strong{color:var(--ink);}
+
+  .callout{border-left:3px solid var(--signal);background:var(--signal-soft);padding:14px 18px;border-radius:0 10px 10px 0;margin:16px 0;}
+  .callout p{color:var(--ink);margin:0;max-width:none;}
+  .callout .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--signal);margin-bottom:6px;display:block;}
+  .callout.crit{border-left-color:var(--crit);background:var(--crit-soft);}.callout.crit .k{color:var(--crit);}
+
+  ul.clean{list-style:none;padding:0;margin:6px 0 0;}
+  ul.clean li{padding:8px 0 8px 24px;border-top:1px solid var(--line);position:relative;font-size:.92rem;color:var(--ink-2);}
+  ul.clean li:first-child{border-top:none;}
+  ul.clean li::before{content:"→";position:absolute;left:0;top:8px;color:var(--signal);font-family:var(--mono);}
+  ul.clean li strong{color:var(--ink);}
+
+  ol.dec{margin:6px 0 0;padding-left:22px;}
+  ol.dec li{font-size:.92rem;color:var(--ink-2);margin-bottom:8px;}
+  ol.dec li strong{color:var(--ink);}
+
+  .signoff{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px;}
+  @media(max-width:640px){.signoff{grid-template-columns:1fr;}}
+  .sig{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--surface);}
+  .sig .r{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);}
+  .sig .line{border-bottom:1px solid var(--line-2);height:26px;margin-top:14px;}
+  .sig .cap{font-family:var(--mono);font-size:9.5px;color:var(--ink-3);margin-top:5px;}
+
+  footer{padding:26px 22px 46px;max-width:880px;margin:0 auto;}
+  footer p{font-family:var(--mono);font-size:11px;color:var(--ink-3);max-width:none;line-height:1.7;}
+</style>
+
+<header class="bar">
+  <div class="bar-inner">
+    <div class="bar-mark">FIELDNOTE<span>.</span></div>
+    <div class="bar-tag">Launch scope · v1 · locks Phase 0</div>
+  </div>
+</header>
+
+<main>
+  <!-- HERO -->
+  <section class="wrap">
+    <div class="eyebrow">Launch scope — the signable contract</div>
+    <h1>What we are shipping on 31 October.</h1>
+    <p class="lead">FieldNote's first release is a self-serve library of <strong>firsthand customer-support AI-deployment records</strong> — verified, evidence-graded, and searchable — with a grounded chatbot, built by adapting NEO onto AWS. This document defines exactly what is in, what is out, and what "done" means. Once signed, changes go through the change-control note below, not by drift.</p>
+    <div class="meta">
+      <div><div class="l">Product</div><div class="v">FieldNote (ex-NEO)</div></div>
+      <div><div class="l">Go-live</div><div class="v">31 Oct 2026</div></div>
+      <div><div class="l">Launch corpus</div><div class="v">40–60 records</div></div>
+      <div><div class="l">Domain</div><div class="v">Customer support</div></div>
+    </div>
+  </section>
+
+  <!-- LAUNCH DEFINITION -->
+  <section class="wrap">
+    <div class="eyebrow">Launch definition</div>
+    <h2>One sentence everyone agrees on.</h2>
+    <div class="lockbar"><span class="k">Definition of "launched"</span><p>FieldNote is live when a customer-support leader can self-serve: create a role profile, browse and filter a library of <strong>40–60 human-verified, evidence-graded firsthand CS deployment records</strong>, open any record through its TL;DR → decision card → evidence, and ask a grounded, cited chatbot — all on a stable, publicly reachable deployment.</p></div>
+    <p>This is a <strong>quality-over-volume</strong> launch. The corpus is intentionally small and fully verified. Coverage and automation grow after launch; trust does not wait.</p>
+  </section>
+
+  <!-- IN / OUT -->
+  <section class="wrap">
+    <div class="eyebrow">The boundary</div>
+    <h2>In scope / out of scope.</h2>
+    <div class="dual">
+      <div class="box in">
+        <div class="k">In scope for 31 Oct</div>
+        <h3>Product features</h3>
+        <ul>
+          <li><strong>Role-based profile</strong> (role · industry · size · workflows) — self-serve, no onboarding call</li>
+          <li><strong>Filtered library</strong> — facets: company · category · models · ROI / evidence grade + search</li>
+          <li><strong>Tiered record view</strong> — TL;DR → decision card → evidence (quotes + timestamps)</li>
+          <li><strong>Grounded RAG chatbot</strong> — answers from verified corpus only, cited, server-side, rate-capped</li>
+          <li><strong>Evidence grade A–D</strong> + "verified" badge on every record</li>
+          <li><strong>"Why this matters to you"</strong> fit note per record</li>
+        </ul>
+        <h3>Content</h3>
+        <ul>
+          <li><strong>40–60 firsthand CS records</strong>, human-SCRUBBED, graded</li>
+          <li>Workflows: tier-1 deflection · order-status · agent-assist</li>
+          <li>Source: YouTube (primary)</li>
+        </ul>
+        <h3>Platform</h3>
+        <ul>
+          <li><strong>AWS</strong> — Bedrock (chatbot + extraction), Aurora + pgvector, Cognito auth</li>
+          <li>Stack-fallback to NEO's current stack as date insurance</li>
+        </ul>
+      </div>
+      <div class="box out">
+        <div class="k">Out of scope — deferred to Nov+</div>
+        <h3>Volume &amp; automation</h3>
+        <ul>
+          <li><strong>1,000 records</strong> — a Nov–Dec content effort, not launch</li>
+          <li><strong>Fully-automated ingestion orchestration</strong> — semi-manual at launch</li>
+          <li>Freshness / re-review automation</li>
+        </ul>
+        <h3>Modules &amp; scope</h3>
+        <ul>
+          <li>Vendor Explorer · Demo Catalog · Use Case Library (NEO "launching soon")</li>
+          <li>Additional domains — document processing, software engineering</li>
+          <li>Additional workflows beyond the three CS ones</li>
+          <li>Comparisons, watchlists, exports</li>
+        </ul>
+        <h3>Sources &amp; commerce</h3>
+        <ul>
+          <li><strong>X as a record source</strong> — X stays discovery/leads only</li>
+          <li>Vendor case studies / press / analyst content (not firsthand)</li>
+          <li><strong>Payments / billing</strong> — free early access to measure demand</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUALITY BAR -->
+  <section class="wrap">
+    <div class="eyebrow">Quality bar — non-negotiable</div>
+    <h2>What makes a record fit to ship.</h2>
+    <p>A record counts toward the 40–60 only if it clears every one of these. These do not bend under deadline pressure.</p>
+    <ul class="clean">
+      <li><strong>Firsthand</strong> — a named person from a named company, in their own public words (YouTube).</li>
+      <li><strong>Customer-support</strong> — maps to one of the three launch workflows.</li>
+      <li><strong>Human-SCRUBBED</strong> — a person confirmed each quote and timestamp against the source.</li>
+      <li><strong>Grounded</strong> — every claim (number, model, architecture) has a verbatim quote + timestamp; absent = <code>not_disclosed</code>, shown as such.</li>
+      <li><strong>Graded</strong> — carries an evidence grade A–D with metric hygiene (deflection ≠ resolution ≠ containment ≠ handle-rate).</li>
+      <li><strong>Boundary-marked</strong> — caveats / what the operator would warn a peer about are visible.</li>
+    </ul>
+  </section>
+
+  <!-- ACCEPTANCE -->
+  <section class="wrap">
+    <div class="eyebrow">Launch acceptance criteria</div>
+    <h2>We have launched when all are true.</h2>
+    <ul class="check">
+      <li><strong>≥40 verified records</strong> live, each meeting the quality bar</li>
+      <li>A new user can <strong>create a role profile</strong> and see a relevant feed</li>
+      <li><strong>Filters work</strong> across company, category, models, ROI/grade + search</li>
+      <li>Every record opens through <strong>all three tiers</strong> with working source links + timestamps</li>
+      <li>The <strong>chatbot answers from the corpus with citations</strong> and refuses out-of-corpus questions</li>
+      <li>Off-scope NEO content is <strong>excluded</strong> from the FieldNote library</li>
+      <li>Deployed to a <strong>stable public URL</strong>; auth works; smoke tests pass</li>
+    </ul>
+  </section>
+
+  <!-- SUCCESS GATE -->
+  <section class="wrap">
+    <div class="eyebrow">After launch — how we judge it</div>
+    <h2>The success gate.</h2>
+    <p>Launch is the start of the measurement, not the finish line. Over the weeks after go-live we watch three signals to decide whether to invest further:</p>
+    <ul class="clean">
+      <li><strong>Repeat use</strong> — do the same CS leaders come back?</li>
+      <li><strong>Decision impact</strong> — did a record change or inform a real decision?</li>
+      <li><strong>Willingness to pay</strong> — would they pay for it?</li>
+    </ul>
+    <p>Exact thresholds are set by the Product Lead before launch. Missing the gate is a signal to stop or pivot cheaply — the whole point of a small, honest launch.</p>
+  </section>
+
+  <!-- ASSUMPTIONS + DECISIONS -->
+  <section class="wrap">
+    <div class="eyebrow">Assumptions &amp; locked decisions</div>
+    <h2>What this scope depends on.</h2>
+    <h3>Assumptions (if any breaks, the date is at risk)</h3>
+    <ul class="clean">
+      <li>1–2 developers (one who knows the NEO codebase) + 1 curator, from day one.</li>
+      <li>AWS + Bedrock access, budget, and NEO repo/data/key handoff completed in week 1.</li>
+      <li>Firsthand CS source material exists in enough volume to reach 40–60 (order-status is the thin spot).</li>
+    </ul>
+    <h3>Decisions locked this cycle</h3>
+    <ol class="dec">
+      <li><strong>Adapt NEO, migrate to AWS now</strong> — not a fresh build, not NEO's current stack long-term.</li>
+      <li><strong>Strict firsthand customer-support scope</strong> — the moat over volume.</li>
+      <li><strong>~40–60 verified records at launch</strong> — explicitly not 1,000.</li>
+      <li><strong>Chatbot = consumption model B</strong>, grounded + server-side (user spends no tokens).</li>
+      <li><strong>Stack-fallback accepted</strong> as date insurance.</li>
+    </ol>
+    <div class="callout crit"><span class="k">Change control</span><p>After sign-off, any addition to "in scope" must name what it displaces — a deferred item stays deferred, the date stays fixed, or the record count drops. Scope grows only by explicit trade, never by drift.</p></div>
+  </section>
+
+  <!-- SIGN OFF -->
+  <section class="wrap">
+    <div class="eyebrow">Sign-off</div>
+    <h2>Agreed by.</h2>
+    <div class="signoff">
+      <div class="sig"><div class="r">Product / Founder Lead</div><div class="line"></div><div class="cap">name · date</div></div>
+      <div class="sig"><div class="r">Engineering Lead</div><div class="line"></div><div class="cap">name · date</div></div>
+      <div class="sig"><div class="r">Sponsor / Boss</div><div class="line"></div><div class="cap">name · date</div></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>FieldNote — a Trueinfo Labs product · Launch Scope v1 · Sep 2026. Locks Phase 0 of the Execution Plan. Pairs with: Execution Plan, Delivery Plan v2, Functional Spec, Build Case. Go-live 31 Oct 2026 · adapt NEO → AWS · strict firsthand customer-support · 40–60 verified records. "FieldNote" name not yet cleared.</p>
+</footer>

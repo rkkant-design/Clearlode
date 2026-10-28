@@ -1,0 +1,217 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  :root{--ink:#14181F;--ink2:#434B57;--ink3:#6B7482;--line:#DCE1E8;--surf2:#EEF1F5;--slate:#2C4A6E;--slateS:#E4EAF1;--signal:#9A6410;--signalS:#F6ECD8;--good:#2E6E4E;--goodS:#DDEEE4;--warn:#9A6410;--warnS:#F5E8D2;--crit:#9A3838;--critS:#F2DDDD;--mute:#5C6470;--muteS:#E6E9EE;}
+  *{box-sizing:border-box;}
+  html{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  body{margin:0;font-family:'IBM Plex Sans',system-ui,sans-serif;color:var(--ink);font-size:12.5px;line-height:1.5;background:#fff;}
+  @page{margin:15mm 16mm;}
+  .page{page-break-after:always;}
+  .page:last-child{page-break-after:auto;}
+  h1{font-family:'Newsreader',serif;font-weight:500;font-size:30px;line-height:1.08;margin:0 0 12px;letter-spacing:-.01em;}
+  h2{font-family:'Newsreader',serif;font-weight:500;font-size:21px;line-height:1.15;margin:0 0 4px;}
+  h3{font-size:13px;font-weight:600;margin:16px 0 6px;}
+  p{margin:0 0 10px;color:var(--ink2);}
+  .mark{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);}
+  .mark span{color:var(--signal);}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--signal);margin-bottom:8px;}
+  .rule{height:1px;background:var(--line);margin:14px 0;}
+  .lbl{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);margin-bottom:3px;}
+  .pill{font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 10px;border-radius:100px;font-weight:600;display:inline-block;}
+  .pill.adopt{background:var(--goodS);color:var(--good);}
+  .pill.pilot{background:var(--warnS);color:var(--warn);}
+  .pill.investigate{background:var(--slateS);color:var(--slate);}
+  .pill.monitor{background:var(--muteS);color:var(--mute);}
+  .gr{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:10px;padding:2px 7px;border-radius:6px;}
+  .gr.a{background:var(--goodS);color:var(--good);}.gr.b{background:var(--slateS);color:var(--slate);}.gr.c{background:var(--warnS);color:var(--warn);}.gr.d{background:var(--muteS);color:var(--mute);}
+  table{border-collapse:collapse;width:100%;margin:4px 0 10px;}
+  td,th{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top;font-size:12px;}
+  th{background:var(--surf2);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);font-weight:500;}
+  td.k{background:var(--surf2);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);width:150px;white-space:nowrap;}
+  .cvr{background:var(--signalS);border-left:3px solid var(--signal);padding:10px 12px;border-radius:0 6px 6px 0;margin:8px 0;}
+  .cvr .claim{color:var(--ink3);text-decoration:line-through;}
+  .cvr .ver{color:var(--ink);font-weight:600;}
+  .basis{background:var(--slateS);border-left:3px solid var(--slate);padding:10px 12px;border-radius:0 6px 6px 0;margin:8px 0;}
+  .basis b{color:var(--slate);}
+  .foot{position:running(f);}
+  .cover{display:flex;flex-direction:column;justify-content:center;min-height:250mm;}
+  .cover .big{font-family:'Newsreader',serif;font-size:46px;line-height:1.02;font-weight:500;letter-spacing:-.02em;margin:10px 0 16px;max-width:15ch;}
+  .cover .sub{font-size:15px;color:var(--ink2);max-width:52ch;}
+  .cover .meta{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink3);margin-top:26px;line-height:1.9;}
+  .tag{font-family:'IBM Plex Mono',monospace;font-size:10px;background:var(--surf2);border:1px solid var(--line);color:var(--ink2);padding:1px 7px;border-radius:6px;}
+  .hdr{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:14px;}
+  .hdr .r{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--ink3);letter-spacing:.05em;}
+  .badges{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0 12px;}
+  .next{background:var(--goodS);border-radius:8px;padding:11px 13px;margin-top:10px;}
+  .next .lbl{color:var(--good);}
+</style></head><body>
+
+<!-- COVER -->
+<section class="page cover">
+  <div class="mark">FIELDNOTE<span>.</span></div>
+  <div class="eyebrow" style="margin-top:22px">Use-Case Dossier · evidence-backed AI decisions</div>
+  <div class="big">What to do about this week's AI — and why.</div>
+  <div class="sub">Six developments, mapped to Meridian Media's priorities. Each carries a recommendation, the transparent basis for it, the vendor claim checked against verified outcomes, and the full use case — so the decision can be trusted, audited and shared.</div>
+  <div class="meta">
+    Prepared for: <b style="color:var(--ink)">Meridian Media</b> — mid-market digital publisher<br>
+    Scope: Yield · Ad Operations · Revenue · Subscriptions<br>
+    Week of 15–21 September 2026<br>
+    A Trueinfo Labs product · sample dossier, illustrative data
+  </div>
+</section>
+
+<!-- METHODOLOGY -->
+<section class="page">
+  <div class="hdr"><div class="mark">FIELDNOTE<span>.</span></div><div class="r">Methodology · how we grade &amp; recommend</div></div>
+  <h1>On what basis FieldNote recommends.</h1>
+  <p>A recommendation is only worth trusting if you can see how it was reached. Every card is scored on four axes, then mapped to an action by a fixed rule. Nothing rests on opinion or a vendor's press release.</p>
+
+  <h3>1 · Evidence grade — how well substantiated</h3>
+  <table>
+    <tr><td class="k"><span class="gr a">A</span></td><td>Independent production evidence — named organisation, method, measurable result. Language: "observed in production".</td></tr>
+    <tr><td class="k"><span class="gr b">B</span></td><td>Named customer case study or credible research with clear methodology. Language: "reported / associated with".</td></tr>
+    <tr><td class="k"><span class="gr c">C</span></td><td>Vendor documentation, release notes or sponsored study. Language: "vendor states".</td></tr>
+    <tr><td class="k"><span class="gr d">D</span></td><td>Demo, announcement or unverified secondary report. Language: "early signal, not verified".</td></tr>
+  </table>
+
+  <h3>2 · Verified outcome — what actually happened</h3>
+  <p>The vendor's claim is checked against outcomes FieldNote has tracked across real pilots. The gap between claim and verified reality is itself the intelligence — and the proprietary asset a summary can't reproduce.</p>
+
+  <h3>3 · Fit to your business</h3>
+  <p>Does it address a stated priority, and are the conditions where it works present at your company? A strong average outcome with poor fit is still the wrong bet.</p>
+
+  <h3>4 · Complexity &amp; risk</h3>
+  <p>Implementation effort, downside exposure and reversibility.</p>
+
+  <div class="rule"></div>
+  <h3>The decision rule</h3>
+  <table>
+    <tr><td class="k"><span class="pill adopt">Adopt</span></td><td>Strong evidence (A/B) + consistent positive verified outcome + good fit + low downside.</td></tr>
+    <tr><td class="k"><span class="pill pilot">Pilot</span></td><td>Positive but variable outcome, or strong fit on a high-effort response — prove it in your context against a control before rollout.</td></tr>
+    <tr><td class="k"><span class="pill investigate">Investigate</span></td><td>Real potential on vendor-grade (C) evidence — get methodology and references, then a small controlled test.</td></tr>
+    <tr><td class="k"><span class="pill monitor">Watch</span></td><td>Weak evidence or a negative track record — do not act; the downside outweighs the upside.</td></tr>
+  </table>
+  <p style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ink3);margin-top:14px;">Note: pilot counts and verified figures in this sample dossier are illustrative. In production they are drawn from FieldNote's tracked-outcomes ledger, which accrues with every customer pilot.</p>
+</section>
+
+<!-- USE CASES -->
+<!-- c6 ADOPT -->
+<section class="page">
+  <div class="hdr"><div class="mark">FIELDNOTE<span>.</span></div><div class="r">Use case 1 of 6 · Priority: revenue integrity</div></div>
+  <div class="eyebrow">Independent benchmark · 15 Sep 2026</div>
+  <h2>ML invalid-traffic detection outperforms rule-based filters</h2>
+  <div class="badges"><span class="pill adopt">Recommend: Adopt</span><span class="gr b">Evidence B</span><span class="tag">Ad operations</span><span class="tag">Revenue</span></div>
+  <div class="basis"><b>Why Adopt:</b> Grade-B independent evidence, a consistent positive outcome (+6% net revenue recovered across 27 pilots) and low downside → the risk-adjusted case is strong enough to roll out, not just test.</div>
+  <div class="cvr"><span class="lbl">Claim → verified</span><br><span class="claim">Vendor: "catches 99% of invalid traffic"</span> → <span class="ver">+6% net revenue recovered, median, 27 tracked publishers; low downside</span></div>
+  <table>
+    <tr><td class="k">What happened</td><td>Catches sophisticated invalid traffic that rule-based filters miss, protecting revenue and advertiser trust.</td></tr>
+    <tr><td class="k">Track record</td><td>Consistent, low-drama win across 27 tracked publishers — one of the few "adopt" grades precisely because the downside stayed small. Best fit: broadly applicable, more upside at higher programmatic volume.</td></tr>
+    <tr><td class="k">Company relevance</td><td>Broadly relevant; IVT quietly taxes programmatic revenue and standing with demand partners.</td></tr>
+    <tr><td class="k">Requirements</td><td>Pre-bid integration · traffic logs · demand-partner alignment.</td></tr>
+    <tr><td class="k">Key risks</td><td>False positives suppressing good traffic · latency.</td></tr>
+    <tr><td class="k">Success measures</td><td>IVT rate · blocked-good rate · advertiser complaints · net revenue.</td></tr>
+    <tr><td class="k">Evidence &amp; sources</td><td>Independent benchmark with reproducible method.</td></tr>
+  </table>
+  <div class="next"><div class="lbl">Recommended next step</div>Roll out ahead of the ad server; start in flag-only mode to calibrate false positives, then enable blocking; measure recovered revenue against a hold-back.</div>
+</section>
+
+<!-- c2 PILOT -->
+<section class="page">
+  <div class="hdr"><div class="mark">FIELDNOTE<span>.</span></div><div class="r">Use case 2 of 6 · Priority: defend ad revenue</div></div>
+  <div class="eyebrow">Search-platform blog + trade press · 18 Sep 2026</div>
+  <h2>Generative search is cutting publisher referral traffic</h2>
+  <div class="badges"><span class="pill pilot">Recommend: Pilot</span><span class="gr b">Evidence B</span><span class="tag">Audience</span><span class="tag">Revenue</span></div>
+  <div class="basis"><b>Why Pilot:</b> Grade-B evidence of an already-happening threat to your #1 revenue source, strong fit, but a high-effort response → pilot the first-party / direct-sold shift now; waiting for certainty is the expensive option.</div>
+  <div class="cvr"><span class="lbl">Claim → verified</span><br><span class="claim">Industry line: "AI search won't dent publisher traffic"</span> → <span class="ver">−18% median search referral across 60+ tracked news publishers over 9 months</span></div>
+  <table>
+    <tr><td class="k">What happened</td><td>AI Overviews reduce click-through from search, eroding open-web impressions and programmatic revenue.</td></tr>
+    <tr><td class="k">Track record</td><td>Publishers who moved early to first-party + direct-sold retained 2–3× more at-risk revenue than those who waited. Best fit: act now if search is &gt;30% of your traffic.</td></tr>
+    <tr><td class="k">Company relevance</td><td>High for search-dependent publishers; pushes strategy toward owned audience and direct-sold.</td></tr>
+    <tr><td class="k">Requirements</td><td>Consent-based data capture · CDP · direct-sales motion · newsletter stack.</td></tr>
+    <tr><td class="k">Key risks</td><td>Slow payoff · resourcing · measuring substitution.</td></tr>
+    <tr><td class="k">Success measures</td><td>Referral share · first-party reach · direct-sold % · revenue per session.</td></tr>
+    <tr><td class="k">Evidence &amp; sources</td><td>Corroborating trade coverage + your first-party analytics.</td></tr>
+  </table>
+  <div class="next"><div class="lbl">Recommended next step</div>Pilot first-party capture on your highest-traffic sections and stand up one direct-sold/newsletter offer; measure retained revenue vs the declining search baseline.</div>
+</section>
+
+<!-- c4 PILOT -->
+<section class="page">
+  <div class="hdr"><div class="mark">FIELDNOTE<span>.</span></div><div class="r">Use case 3 of 6 · Priority: subscriptions</div></div>
+  <div class="eyebrow">Peer case study · 16 Sep 2026</div>
+  <h2>Churn-prediction model cuts subscription cancellations</h2>
+  <div class="badges"><span class="pill pilot">Recommend: Pilot</span><span class="gr b">Evidence B</span><span class="tag">Subscriptions</span><span class="tag">Revenue</span></div>
+  <div class="basis"><b>Why Pilot:</b> Grade-B peer evidence, a clear measurable outcome (−14% churn across 12 publishers) and strong fit → pilot on your top-risk decile with a holdout so the result is bankable.</div>
+  <div class="cvr"><span class="lbl">Claim → verified</span><br><span class="claim">Peer case study: "−30% churn"</span> → <span class="ver">−14% median across 12 tracked subscription publishers</span></div>
+  <table>
+    <tr><td class="k">What happened</td><td>Predicts at-risk subscribers and triggers retention offers; a named peer reports lower churn.</td></tr>
+    <tr><td class="k">Track record</td><td>Meaningful for publishers with enough subscribers to model; below ~20k subs the signal is drowned in noise. Best fit: above ~20k paying subscribers.</td></tr>
+    <tr><td class="k">Company relevance</td><td>High given a paid subscription with meaningful monthly churn.</td></tr>
+    <tr><td class="k">Requirements</td><td>Subscription event data · offer engine · holdout group.</td></tr>
+    <tr><td class="k">Key risks</td><td>Offer cannibalization · data quality · privacy.</td></tr>
+    <tr><td class="k">Success measures</td><td>Churn · save-rate · LTV · offer margin — vs holdout.</td></tr>
+    <tr><td class="k">Evidence &amp; sources</td><td>Named peer case study with shared methodology.</td></tr>
+  </table>
+  <div class="next"><div class="lbl">Recommended next step</div>Score subscribers weekly, trigger save-offers to the top-risk decile only, hold out a control, and read churn and offer-margin after one cycle.</div>
+</section>
+
+<!-- c3 PILOT -->
+<section class="page">
+  <div class="hdr"><div class="mark">FIELDNOTE<span>.</span></div><div class="r">Use case 4 of 6 · Priority: lift yield</div></div>
+  <div class="eyebrow">Vendor + independent benchmark · 17 Sep 2026</div>
+  <h2>Cookieless contextual targeting claims brand-safe CPM uplift</h2>
+  <div class="badges"><span class="pill pilot">Recommend: Pilot</span><span class="gr c">Evidence C</span><span class="tag">Ad operations</span><span class="tag">Revenue</span></div>
+  <div class="basis"><b>Why Pilot:</b> Positive verified outcome (+11% across 41) with strong fit for editorial inventory, but Grade-C evidence and wide variance by vertical → pilot on one section against a control to confirm it works for you.</div>
+  <div class="cvr"><span class="lbl">Claim → verified</span><br><span class="claim">Vendor: "+25% CPM on cookieless"</span> → <span class="ver">+11% median across 41 tracked pilots; wide variance by content vertical</span></div>
+  <table>
+    <tr><td class="k">What happened</td><td>Contextual model targets and screens brand-safety without cookies — could lift CPMs on open inventory.</td></tr>
+    <tr><td class="k">Track record</td><td>Worked best for editorial/news with a clean contextual taxonomy; weak on thin or mixed content. Fit matters more than the average. Best fit: structured editorial inventory.</td></tr>
+    <tr><td class="k">Company relevance</td><td>~A third of your open inventory is cookieless and sells cheap — the most direct lever on that gap.</td></tr>
+    <tr><td class="k">Requirements</td><td>Ad-server integration · taxonomy mapping · brand-safety rules.</td></tr>
+    <tr><td class="k">Key risks</td><td>Accuracy on edge content · classification errors · vendor lock-in.</td></tr>
+    <tr><td class="k">Success measures</td><td>CPM · viewability · brand-safety incidents · fill rate.</td></tr>
+    <tr><td class="k">Evidence &amp; sources</td><td>Vendor benchmark + one independent test.</td></tr>
+  </table>
+  <div class="next"><div class="lbl">Recommended next step</div>Pilot on one well-structured editorial section against a control; expand only if CPM lift holds and brand-safety incidents stay flat.</div>
+</section>
+
+<!-- c1 INVESTIGATE -->
+<section class="page">
+  <div class="hdr"><div class="mark">FIELDNOTE<span>.</span></div><div class="r">Use case 5 of 6 · Priority: lift yield</div></div>
+  <div class="eyebrow">SSP release notes · 19 Sep 2026</div>
+  <h2>SSP releases automated floor-price optimization</h2>
+  <div class="badges"><span class="pill investigate">Recommend: Investigate</span><span class="gr c">Evidence C</span><span class="tag">Yield mgmt</span><span class="tag">Ad operations</span></div>
+  <div class="basis"><b>Why Investigate:</b> Real but modest upside (+7%, not the 20–30% claimed) on vendor-only Grade-C evidence, with 4 of 34 rolling back → don't adopt blind. Get the methodology and references, then run a controlled pilot.</div>
+  <div class="cvr"><span class="lbl">Claim → verified</span><br><span class="claim">SSP markets "20–30% RPM uplift"</span> → <span class="ver">+7% median across 34 tracked pilots; 9 saw &lt;2%; 4 rolled back</span></div>
+  <table>
+    <tr><td class="k">What happened</td><td>Sets floor prices and allocates impressions automatically — could lift RPM without manual trafficking.</td></tr>
+    <tr><td class="k">Track record</td><td>Uplift is real but far below the pitch, and concentrated in publishers with high remnant volume; below that it isn't worth the volatility. Best fit: static floors and high remnant volume.</td></tr>
+    <tr><td class="k">Company relevance</td><td>Your yield team sets floors by hand across 3 SSPs — this targets exactly that manual effort.</td></tr>
+    <tr><td class="k">Requirements</td><td>Auction-level data · experiment design · SSP access · revenue guardrails.</td></tr>
+    <tr><td class="k">Key risks</td><td>Revenue volatility · opaque logic · single-SSP dependency.</td></tr>
+    <tr><td class="k">Success measures</td><td>RPM · fill rate · bid density · latency · net revenue — vs a control.</td></tr>
+    <tr><td class="k">Evidence &amp; sources</td><td>SSP release notes + 2 vendor case studies (unverified).</td></tr>
+  </table>
+  <div class="next"><div class="lbl">Recommended next step</div>Request the optimization methodology and 2–3 comparable references; if credible, run a bounded pilot on remnant inventory against a control before any wider trust.</div>
+</section>
+
+<!-- c5 WATCH -->
+<section class="page">
+  <div class="hdr"><div class="mark">FIELDNOTE<span>.</span></div><div class="r">Use case 6 of 6 · Priority: defend ad revenue</div></div>
+  <div class="eyebrow">Vendor demo · 15 Sep 2026</div>
+  <h2>Generative tool auto-writes SEO summaries at scale</h2>
+  <div class="badges"><span class="pill monitor">Recommend: Watch — don't chase</span><span class="gr d">Evidence D</span><span class="tag">Content ops</span></div>
+  <div class="basis"><b>Why Watch:</b> Grade-D evidence and a negative track record (6 of 18 penalised; net traffic flat-to-negative) → the downside outweighs the upside. A summary would have sold you this; the outcomes data says avoid it.</div>
+  <div class="cvr"><span class="lbl">Claim → verified</span><br><span class="claim">Vendor: "3× organic traffic"</span> → <span class="ver">Of 18 tracked, 6 hit by search penalties within 6 months; net traffic flat-to-negative</span></div>
+  <table>
+    <tr><td class="k">What happened</td><td>Bulk-generates summaries and landing pages — a cheap-traffic play with real quality and brand risk.</td></tr>
+    <tr><td class="k">Track record</td><td>The cheap-traffic play backfired more often than it worked — the reason this is graded "watch, don't chase". Best fit: only as human-assisted editing, never unattended.</td></tr>
+    <tr><td class="k">Company relevance</td><td>Tempting as a P1 traffic-recovery shortcut, but it risks a search penalty on the very domain your revenue depends on.</td></tr>
+    <tr><td class="k">Key risks</td><td>Search penalties · brand damage · commodity content.</td></tr>
+    <tr><td class="k">Success measures</td><td>Editor time saved · engagement · penalty incidents.</td></tr>
+    <tr><td class="k">Evidence &amp; sources</td><td>Vendor demo only — not independently verified.</td></tr>
+  </table>
+  <div class="next" style="background:var(--critS)"><div class="lbl" style="color:var(--crit)">Recommended next step</div>Do not deploy for unattended publishing. Re-evaluate only if independent, penalty-free production evidence emerges. Meanwhile, direct the same effort at Use case 2 (first-party audience).</div>
+</section>
+
+</body></html>

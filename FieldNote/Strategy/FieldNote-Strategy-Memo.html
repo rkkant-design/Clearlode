@@ -1,0 +1,929 @@
+<title>FieldNote</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --paper: #F6F7F9;
+    --surface: #FFFFFF;
+    --surface-2: #EEF1F5;
+    --ink: #14181F;
+    --ink-2: #434B57;
+    --ink-3: #6B7482;
+    --line: #DCE1E8;
+    --line-2: #C9D0DA;
+    --slate: #2C4A6E;
+    --slate-soft: #E4EAF1;
+    --signal: #B0761A;
+    --signal-soft: #F6ECD8;
+    --good: #2E6E4E;
+    --good-soft: #DDEEE4;
+    --warn: #9A6410;
+    --warn-soft: #F5E8D2;
+    --crit: #9A3838;
+    --crit-soft: #F2DDDD;
+    --mute: #5C6470;
+    --mute-soft: #E6E9EE;
+    --shadow: 0 1px 2px rgba(20,24,31,.05), 0 8px 24px -12px rgba(20,24,31,.14);
+    --display: 'Newsreader', Georgia, 'Times New Roman', serif;
+    --body: 'IBM Plex Sans', system-ui, sans-serif;
+    --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --paper: #0F1216;
+      --surface: #171B21;
+      --surface-2: #1E242C;
+      --ink: #EAEEF3;
+      --ink-2: #B4BDC9;
+      --ink-3: #838E9C;
+      --line: #2A313A;
+      --line-2: #38414C;
+      --slate: #8FB2D6;
+      --slate-soft: #1C2A3A;
+      --signal: #E0A94A;
+      --signal-soft: #2E2513;
+      --good: #6FC095;
+      --good-soft: #16281E;
+      --warn: #DDA043;
+      --warn-soft: #2C2411;
+      --crit: #E28B8B;
+      --crit-soft: #2E1919;
+      --mute: #9AA4B1;
+      --mute-soft: #22272F;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #0F1216;
+    --surface: #171B21;
+    --surface-2: #1E242C;
+    --ink: #EAEEF3;
+    --ink-2: #B4BDC9;
+    --ink-3: #838E9C;
+    --line: #2A313A;
+    --line-2: #38414C;
+    --slate: #8FB2D6;
+    --slate-soft: #1C2A3A;
+    --signal: #E0A94A;
+    --signal-soft: #2E2513;
+    --good: #6FC095;
+    --good-soft: #16281E;
+    --warn: #DDA043;
+    --warn-soft: #2C2411;
+    --crit: #E28B8B;
+    --crit-soft: #2E1919;
+    --mute: #9AA4B1;
+    --mute-soft: #22272F;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.7);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: var(--signal-soft); color: var(--ink); }
+
+  /* ---------- header ---------- */
+  header.bar {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 20;
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: saturate(1.4) blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .bar-inner {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 11px 24px;
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+  }
+  .bar-mark {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  .bar-mark span { color: var(--signal); }
+  .bar-tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .04em;
+    color: var(--ink-3);
+    margin-left: auto;
+    text-align: right;
+  }
+  @media (max-width: 620px) { .bar-tag { display: none; } }
+
+  /* ---------- layout ---------- */
+  main { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+  .wrap { max-width: 760px; }
+  section { padding-block: 44px; border-top: 1px solid var(--line); }
+  section:first-of-type { border-top: none; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--signal);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 18px;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 22px; height: 1.5px;
+    background: var(--signal);
+    display: inline-block;
+  }
+
+  h1 {
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: clamp(2.3rem, 6vw, 3.6rem);
+    line-height: 1.04;
+    letter-spacing: -.015em;
+    margin: 0 0 22px;
+    text-wrap: balance;
+    max-width: 15ch;
+  }
+  h2 {
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: clamp(1.55rem, 3.4vw, 2.05rem);
+    line-height: 1.12;
+    letter-spacing: -.01em;
+    margin: 0 0 16px;
+    text-wrap: balance;
+  }
+  h3 {
+    font-family: var(--body);
+    font-weight: 600;
+    font-size: 1.02rem;
+    letter-spacing: -.005em;
+    margin: 0 0 6px;
+  }
+  p { margin: 0 0 16px; color: var(--ink-2); max-width: 70ch; }
+  p.lead {
+    font-family: var(--display);
+    font-size: clamp(1.15rem, 2.2vw, 1.4rem);
+    line-height: 1.44;
+    color: var(--ink);
+    font-weight: 400;
+  }
+  strong { color: var(--ink); font-weight: 600; }
+  em { font-style: italic; }
+  a { color: var(--slate); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+
+  .promise {
+    font-family: var(--display);
+    font-size: clamp(1.3rem, 3vw, 1.75rem);
+    line-height: 1.3;
+    color: var(--ink);
+    margin: 0;
+  }
+  .promise b { color: var(--signal); font-weight: 500; }
+
+  /* ---------- hero rating strip ---------- */
+  .ratings {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 34px;
+  }
+  .rating { background: var(--surface); padding: 18px 18px 20px; }
+  .rating .score { font-family: var(--display); font-size: 2rem; line-height: 1; letter-spacing: -.02em; }
+  .rating .score small { font-size: .9rem; color: var(--ink-3); }
+  .rating .what {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-top: 10px;
+    line-height: 1.4;
+  }
+  .rating.hot { background: var(--signal-soft); }
+  .rating.hot .score { color: var(--signal); }
+  .rating.hot .what { color: var(--signal); }
+  @media (max-width: 560px) { .ratings { grid-template-columns: 1fr; } }
+
+  /* ---------- flow pipeline ---------- */
+  .flow { display: flex; flex-wrap: wrap; gap: 8px; align-items: stretch; margin-top: 8px; }
+  .flow-step {
+    flex: 1 1 130px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 13px 14px;
+    min-width: 0;
+  }
+  .flow-step .n { font-family: var(--mono); font-size: 10px; color: var(--signal); letter-spacing: .1em; }
+  .flow-step .t { font-weight: 600; font-size: .9rem; color: var(--ink); margin-top: 3px; line-height: 1.25; }
+  .flow-step.end { border-color: var(--slate); background: var(--slate-soft); }
+  .verdict-scale {
+    font-family: var(--mono); font-size: 11.5px; color: var(--ink-2);
+    margin-top: 16px; letter-spacing: .02em;
+  }
+  .verdict-scale b { color: var(--signal); font-weight: 500; }
+
+  /* ---------- signature card ---------- */
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; margin-top: 6px; }
+  .card-head { padding: 16px 20px; border-bottom: 1px solid var(--line); background: var(--surface-2); }
+  .card-kicker { font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+  .card-title { font-family: var(--display); font-size: 1.3rem; font-weight: 500; color: var(--ink); line-height: 1.15; width: 100%; margin-top: 2px; }
+  .pill { font-family: var(--mono); font-size: 11px; letter-spacing: .04em; padding: 4px 10px; border-radius: 100px; font-weight: 500; white-space: nowrap; }
+  .pill.pilot { background: var(--warn-soft); color: var(--warn); }
+  .pill.adopt { background: var(--good-soft); color: var(--good); }
+  .pill.monitor { background: var(--slate-soft); color: var(--slate); }
+  .pill.investigate { background: var(--slate-soft); color: var(--slate); }
+  .pill.ignore { background: var(--mute-soft); color: var(--mute); }
+  .verdict-row { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+  .verdict-label { font-family: var(--mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+
+  .card-body { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--line); }
+  .field { background: var(--surface); padding: 13px 20px; }
+  .field.full { grid-column: 1 / -1; }
+  .field .k { font-family: var(--mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 4px; }
+  .field .v { font-size: .92rem; color: var(--ink); line-height: 1.45; }
+  .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 2px; }
+  .tag { font-family: var(--mono); font-size: 11px; background: var(--surface-2); border: 1px solid var(--line); color: var(--ink-2); padding: 2px 8px; border-radius: 6px; }
+  @media (max-width: 560px) {
+    .card-body { grid-template-columns: 1fr; }
+    .verdict-row { margin-left: 0; }
+  }
+  .caption { font-family: var(--mono); font-size: 11px; color: var(--ink-3); margin-top: 12px; line-height: 1.5; }
+
+  /* ---------- phase / pillar cards ---------- */
+  .phases { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 8px; }
+  .phase { border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; background: var(--surface); }
+  .phase.seed { border: 1.5px solid var(--signal); background: var(--signal-soft); }
+  .phase .stage { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+  .phase.seed .stage { color: var(--signal); }
+  .phase h3 { margin: 4px 0 0; }
+  .phase .role { font-size: .88rem; color: var(--ink-2); margin-top: 5px; line-height: 1.4; }
+  .phase .acv { font-family: var(--mono); font-size: 10.5px; color: var(--slate); margin-top: 10px; letter-spacing: .02em; }
+  .phase .tags { margin-top: 10px; }
+
+  /* ---------- callout ---------- */
+  .callout { border-left: 3px solid var(--signal); background: var(--signal-soft); padding: 16px 20px; border-radius: 0 10px 10px 0; margin: 22px 0; }
+  .callout p { color: var(--ink); margin: 0; max-width: none; }
+  .callout .k { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--signal); margin-bottom: 6px; display: block; }
+  .callout.neutral { border-left-color: var(--line-2); background: var(--surface-2); }
+  .callout.neutral .k { color: var(--ink-3); }
+  .callout.slate { border-left-color: var(--slate); background: var(--slate-soft); }
+  .callout.slate .k { color: var(--slate); }
+
+  /* ---------- numbered / clean lists ---------- */
+  .stack { display: flex; flex-direction: column; gap: 2px; margin-top: 6px; }
+  .row2 { display: grid; grid-template-columns: 34px 1fr; gap: 14px; padding: 15px 0; border-top: 1px solid var(--line); align-items: start; }
+  .row2:first-child { border-top: none; }
+  .row2 .idx { font-family: var(--display); font-size: 1.3rem; color: var(--signal); line-height: 1; padding-top: 2px; }
+  .row2 p { margin: 4px 0 0; font-size: .95rem; }
+
+  ul.clean { list-style: none; padding: 0; margin: 6px 0 0; }
+  ul.clean li { padding: 9px 0 9px 26px; border-top: 1px solid var(--line); position: relative; font-size: .95rem; color: var(--ink-2); }
+  ul.clean li:first-child { border-top: none; }
+  ul.clean li::before { content: "→"; position: absolute; left: 0; top: 9px; color: var(--signal); font-family: var(--mono); }
+  ul.clean li strong { color: var(--ink); }
+
+  /* ---------- what it is / isn't ---------- */
+  .dual { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 6px; }
+  @media (max-width: 560px) { .dual { grid-template-columns: 1fr; } }
+  .box { border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; background: var(--surface); }
+  .box .k { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 10px; }
+  .box.is { border-left: 3px solid var(--good); }
+  .box.is .k { color: var(--good); }
+  .box.isnt { border-left: 3px solid var(--crit); }
+  .box.isnt .k { color: var(--crit); }
+  .box ul { margin: 0; padding-left: 16px; }
+  .box li { font-size: .9rem; color: var(--ink-2); margin-bottom: 6px; line-height: 1.4; }
+
+  /* ---------- tiers ---------- */
+  .tiers { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-top: 6px; }
+  .tier { border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; background: var(--surface); display: flex; flex-direction: column; }
+  .tier .name { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+  .tier .price { font-family: var(--display); font-size: 1.15rem; color: var(--ink); margin: 6px 0 10px; font-variant-numeric: tabular-nums; }
+  .tier .price .per { font-family: var(--mono); font-size: .72rem; color: var(--ink-3); letter-spacing: .02em; }
+  .tier ul { margin: 0; padding-left: 16px; }
+  .tier li { font-size: .86rem; color: var(--ink-2); margin-bottom: 5px; }
+  .tier.feature { border-color: var(--slate); box-shadow: var(--shadow); }
+  .tier.feature .price { color: var(--slate); }
+
+  /* ---------- tables ---------- */
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; margin-top: 6px; -webkit-overflow-scrolling: touch; }
+  table.cmp { border-collapse: collapse; width: 100%; min-width: 640px; font-size: .9rem; }
+  table.cmp th, table.cmp td { text-align: left; padding: 12px 15px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table.cmp thead th { font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); background: var(--surface-2); font-weight: 500; }
+  table.cmp tbody tr:last-child td { border-bottom: none; }
+  table.cmp td.name { font-weight: 600; color: var(--ink); }
+  table.cmp td .sub { color: var(--ink-3); font-size: .82rem; display: block; margin-top: 2px; }
+  table.cmp td.go { color: var(--good); font-weight: 500; }
+  table.cmp td.rw { color: var(--warn); }
+  table.cmp td.no { color: var(--crit); }
+  table.cmp tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--surface-2) 45%, transparent); }
+  .gr { font-family: var(--mono); font-weight: 600; font-size: 11px; padding: 3px 8px; border-radius: 6px; white-space: nowrap; }
+  .gr.a { background: var(--good-soft); color: var(--good); }
+  .gr.b { background: var(--slate-soft); color: var(--slate); }
+  .gr.c { background: var(--warn-soft); color: var(--warn); }
+  .gr.d { background: var(--mute-soft); color: var(--mute); }
+
+  /* ---------- sizing funnel ---------- */
+  .funnel { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+  .fbar { border-radius: 12px; padding: 16px 20px; border: 1px solid var(--line); align-self: stretch; }
+  .fbar .lab { font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 4px; }
+  .fbar .fig { font-family: var(--display); font-size: 1.15rem; line-height: 1.2; color: var(--ink); }
+  .fbar .def { font-size: .88rem; color: var(--ink-2); margin-top: 6px; line-height: 1.4; max-width: 60ch; }
+  .fbar .asm { font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); margin-top: 8px; letter-spacing: .02em; }
+  .fbar.tam { background: var(--surface-2); }
+  .fbar.sam { background: var(--slate-soft); border-color: var(--slate); }
+  .fbar.som { background: var(--signal-soft); border-color: var(--signal); }
+  @media (min-width: 640px) {
+    .fbar.tam { width: 100%; }
+    .fbar.sam { width: 82%; }
+    .fbar.som { width: 62%; }
+  }
+
+  /* ---------- final ---------- */
+  .final { background: #141821; border-radius: 16px; padding: 40px 34px; margin-top: 8px; }
+  :root[data-theme="dark"] .final, :root:not([data-theme="light"]) .final { border: 1px solid var(--line-2); }
+  .final .eyebrow { color: var(--signal); }
+  .final h2 { color: #F6F7F9; }
+  .final p { color: #C6CDD7; }
+  .final .promise { color: #FFFFFF; }
+  .final .promise b { color: var(--signal); }
+
+  footer { padding: 30px 24px 46px; max-width: 1080px; margin: 0 auto; }
+  footer p { font-family: var(--mono); font-size: 11px; color: var(--ink-3); max-width: none; line-height: 1.7; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .rating, .flow-step, .phase { transition: transform .15s ease; }
+  }
+</style>
+
+<header class="bar">
+  <div class="bar-inner">
+    <div class="bar-mark">FIELDNOTE<span>.</span></div>
+    <div class="bar-tag">by Trueinfo Labs · Market-entry plan v10</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- HERO -->
+  <section class="wrap">
+    <div class="eyebrow">Strategic direction</div>
+    <h1>Sell the decision, not the headline.</h1>
+    <p class="lead">Build <strong>FieldNote</strong> as a focused AI <em>opportunity-intelligence</em> business — not an AI news site. Enter through mid-market digital publishers, deliver the first offer as a hands-on intelligence service, and convert repeated customer decisions into a scalable software platform.</p>
+    <p class="promise">"What changed, <b>why does it matter to my company</b>, and what should we do about it?"</p>
+
+    <div class="ratings">
+      <div class="rating">
+        <div class="score">5<small>/10</small></div>
+        <div class="what">As an AI news aggregator — crowded, copyable, hard to monetize</div>
+      </div>
+      <div class="rating">
+        <div class="score">7<small>/10</small></div>
+        <div class="what">As "Wikipedia for AI" — useful, but free sources compete</div>
+      </div>
+      <div class="rating hot">
+        <div class="score">9<small>/10</small></div>
+        <div class="what">As an adoption &amp; decision layer — they pay to decide what, why, how</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUCT THESIS -->
+  <section class="wrap">
+    <div class="eyebrow">Core product thesis</div>
+    <h2>Reduce the work between an AI signal and a business decision.</h2>
+    <p>FieldNote helps a company decide which AI opportunities deserve action — using current developments, relevant use cases, credible evidence and explicit next steps. Its initial job is narrow on purpose.</p>
+    <div class="dual">
+      <div class="box is">
+        <div class="k">What it is</div>
+        <ul>
+          <li>A trusted decision layer between external AI developments and internal action</li>
+          <li>A repeatable decision record that changes or accelerates a real decision</li>
+          <li>Evidence-graded: fact, vendor claim and FieldNote analysis kept visibly separate</li>
+        </ul>
+      </div>
+      <div class="box isnt">
+        <div class="k">What it is not</div>
+        <ul>
+          <li>A general AI news site or newsletter chasing volume and opens</li>
+          <li>A broad software directory or review marketplace</li>
+          <li>A replacement for technical, legal, security or implementation diligence</li>
+        </ul>
+      </div>
+    </div>
+    <p class="caption">Reading time, page views and opens are supporting metrics — not the product outcome. The outcome is a decision made faster or better.</p>
+  </section>
+
+  <!-- PROBLEM -->
+  <section class="wrap">
+    <div class="eyebrow">The problem</div>
+    <h2>Companies aren't short on AI information. They're short on judgment.</h2>
+    <p>Hundreds of models, agents and products ship every month. The unresolved task is deciding whether a development matters to a particular workflow, whether the evidence is credible, and what action is proportionate to the expected value and risk.</p>
+    <p>Every one of those gaps sits between an <strong>event</strong> and a <strong>decision</strong>. That gap is the product — and, as the market section shows, the evidence establishes the <em>problem</em>, not yet that FieldNote is the answer.</p>
+  </section>
+
+  <!-- SIGNATURE CARD -->
+  <section>
+    <div class="wrap">
+      <div class="eyebrow">The decision card</div>
+      <h2>Every development resolves into one structured card.</h2>
+      <p>The card is a product interface, not a moat by itself — its value comes from the evidence, taxonomy, company context and outcome history behind it. The specimen below is <strong>illustrative and fictional</strong>; it demonstrates the required fields and must not be read as a verified market development.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+          <span class="card-kicker">Illustrative · digital publishers</span>
+          <div class="verdict-row">
+            <span class="gr c">Evidence C</span>
+            <span class="verdict-label">Verdict</span>
+            <span class="pill investigate">Investigate</span>
+          </div>
+        </div>
+        <div class="card-title">A supply-side platform releases automated floor-price optimization for publisher inventory</div>
+      </div>
+      <div class="card-body">
+        <div class="field full">
+          <div class="k">Source status</div>
+          <div class="v">Vendor announcement only. No independent production benchmark identified. <strong>Evidence grade C.</strong></div>
+        </div>
+        <div class="field">
+          <div class="k">Relevant segments</div>
+          <div class="v"><div class="tags"><span class="tag">News media</span><span class="tag">Niche publishers</span><span class="tag">Streaming</span></div></div>
+        </div>
+        <div class="field">
+          <div class="k">Relevant functions</div>
+          <div class="v"><div class="tags"><span class="tag">Yield mgmt</span><span class="tag">Ad operations</span><span class="tag">Revenue</span></div></div>
+        </div>
+        <div class="field full">
+          <div class="k">Company relevance</div>
+          <div class="v">Potentially relevant to publishers with sufficient auction volume, current floor-management effort, and the ability to run a controlled experiment.</div>
+        </div>
+        <div class="field">
+          <div class="k">Possible use case</div>
+          <div class="v">Optimize price floors on a limited portion of remnant web inventory.</div>
+        </div>
+        <div class="field">
+          <div class="k">Expected value</div>
+          <div class="v">Possible RPM improvement and reduced manual analysis. <strong>No uplift estimate before baseline data is reviewed.</strong></div>
+        </div>
+        <div class="field">
+          <div class="k">Requirements</div>
+          <div class="v">Auction-level data · experiment design · SSP access · latency monitoring · revenue guardrails.</div>
+        </div>
+        <div class="field">
+          <div class="k">Key risks</div>
+          <div class="v">Short-term revenue volatility · opaque optimization logic · single-SSP dependency · confounding demand shifts.</div>
+        </div>
+        <div class="field full">
+          <div class="k">Recommended action</div>
+          <div class="v"><strong>Investigate.</strong> Request methodology and references, then run a time-bound controlled pilot if baseline volume is sufficient.</div>
+        </div>
+        <div class="field full">
+          <div class="k">Success measures</div>
+          <div class="v" style="color:var(--slate);">RPM · fill rate · bid density · latency · net revenue · manual hours — each measured against a control.</div>
+        </div>
+      </div>
+    </div>
+    <div class="wrap"><p class="caption">Note how the card leads with source status and an evidence grade, refuses an ROI number before baseline, and recommends "investigate" rather than "adopt." That discipline — not the layout — is the product.</p></div>
+  </section>
+
+  <!-- ENGINE -->
+  <section class="wrap">
+    <div class="eyebrow">The decision spine</div>
+    <h2>Signal in, decision out.</h2>
+    <p>Each input is carried from raw signal to a stated action mapped to the customer's business — never left as an article to interpret.</p>
+    <div class="flow">
+      <div class="flow-step"><div class="n">01</div><div class="t">Collect from an approved source list</div></div>
+      <div class="flow-step"><div class="n">02</div><div class="t">Classify &amp; grade evidence</div></div>
+      <div class="flow-step"><div class="n">03</div><div class="t">Map to company &amp; workflow</div></div>
+      <div class="flow-step"><div class="n">04</div><div class="t">Weigh value, risk &amp; alternatives</div></div>
+      <div class="flow-step end"><div class="n">05</div><div class="t">State the action &amp; next review</div></div>
+    </div>
+    <div class="verdict-scale">Every card resolves to one verdict: <b>Ignore · Monitor · Investigate · Pilot · Adopt · Replace</b> — with an owner, a rationale, and a next review date.</div>
+  </section>
+
+  <!-- STRATEGIC PILLARS -->
+  <section class="wrap">
+    <div class="eyebrow">Strategic pillars</div>
+    <h2>Four jobs the product must do well.</h2>
+    <div class="phases">
+      <div class="phase"><div class="stage">Pillar 01</div><h3>Relevance</h3><div class="role">Filter the external AI market through the customer's industry, workflows and constraints.</div></div>
+      <div class="phase"><div class="stage">Pillar 02</div><h3>Evidence</h3><div class="role">Show the source, confidence and limitations behind every material claim.</div></div>
+      <div class="phase"><div class="stage">Pillar 03</div><h3>Decision</h3><div class="role">Turn research into a stated action, owner, rationale and next review point.</div></div>
+      <div class="phase"><div class="stage">Pillar 04</div><h3>Learning</h3><div class="role">Capture outcomes so later recommendations reflect what worked for comparable organizations.</div></div>
+    </div>
+    <p class="caption">Value accumulates <em>inside each customer account</em> — company context, an opportunity portfolio, and a decision history. That is a more durable role than a feed, because it compounds where it can't easily be copied.</p>
+  </section>
+
+  <!-- MARKET CONTEXT -->
+  <section class="wrap">
+    <div class="eyebrow">Market context &amp; demand</div>
+    <h2>The evidence proves the problem — not product-market fit.</h2>
+    <p>Research supports the need for better AI value-selection. It should not be presented as proof that businesses will buy FieldNote. Figures below are stated with their correct interpretation and source.</p>
+    <div class="tablewrap">
+      <table class="cmp">
+        <thead><tr><th>Finding</th><th>Correct interpretation</th><th>Source</th></tr></thead>
+        <tbody>
+          <tr><td>71% regularly used generative AI in ≥1 function</td><td>Adoption is widespread; the figure does <strong>not</strong> measure scaled financial value</td><td class="name">McKinsey<span class="sub">Mar 2025</span></td></tr>
+          <tr><td>25% of AI initiatives met expected ROI; 16% scaled enterprise-wide</td><td>Executives report a value-realization gap</td><td class="name">IBM<span class="sub">May 2025</span></td></tr>
+          <tr><td>56% of CEOs saw neither higher revenue nor lower cost from AI</td><td>A company-level financial outcome, not a project failure rate</td><td class="name">PwC<span class="sub">Jan 2026</span></td></tr>
+          <tr><td>42% abandoned most AI initiatives; avg. org scrapped 46% of PoCs</td><td>Late-2024 fieldwork; <strong>not</strong> "88% never reach production"</td><td class="name">S&amp;P 451<span class="sub">2025</span></td></tr>
+          <tr><td>60% of AI projects without AI-ready data abandoned through 2026</td><td>A <strong>conditional</strong> forecast about data readiness, not all AI projects</td><td class="name">Gartner<span class="sub">Feb 2025</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout neutral">
+      <span class="k">On the widely-repeated "95%"</span>
+      <p>The 2025 MIT NANDA "95%" result concerns measurable P&amp;L impact among integrated enterprise GenAI initiatives in that report's dataset. It should <strong>not</strong> be restated as "95% of all enterprise AI pilots fail in 2026." Earlier versions of this memo overstated it — corrected here.</p>
+    </div>
+  </section>
+
+  <!-- COMPETITIVE LANDSCAPE -->
+  <section class="wrap">
+    <div class="eyebrow">Competitive landscape</div>
+    <h2>A fragmented market, not an empty one.</h2>
+    <p>FieldNote's opportunity is to combine elements that today sit across research firms, market-intelligence platforms, use-case libraries, directories and AI-adoption products — for a narrow recurring decision, at mid-market cost.</p>
+    <div class="tablewrap">
+      <table class="cmp">
+        <thead><tr><th>Category &amp; examples</th><th>Established strength</th><th>Opportunity for FieldNote</th></tr></thead>
+        <tbody>
+          <tr><td class="name">Research &amp; advisory<span class="sub">Gartner, Forrester, IDC</span></td><td>Analyst access, frameworks, enterprise credibility</td><td>Faster, lower-cost guidance for a narrow recurring decision</td></tr>
+          <tr><td class="name">Market intelligence<span class="sub">AlphaSense, CB Insights</span></td><td>Large corpora, cited search, competitive intel</td><td>Company-process mapping &amp; adoption recommendations for mid-market</td></tr>
+          <tr><td class="name">AI opportunity &amp; ROI<span class="sub">Workhelix</span></td><td>Task-level opportunity analysis, ROI measurement</td><td>Current external signals and a lighter entry for smaller orgs</td></tr>
+          <tr><td class="name">Use-case research<span class="sub">Emerj, Deloitte AI Dossier, AIMultiple</span></td><td>Industry examples, capability maps</td><td>Persistent company context &amp; a prioritized decision backlog</td></tr>
+          <tr><td class="name">Directories &amp; reviews<span class="sub">Futurepedia, G2</span></td><td>Product discovery, reviews, breadth</td><td>Evidence-weighted fit that starts from the business problem</td></tr>
+          <tr><td class="name">Technical benchmarks<span class="sub">Artificial Analysis</span></td><td>Model quality, speed, price comparisons</td><td>Translation from benchmark to business-use-case requirement</td></tr>
+          <tr><td class="name">Internal alternatives<span class="sub">Consultants, vendors, spreadsheets, chatbots</span></td><td>Flexible, familiar, often already funded</td><td>Consistent evidence model, institutional memory, repeatable workflow</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3 style="margin-top:26px;">Differentiation — stated as hypotheses to test</h3>
+    <ul class="clean">
+      <li><strong>Persistent company context</strong> that changes what is considered relevant</li>
+      <li><strong>A structured link</strong> from development to workflow, evidence, risk and next action</li>
+      <li><strong>A transparent evidence grade</strong> separating verified fact, vendor claim and FieldNote analysis</li>
+      <li><strong>A decision history</strong> of what the company ignored, monitored, piloted and learned</li>
+    </ul>
+    <p class="caption">Adjacent products are adding AI research, workflow and recommendation features quickly. Refresh this landscape quarterly.</p>
+  </section>
+
+  <!-- EVIDENCE STANDARD -->
+  <section class="wrap">
+    <div class="eyebrow">Evidence &amp; editorial standard</div>
+    <h2>Trust is a product requirement, not a nicety.</h2>
+    <p>Every recommendation must let a reader trace the material evidence, understand its limits, and tell observation apart from judgment. Each claim carries a grade.</p>
+    <div class="tablewrap">
+      <table class="cmp">
+        <thead><tr><th>Grade</th><th>Definition</th><th>Permitted language</th></tr></thead>
+        <tbody>
+          <tr><td><span class="gr a">A</span></td><td>Independent production evidence — named org, method, measurable result</td><td>"Observed in production" (stated scope)</td></tr>
+          <tr><td><span class="gr b">B</span></td><td>Named customer case study or credible research with clear methodology</td><td>"Reported" / "associated with"</td></tr>
+          <tr><td><span class="gr c">C</span></td><td>Vendor documentation, release notes or sponsored case study</td><td>"Vendor states" / "vendor-reported"</td></tr>
+          <tr><td><span class="gr d">D</span></td><td>Demo, announcement, anecdote or unverified secondary report</td><td>"Early signal" / "not independently verified"</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3 style="margin-top:26px;">Minimum editorial controls</h3>
+    <ul class="clean">
+      <li>At least one primary source per development; direct links, publication and access dates</li>
+      <li>A named reviewer for high-impact recommendations</li>
+      <li>Visible separation of fact, vendor claim, FieldNote inference and recommendation</li>
+      <li>A correction history for material changes</li>
+      <li>Source-use policies respecting copyright, contract terms, database rights and robots restrictions</li>
+    </ul>
+  </section>
+
+  <!-- TARGET CUSTOMER -->
+  <section class="wrap">
+    <div class="eyebrow">Target customer &amp; buying need</div>
+    <h2>"Mid-market leader" is too broad to guide anything.</h2>
+    <p>The initial buyer must <strong>own an AI-adoption decision</strong> and have authority to fund research or a pilot. The roles below are hypotheses to confirm in discovery.</p>
+    <div class="tablewrap">
+      <table class="cmp">
+        <thead><tr><th>Role</th><th>Recurring job</th><th>Evidence to confirm</th><th>Likely budget</th></tr></thead>
+        <tbody>
+          <tr><td class="name">COO / transformation lead<span class="sub">primary hypothesis</span></td><td>Prioritize AI opportunities across teams; brief leadership</td><td>Cross-functional remit; active automation backlog</td><td>Transformation / operations / innovation</td></tr>
+          <tr><td class="name">Revenue leader at a publisher<span class="sub">secondary hypothesis</span></td><td>Protect/grow revenue as search, content &amp; ad markets shift</td><td>Owns yield, ad ops or digital-revenue decisions</td><td>Commercial ops / revenue technology</td></tr>
+          <tr><td class="name">Analyst / programme manager<span class="sub">user, not buyer</span></td><td>Research, compare, maintain the opportunity backlog</td><td>Spends hours/month collecting &amp; validating evidence</td><td>Usually not the economic buyer</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout neutral">
+      <span class="k">Problem boundaries</span>
+      <p>FieldNote improves use-case selection and external research. It <strong>cannot</strong> by itself repair poor data, weak integrations, missing governance or change management — and every recommendation must state when specialist technical, legal, privacy or security review is required.</p>
+    </div>
+  </section>
+
+  <!-- SEED SEGMENT -->
+  <section class="wrap">
+    <div class="eyebrow">Market entry — seed segment</div>
+    <h2>Start where you have access: digital publishers.</h2>
+    <p>Publishers are a practical <em>first</em> segment because the founding team has real access and domain depth — not because they're proven to be the best long-term market. Budget pressure may raise urgency while lowering willingness to pay. Treat it as a test, with evidence required to continue.</p>
+    <div class="tablewrap">
+      <table class="cmp">
+        <thead><tr><th>Reason to test</th><th>Counter-risk</th><th>Evidence required</th></tr></thead>
+        <tbody>
+          <tr><td>AI is reshaping search traffic, content economics &amp; ad ops</td><td>Problem may be strategic but unfunded by a research budget</td><td>Named budget owner + recent spend on research/tools</td></tr>
+          <tr><td>Yield &amp; revenue decisions have measurable metrics</td><td>Publishers may prefer direct optimization tech over intelligence</td><td>Cases where better external intel changed a decision</td></tr>
+          <tr><td>Existing access shortens discovery &amp; sales</td><td>Warm access can create false-positive enthusiasm</td><td>Paid conversion beyond personal relationships</td></tr>
+          <tr><td>Domain depth enables specific analysis</td><td>Learning may not transfer to logistics or fintech</td><td>Validate adjacent markets independently first</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3 style="margin-top:24px;">Publisher workflows to investigate</h3>
+    <ul class="clean">
+      <li>Yield &amp; price-floor management</li>
+      <li>Demand-partner &amp; identity-solution evaluation</li>
+      <li>Referral-traffic response to generative search</li>
+      <li>Content operations &amp; disclosure policy</li>
+      <li>Subscription conversion &amp; churn intervention</li>
+      <li>Brand-safety, invalid-traffic &amp; content-provenance controls</li>
+    </ul>
+
+    <div class="phases" style="margin-top:24px;">
+      <div class="phase seed">
+        <div class="stage">Seed · now</div>
+        <h3>Digital Publishers</h3>
+        <div class="role">Revenue &amp; ad operations — the functions AI is reshaping now.</div>
+        <div class="tags"><span class="tag">Inventory</span><span class="tag">Yield</span><span class="tag">Ad ops</span></div>
+        <div class="acv">Deepest founder access</div>
+      </div>
+      <div class="phase">
+        <div class="stage">Expand · candidate</div>
+        <h3>Supply Chain &amp; Logistics</h3>
+        <div class="role">Operationally a cousin of yield management. Validate separately — do not precommit.</div>
+        <div class="tags"><span class="tag">Ops</span><span class="tag">Forecasting</span></div>
+        <div class="acv">Separate buyer &amp; data check</div>
+      </div>
+      <div class="phase">
+        <div class="stage">Expand · candidate</div>
+        <h3>Fintech</h3>
+        <div class="role">Highest ACV, highest trust bar, builds in-house. Later, once mature.</div>
+        <div class="tags"><span class="tag">Risk</span><span class="tag">Compliance</span></div>
+        <div class="acv">Separate validation</div>
+      </div>
+    </div>
+    <p class="caption">Expansion into logistics or fintech is <strong>not</strong> precommitted. Each vertical needs its own buyer, budget, competitive and data-access validation.</p>
+  </section>
+
+  <!-- GO TO MARKET -->
+  <section class="wrap">
+    <div class="eyebrow">Go-to-market</div>
+    <h2>Do things that don't scale first — then automate what proved valuable.</h2>
+    <p>The first offer is a <strong>hands-on (concierge) intelligence service</strong> with a lightweight portal. It creates real value, tests payment, and reveals which analysis is worth building into software.</p>
+    <div class="dual">
+      <div class="box">
+        <div class="k" style="color:var(--slate);">Weeks 1–2 · Discovery</div>
+        <ul>
+          <li>Interview 15–20 orgs (owners, revenue / yield / ad-ops leaders)</li>
+          <li>Document recent AI decisions, current research methods, time &amp; spend</li>
+          <li>Identify the economic buyer, user, approval process and budget</li>
+          <li>Test observed behaviour and recent spending — not whether they "like" the concept</li>
+        </ul>
+      </div>
+      <div class="box">
+        <div class="k" style="color:var(--slate);">Weeks 3–6 · Concierge pilot</div>
+        <ul>
+          <li>Secure ≥5 pilot commitments; ≥3 <strong>paid</strong> pilots</li>
+          <li>Deliver the offer manually via a simple portal / shared workspace</li>
+          <li>Track which signals are opened, saved, rejected and acted on</li>
+          <li>Record the reason for every decision and whether diligence or a pilot follows</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout">
+      <span class="k">Entry-offer pricing — research ranges, not list prices</span>
+      <p>Test <strong>₹25,000–50,000</strong> for a six-week India pilot and <strong>$500–1,000</strong> internationally. Use structured pricing interviews and actual payment behaviour to revise them.</p>
+    </div>
+  </section>
+
+  <!-- DECISION GATES -->
+  <section class="wrap">
+    <div class="eyebrow">Market-entry decision gates</div>
+    <h2>What must be true before you build the product.</h2>
+    <div class="tablewrap">
+      <table class="cmp">
+        <thead><tr><th>Criterion</th><th>Continue</th><th>Rework</th><th>Stop / change segment</th></tr></thead>
+        <tbody>
+          <tr><td class="name">Pilot demand</td><td class="go">≥5 of 20 interviews commit</td><td class="rw">3–4 commit</td><td class="no">Fewer than 3</td></tr>
+          <tr><td class="name">Paid conversion</td><td class="go">≥3 paid pilots</td><td class="rw">1–2 paid</td><td class="no">No paid pilot</td></tr>
+          <tr><td class="name">Repeated use</td><td class="go">≥60% use it in 4 of 6 weeks</td><td class="rw">30–59%</td><td class="no">Below 30%</td></tr>
+          <tr><td class="name">Decision influence</td><td class="go">≥2 orgs act on a recommendation</td><td class="rw">Interest, no action</td><td class="no">No live-decision influence</td></tr>
+          <tr><td class="name">Recurring conversion</td><td class="go">≥2 request paid continuation</td><td class="rw">One continuation</td><td class="no">No continuation</td></tr>
+          <tr><td class="name">Delivery economics</td><td class="go">Path to ≥70% gross margin</td><td class="rw">Analyst effort stays high</td><td class="no">Cost ≈ or &gt; revenue</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="caption">Meeting the thresholds justifies a focused product build. Miss one → diagnose. Miss several → change the offer, buyer or segment before building.</p>
+  </section>
+
+  <!-- REVENUE & PRICING -->
+  <section class="wrap">
+    <div class="eyebrow">Revenue model &amp; pricing</div>
+    <h2>Don't price as a newsletter before proving decision value.</h2>
+    <p>Recurring plans are tested only after the concierge pilots reveal the recurring job and the cost to deliver it. These are hypotheses.</p>
+    <div class="tiers">
+      <div class="tier">
+        <div class="name">Validation pilot</div>
+        <div class="price">₹25–50K<span class="per"> / $500–1K · 6 wks</span></div>
+        <ul><li>Company profile</li><li>Screened signals</li><li>Opportunity cards</li><li>Brief + analyst review</li></ul>
+      </div>
+      <div class="tier">
+        <div class="name">Professional</div>
+        <div class="price">$49–99<span class="per">/user/mo</span></div>
+        <ul><li>Personal relevance</li><li>Saved decisions</li><li>Watchlists</li><li>Evidence updates</li></ul>
+      </div>
+      <div class="tier feature">
+        <div class="name">Business · core</div>
+        <div class="price">$4K–10K<span class="per">/yr</span></div>
+        <ul><li>Team workflow</li><li>Company context</li><li>Opportunity backlog</li><li>Briefs + review cadence</li></ul>
+      </div>
+      <div class="tier">
+        <div class="name">Enterprise · later</div>
+        <div class="price">Custom</div>
+        <ul><li>Internal sources</li><li>Governance, SSO, permissions</li><li>Audit history</li><li>Support</li></ul>
+      </div>
+    </div>
+    <p class="caption">Competitor list prices are often unpublished, negotiated and seat/content-dependent. Any external pricing comparison must show the source date and label third-party estimates as estimates.</p>
+  </section>
+
+  <!-- MARKET SIZING -->
+  <section class="wrap">
+    <div class="eyebrow">Market sizing — method first</div>
+    <h2>Build the number bottom-up; don't borrow a category TAM.</h2>
+    <p>A category TAM shouldn't be used until FieldNote has a stable product definition — the broader decision-intelligence and GenAI markets contain spending FieldNote cannot serve. Size it in layers, each published only when its inputs are documented.</p>
+    <div class="funnel">
+      <div class="fbar tam">
+        <div class="lab">Initial reachable market</div>
+        <div class="fig">Qualified publishers, named buyers</div>
+        <div class="def">Count qualified digital publishers in selected geographies within the target employee/revenue band, each with a named buyer.</div>
+        <div class="asm">Publish after the ICP filters &amp; company list are documented</div>
+      </div>
+      <div class="fbar sam">
+        <div class="lab">Serviceable market</div>
+        <div class="fig">Reachable accounts × validated ACV</div>
+        <div class="def">Reachable accounts × validated annual contract value × the share with an active recurring job.</div>
+        <div class="asm">Publish after paid pilots &amp; pricing interviews</div>
+      </div>
+      <div class="fbar som">
+        <div class="lab">3-year obtainable market</div>
+        <div class="fig">Capacity × conversion × retention</div>
+        <div class="def">Sales capacity × conversion × implementation capacity × retention &amp; expansion assumptions.</div>
+        <div class="asm">Publish after ≥2 quarters of funnel data</div>
+      </div>
+    </div>
+    <div class="callout">
+      <span class="k">Cautious Year-3 planning range — not a forecast</span>
+      <p><strong>100–300 business accounts × $3,000–10,000 ACV ≈ $0.3M–$3M ARR.</strong> Replace this the moment real acquisition, retention and delivery data exist.</p>
+    </div>
+  </section>
+
+  <!-- OPERATING MODEL -->
+  <section class="wrap">
+    <div class="eyebrow">Operating model &amp; unit economics</div>
+    <h2>Human review builds trust — and can quietly make it unscalable.</h2>
+    <p>The moat is curation labor, so the model must measure expert time at the level of each output and drive it down without losing quality.</p>
+    <div class="tablewrap">
+      <table class="cmp">
+        <thead><tr><th>Activity</th><th>Initial approach</th><th>Measure</th></tr></thead>
+        <tbody>
+          <tr><td class="name">Source monitoring</td><td>Automated collection from an approved list</td><td>Signals collected &amp; rejected / week</td></tr>
+          <tr><td class="name">Classification</td><td>Model-assisted tagging (industry, function, workflow, capability)</td><td>Correction rate by reviewer</td></tr>
+          <tr><td class="name">Evidence review</td><td>Human verification for material facts &amp; recommendations</td><td>Minutes per card; evidence-grade mix</td></tr>
+          <tr><td class="name">Company mapping</td><td>Rules + analyst judgment from the company profile</td><td>Acceptance / rejection reasons</td></tr>
+          <tr><td class="name">Brief production</td><td>Template-driven synthesis with human approval</td><td>Minutes per brief; revision rate</td></tr>
+          <tr><td class="name">Outcome capture</td><td>User records action and later result</td><td>% of recommendations with a recorded outcome</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout neutral">
+      <span class="k">Target operating economics</span>
+      <p>≥70% gross margin at the business-plan level · ≤2 analyst hours per customer per month after first product release · falling review time without rising corrections · CAC payback matched to contract length and margin.</p>
+    </div>
+  </section>
+
+  <!-- DATA ARCHITECTURE -->
+  <section class="wrap">
+    <div class="eyebrow">Product &amp; data architecture</div>
+    <h2>The durable asset is a structured, reproducible record.</h2>
+    <p>Connect developments to capabilities, workflows, use cases, evidence, organizations, decisions and outcomes — preserving source provenance so every recommendation is reproducible. This is also the MVP data model.</p>
+    <div class="tablewrap">
+      <table class="cmp">
+        <thead><tr><th>Entity</th><th>Key fields</th></tr></thead>
+        <tbody>
+          <tr><td class="name">Development</td><td>Source, date, publisher, claim type, evidence grade, capability tags</td></tr>
+          <tr><td class="name">Use case</td><td>Industry, function, workflow, input, output, human role, requirements, risks, success measures</td></tr>
+          <tr><td class="name">Organization profile</td><td>Industry, size, geography, tech environment, data sensitivity, priorities, constraints</td></tr>
+          <tr><td class="name">Decision</td><td>Recommendation, owner, status, rationale, assumptions, next review date</td></tr>
+          <tr><td class="name">Outcome</td><td>Pilot result, metric movement, implementation cost, decision change, lessons</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- LEGAL & TRUST -->
+  <section class="wrap">
+    <div class="eyebrow">Legal, security &amp; trust</div>
+    <h2>The risks that come with publishing evidence.</h2>
+    <div class="tablewrap">
+      <table class="cmp">
+        <thead><tr><th>Risk</th><th>Required control</th></tr></thead>
+        <tbody>
+          <tr><td class="name">Copyright &amp; database rights</td><td>Approved-source register, licence review, excerpt limits, direct links, no reproduction of paid reports</td></tr>
+          <tr><td class="name">Site terms &amp; automated collection</td><td>Source-specific collection policy; honour access restrictions; licence where needed</td></tr>
+          <tr><td class="name">Defamation / inaccurate vendor claims</td><td>Neutral language, source traceability, corrections, right-of-reply for material evaluations</td></tr>
+          <tr><td class="name">Customer confidentiality</td><td>Data minimisation, access controls, retention limits, contractual confidentiality</td></tr>
+          <tr><td class="name">Model error</td><td>Grounded generation, evidence display, reviewer approval, logged correction history</td></tr>
+          <tr><td class="name">Commercial conflict</td><td>Disclose sponsorships; no paid ranking or undisclosed placement</td></tr>
+          <tr><td class="name">Regulated recommendations</td><td>Clear scope limits; refer to qualified legal, security, financial or compliance specialists</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="caption">Legal review is required before automated collection, publication of comparative vendor scores, or use of customer data for benchmarks.</p>
+  </section>
+
+  <!-- ROADMAP -->
+  <section class="wrap">
+    <div class="eyebrow">Product roadmap</div>
+    <h2>Earn each phase with evidence from the last.</h2>
+    <div class="tablewrap">
+      <table class="cmp">
+        <thead><tr><th>Phase</th><th>Timing</th><th>Deliverable</th><th>Exit condition</th></tr></thead>
+        <tbody>
+          <tr><td class="name">Discovery</td><td>Weeks 1–2</td><td>Interview evidence, buyer definition, ranked recurring jobs</td><td>5 credible pilot candidates</td></tr>
+          <tr><td class="name">Concierge validation</td><td>Weeks 3–6</td><td>Paid intelligence service + decision tracking</td><td>Continuation criteria substantially met</td></tr>
+          <tr><td class="name">Focused product</td><td>Months 2–4</td><td>Profiles, signal feed, cards, backlog, brief export</td><td>Repeated use + improving economics</td></tr>
+          <tr><td class="name">Evidence product</td><td>Months 4–8</td><td>Source graph, correction workflow, outcome records</td><td>Customers trust &amp; reuse evidence across decisions</td></tr>
+          <tr><td class="name">Selective expansion</td><td>After repeatable retention</td><td>Second workflow or segment</td><td>Separate validation — not assumed transfer</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- RISKS -->
+  <section class="wrap">
+    <div class="eyebrow">What could kill it</div>
+    <h2>Failure modes to design against.</h2>
+    <div class="stack">
+      <div class="row2"><div class="idx">1</div><div><h3>Going too broad</h3><p>"Everything about AI for every company" is unbuildable as v1. The publisher wedge is the antidote.</p></div></div>
+      <div class="row2"><div class="idx">2</div><div><h3>Content as commodity</h3><p>Summaries are cloned in a weekend. Defensibility is curation labor + the outcomes track record that only time produces.</p></div></div>
+      <div class="row2"><div class="idx">3</div><div><h3>Warm-access false positives</h3><p>Friendly interviews feel like demand. Only paid conversion beyond your network counts.</p></div></div>
+      <div class="row2"><div class="idx">4</div><div><h3>Unscalable service</h3><p>Concierge delivery can trap you as a research agency. The gate is a clear path to ≥70% margin after automation.</p></div></div>
+      <div class="row2"><div class="idx">5</div><div><h3>Name &amp; trademark</h3><p><strong>FieldNote</strong> is the chosen name — but it collides with the well-known <em>Field Notes</em> notebook brand, and its domains and trademark have <strong>not</strong> been cleared. Confirm <code>.com</code>/<code>.ai</code> at a registrar and run an in-class (software) trademark search before committing spend.</p></div></div>
+    </div>
+  </section>
+
+  <!-- IMMEDIATE ACTIONS -->
+  <section class="wrap">
+    <div class="eyebrow">Immediate actions</div>
+    <h2>The next five moves.</h2>
+    <div class="stack">
+      <div class="row2"><div class="idx">1</div><div><h3>Recruit the discovery cohort</h3><p>Confirm the named interviewer; recruit 15–20 publisher participants.</p></div></div>
+      <div class="row2"><div class="idx">2</div><div><h3>Prepare the instruments</h3><p>Interview guide + a standard evidence log, ready before the first conversation.</p></div></div>
+      <div class="row2"><div class="idx">3</div><div><h3>Build two real cards</h3><p>Two fully-sourced decision cards on developments already relevant to publishers.</p></div></div>
+      <div class="row2"><div class="idx">4</div><div><h3>Offer the paid pilot</h3><p>Sell the six-week pilot; record every objection, approval step and price response. Review the gates at week six.</p></div></div>
+      <div class="row2"><div class="idx">5</div><div><h3>Secure the name</h3><p>Register <code>fieldnote.ai</code> (and <code>fieldnote.com</code>), reserve the company/social handles, and file an in-class trademark search for "FieldNote".</p></div></div>
+    </div>
+  </section>
+
+  <!-- FINAL -->
+  <section>
+    <div class="final wrap" style="max-width:780px;">
+      <div class="eyebrow">Current decision</div>
+      <h2 style="max-width:22ch;">Proceed with FieldNote as an AI opportunity-intelligence business, via a concierge-led publisher entry.</h2>
+      <p>Fund the initial hands-on service and a lightweight portal. Release further product investment only when the decision gates show recurring demand, useful recommendations and sustainable delivery economics. The evidence proves the problem; the pilots must prove the business.</p>
+      <p class="promise" style="margin-top:24px;"><b>Discover what matters.</b> Grade the evidence. <b>Decide what to adopt.</b></p>
+      <p style="font-family:var(--mono); font-size:12px; letter-spacing:.16em; color:var(--signal); margin:20px 0 0;">FIELDNOTE · SIGNAL THROUGH THE NOISE</p>
+      <p style="font-family:var(--mono); font-size:11px; letter-spacing:.1em; color:#8A93A0; margin:8px 0 0;">A TRUEINFO LABS PRODUCT</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>FieldNote — a Trueinfo Labs product · merged market-entry plan. Name not yet cleared — it collides with the "Field Notes" notebook brand; confirm domains at a registrar and run an in-class trademark search before committing. Sources accessed Sep 2026; market estimates use differing category definitions and should not be combined without reconciling scope: McKinsey (Mar 2025), IBM (May 2025), PwC 2026 Global CEO Survey (Jan 2026), S&amp;P Global 451 Research (Oct 2025), Gartner (Feb 2025), MIT NANDA (2025), AlphaSense (Jun 2026), Workhelix, Deloitte AI Dossier, Artificial Analysis, NASSCOM–BCG (via IndiaAI). Verify each primary source before external use.</p>
+</footer>

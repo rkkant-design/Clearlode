@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FieldNote</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;450;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  :root{
+    --bg:#F5F6F8;--panel:#FFFFFF;--panel-2:#F1F3F6;--panel-3:#E9ECF1;
+    --sidebar:#12161C;--side-ink:#C4CDD8;--side-ink-2:#828E9D;--side-active:#1E252E;--side-line:#232A33;
+    --ink:#161A20;--ink-2:#525A66;--ink-3:#8992A0;--line:#E4E7EC;--line-2:#D5DAE1;
+    --brand:#177A5C;--brand-2:#1C9270;--brand-soft:#E2F0EB;--brand-ink:#0E5C44;
+    --gA:#177A5C;--gA-s:#E2F0EB;--gB:#3A6DAE;--gB-s:#E5ECF6;--gC:#A9741A;--gC-s:#F6ECD6;--gD:#AC443C;--gD-s:#F6E1DE;--gX:#7A828E;--gX-s:#EDEFF2;
+    --warn:#A9741A;--warn-s:#F6ECD6;--crit:#AC443C;--crit-s:#F6E1DE;--ok:#177A5C;--ok-s:#E2F0EB;
+    --shadow-sm:0 1px 2px rgba(16,20,28,.06);--shadow:0 4px 16px -6px rgba(16,20,28,.14);--shadow-lg:0 16px 40px -18px rgba(16,20,28,.28);
+    --display:'Fraunces',Georgia,serif;--ui:'Inter',system-ui,sans-serif;--mono:'IBM Plex Mono',monospace;
+    --r:10px;
+  }
+  :root:not([data-theme="light"]){@media (prefers-color-scheme:dark){
+    --bg:#0D1013;--panel:#15191F;--panel-2:#1B2027;--panel-3:#222833;
+    --sidebar:#0A0C0F;--side-ink:#B9C2CE;--side-ink-2:#727D8B;--side-active:#191F27;--side-line:#1E242C;
+    --ink:#E8ECF1;--ink-2:#A3ACB9;--ink-3:#6C7581;--line:#252B33;--line-2:#333A44;
+    --brand:#43C79C;--brand-2:#54D4AA;--brand-soft:#11291F;--brand-ink:#6BD9B3;
+    --gA:#43C79C;--gA-s:#11291F;--gB:#77A6E6;--gB-s:#152234;--gC:#DDA64C;--gC-s:#2A2211;--gD:#E58B82;--gD-s:#2C1815;--gX:#8A929E;--gX-s:#1E242C;
+    --warn:#DDA64C;--warn-s:#2A2211;--crit:#E58B82;--crit-s:#2C1815;--ok:#43C79C;--ok-s:#11291F;
+    --shadow-sm:0 1px 2px rgba(0,0,0,.4);--shadow:0 6px 20px -8px rgba(0,0,0,.6);--shadow-lg:0 20px 48px -20px rgba(0,0,0,.75);
+  }}
+  :root[data-theme="dark"]{
+    --bg:#0D1013;--panel:#15191F;--panel-2:#1B2027;--panel-3:#222833;
+    --sidebar:#0A0C0F;--side-ink:#B9C2CE;--side-ink-2:#727D8B;--side-active:#191F27;--side-line:#1E242C;
+    --ink:#E8ECF1;--ink-2:#A3ACB9;--ink-3:#6C7581;--line:#252B33;--line-2:#333A44;
+    --brand:#43C79C;--brand-2:#54D4AA;--brand-soft:#11291F;--brand-ink:#6BD9B3;
+    --gA:#43C79C;--gA-s:#11291F;--gB:#77A6E6;--gB-s:#152234;--gC:#DDA64C;--gC-s:#2A2211;--gD:#E58B82;--gD-s:#2C1815;--gX:#8A929E;--gX-s:#1E242C;
+    --warn:#DDA64C;--warn-s:#2A2211;--crit:#E58B82;--crit-s:#2C1815;--ok:#43C79C;--ok-s:#11291F;
+    --shadow-sm:0 1px 2px rgba(0,0,0,.4);--shadow:0 6px 20px -8px rgba(0,0,0,.6);--shadow-lg:0 20px 48px -20px rgba(0,0,0,.75);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+  input,textarea,select{font-family:inherit;}
+  a{color:inherit;text-decoration:none;}
+  svg{width:1em;height:1em;display:inline-block;vertical-align:-.14em;flex:0 0 auto;}
+  .crumb svg{width:13px;height:13px;opacity:.65;margin:0 1px;}
+  .side-brand .logo svg{width:17px;height:17px;}
+  .mbox .logo svg{width:20px;height:20px;}
+  .chatin button svg{width:18px;height:18px;}
+  .msg .who svg{width:12px;height:12px;}
+  ::selection{background:var(--brand-soft);}
+
+  /* ---------- shell ---------- */
+  .app{display:grid;grid-template-columns:244px 1fr;min-height:100vh;}
+  .sidebar{background:var(--sidebar);color:var(--side-ink);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;border-right:1px solid var(--side-line);}
+  .side-brand{padding:20px 20px 16px;display:flex;align-items:center;gap:10px;}
+  .side-brand .logo{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--brand-2),var(--brand));display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;}
+  .side-brand .wm{font-family:var(--display);font-weight:600;font-size:18px;color:#fff;letter-spacing:.01em;}
+  .side-brand .wm i{color:var(--brand-2);font-style:normal;}
+  .side-nav{padding:8px 12px;flex:1;overflow-y:auto;}
+  .side-lab{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--side-ink-2);padding:14px 12px 6px;}
+  .nav-i{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;color:var(--side-ink);font-size:13.5px;font-weight:450;width:100%;text-align:left;margin-bottom:2px;position:relative;}
+  .nav-i svg{width:18px;height:18px;opacity:.85;flex-shrink:0;}
+  .nav-i:hover{background:var(--side-active);color:#fff;}
+  .nav-i.on{background:var(--side-active);color:#fff;font-weight:500;}
+  .nav-i.on::before{content:"";position:absolute;left:-12px;top:8px;bottom:8px;width:3px;border-radius:3px;background:var(--brand-2);}
+  .nav-i .ct{margin-left:auto;font-family:var(--mono);font-size:10px;background:var(--side-active);color:var(--side-ink);padding:1px 7px;border-radius:20px;}
+  .nav-i.on .ct{background:var(--brand);color:#fff;}
+  .side-foot{border-top:1px solid var(--side-line);padding:12px;}
+  .side-user{display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;width:100%;text-align:left;}
+  .side-user:hover{background:var(--side-active);}
+  .side-user .av{width:32px;height:32px;border-radius:50%;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;flex-shrink:0;}
+  .side-user .nm{font-size:12.5px;color:#fff;font-weight:500;line-height:1.2;}
+  .side-user .rl{font-size:11px;color:var(--side-ink-2);}
+
+  .main{min-width:0;display:flex;flex-direction:column;}
+  .topbar{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:saturate(1.4) blur(8px);border-bottom:1px solid var(--line);padding:11px 26px;display:flex;align-items:center;gap:14px;}
+  .hamb{display:none;}
+  .search{flex:1;max-width:460px;position:relative;}
+  .search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--ink-3);}
+  .search input{width:100%;padding:9px 12px 9px 36px;border:1px solid var(--line);border-radius:9px;background:var(--panel);color:var(--ink);font-size:13.5px;}
+  .search input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft);}
+  .search input::placeholder{color:var(--ink-3);}
+  .topsp{flex:1;}
+  .tbtn{width:36px;height:36px;border-radius:9px;border:1px solid var(--line);background:var(--panel);display:flex;align-items:center;justify-content:center;color:var(--ink-2);position:relative;}
+  .tbtn:hover{border-color:var(--line-2);color:var(--ink);}
+  .tbtn svg{width:17px;height:17px;}
+  .tbtn .dot{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;border-radius:20px;background:var(--brand);color:#fff;font-size:9.5px;font-weight:600;display:flex;align-items:center;justify-content:center;padding:0 4px;font-family:var(--mono);}
+  .content{padding:26px;max-width:1180px;width:100%;margin:0 auto;}
+
+  @media(max-width:900px){
+    .app{grid-template-columns:1fr;}
+    .sidebar{position:fixed;left:0;top:0;z-index:60;width:250px;transform:translateX(-100%);transition:transform .2s;}
+    body.nav-open .sidebar{transform:translateX(0);box-shadow:var(--shadow-lg);}
+    body.nav-open::after{content:"";position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:55;}
+    .hamb{display:flex;}
+    .content{padding:18px;}
+    .topbar{padding:10px 16px;}
+  }
+
+  /* ---------- primitives ---------- */
+  .page-h{margin:0 0 4px;}
+  .page-h h1{font-family:var(--display);font-weight:600;font-size:clamp(1.5rem,3vw,1.9rem);margin:0;letter-spacing:-.01em;color:var(--ink);}
+  .page-sub{color:var(--ink-2);font-size:14px;margin:4px 0 22px;}
+  .eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--brand-ink);margin-bottom:8px;}
+  .row{display:flex;align-items:center;gap:10px;}
+  .wrap-h{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:26px 0 12px;}
+  .wrap-h h2{font-family:var(--ui);font-weight:600;font-size:1.05rem;margin:0;color:var(--ink);}
+  .wrap-h .lnk{font-size:12.5px;color:var(--brand-ink);font-weight:500;}
+  .muted{color:var(--ink-3);font-size:12.5px;}
+
+  .btn{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:9px;font-size:13px;font-weight:500;border:1px solid var(--line);background:var(--panel);color:var(--ink);}
+  .btn:hover{border-color:var(--line-2);}
+  .btn svg{width:15px;height:15px;}
+  .btn.pri{background:var(--brand);color:#fff;border-color:var(--brand);}
+  .btn.pri:hover{background:var(--brand-2);}
+  .btn.sm{padding:6px 11px;font-size:12px;}
+  .btn.on{background:var(--brand-soft);border-color:var(--brand);color:var(--brand-ink);}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow-sm);}
+  .grade{font-family:var(--mono);font-weight:600;font-size:11px;width:20px;height:20px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .gA{background:var(--gA-s);color:var(--gA);}.gB{background:var(--gB-s);color:var(--gB);}.gC{background:var(--gC-s);color:var(--gC);}.gD{background:var(--gD-s);color:var(--gD);}.gX{background:var(--gX-s);color:var(--gX);}
+  .badge{font-family:var(--mono);font-size:9px;font-weight:500;letter-spacing:.03em;padding:2px 7px;border-radius:20px;text-transform:uppercase;display:inline-flex;align-items:center;gap:4px;}
+  .b-ver{background:var(--ok-s);color:var(--ok);}.b-cand{background:var(--warn-s);color:var(--warn);}.b-hold{background:var(--crit-s);color:var(--crit);}
+  .tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.02em;padding:2px 8px;border-radius:6px;background:var(--panel-2);color:var(--ink-2);text-transform:uppercase;}
+  .tag.mdl{background:var(--brand-soft);color:var(--brand-ink);}
+  .logo-sq{width:34px;height:34px;border-radius:8px;background:var(--panel-3);color:var(--ink-2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;}
+
+  /* KPI */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  @media(max-width:820px){.kpis{grid-template-columns:1fr 1fr;}}
+  .kpi{padding:16px 18px;}
+  .kpi .lab{font-size:12px;color:var(--ink-2);display:flex;align-items:center;gap:7px;}
+  .kpi .lab svg{width:15px;height:15px;color:var(--brand);}
+  .kpi .val{font-family:var(--display);font-size:2rem;font-weight:600;color:var(--ink);line-height:1.1;margin-top:8px;}
+  .kpi .sub{font-size:11.5px;color:var(--ink-3);margin-top:3px;}
+
+  /* record grid cards */
+  .rgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+  @media(max-width:720px){.rgrid{grid-template-columns:1fr;}}
+  .rgrid.one{grid-template-columns:1fr;}
+  .rcard{padding:16px 18px;display:flex;flex-direction:column;gap:10px;cursor:pointer;transition:border-color .12s,transform .12s,box-shadow .12s;}
+  .rcard:hover{border-color:var(--line-2);transform:translateY(-2px);box-shadow:var(--shadow);}
+  .rcard .top{display:flex;align-items:flex-start;gap:11px;}
+  .rcard .co{font-weight:600;font-size:15px;color:var(--ink);}
+  .rcard .sp{font-size:11.5px;color:var(--ink-3);}
+  .rcard .tt{font-family:var(--display);font-weight:500;font-size:16px;line-height:1.25;color:var(--ink);}
+  .rcard .dk{font-size:12.5px;color:var(--ink-2);line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .rcard .foot{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:auto;padding-top:4px;}
+  .rcard .acts{margin-left:auto;display:flex;gap:4px;}
+  .iconbtn{width:28px;height:28px;border-radius:7px;border:1px solid var(--line);background:var(--panel);display:flex;align-items:center;justify-content:center;color:var(--ink-3);}
+  .iconbtn:hover{color:var(--ink);border-color:var(--line-2);}
+  .iconbtn.on{color:var(--brand-ink);background:var(--brand-soft);border-color:var(--brand);}
+  .iconbtn svg{width:15px;height:15px;}
+
+  /* filter bar */
+  .fbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+  .selct{padding:8px 12px;border:1px solid var(--line);border-radius:9px;background:var(--panel);color:var(--ink);font-size:12.5px;}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;}
+  .fchip{padding:6px 11px;border:1px solid var(--line);border-radius:20px;font-size:12px;color:var(--ink-2);background:var(--panel);}
+  .fchip:hover{border-color:var(--line-2);}
+  .fchip.on{background:var(--ink);color:var(--panel);border-color:var(--ink);}
+
+  /* detail */
+  .dwrap{display:grid;grid-template-columns:1fr 300px;gap:22px;align-items:start;}
+  @media(max-width:920px){.dwrap{grid-template-columns:1fr;}}
+  .crumb{font-size:12.5px;color:var(--ink-3);margin-bottom:14px;display:flex;align-items:center;gap:7px;}
+  .crumb a{color:var(--brand-ink);}
+  .dhead{display:flex;gap:14px;align-items:flex-start;margin-bottom:14px;}
+  .dhead .logo-sq{width:46px;height:46px;font-size:16px;border-radius:10px;}
+  .dtitle{font-family:var(--display);font-weight:600;font-size:clamp(1.4rem,3vw,1.85rem);line-height:1.14;margin:0 0 5px;color:var(--ink);letter-spacing:-.01em;}
+  .dmeta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px 0;}
+  .sec{padding:18px 20px;margin-bottom:14px;}
+  .sec h3{font-size:12px;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--brand-ink);margin:0 0 12px;}
+  .fld{padding:12px 0;border-top:1px solid var(--line);}
+  .fld:first-of-type{border-top:none;padding-top:0;}
+  .fld .l{font-size:11px;font-family:var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:5px;}
+  .fld p{margin:0;font-size:13.5px;color:var(--ink-2);line-height:1.55;}
+  .mtx{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:9px;overflow:hidden;}
+  @media(max-width:540px){.mtx{grid-template-columns:1fr 1fr;}}
+  .mtx div{background:var(--panel);padding:11px 13px;}
+  .mtx b{font-family:var(--display);font-size:1.3rem;font-weight:600;display:block;line-height:1;color:var(--ink);}
+  .mtx span{font-size:11px;color:var(--ink-2);display:block;margin-top:6px;line-height:1.3;}
+  .quote{border-left:2.5px solid var(--brand);padding:6px 0 6px 15px;margin:11px 0;font-size:14px;line-height:1.5;color:var(--ink);font-style:italic;}
+  .quote cite{display:block;font-style:normal;font-family:var(--mono);font-size:10px;color:var(--ink-3);margin-top:7px;}
+  .flagbar{background:var(--warn-s);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--ink);margin-top:10px;}
+  .flagbar b{color:var(--warn);}
+  .side-panel{position:sticky;top:80px;display:flex;flex-direction:column;gap:14px;}
+  .sp-card{padding:16px;}
+  .sp-card h4{font-size:11px;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin:0 0 12px;}
+  .actgrid{display:flex;flex-direction:column;gap:8px;}
+  .actgrid .btn{justify-content:flex-start;width:100%;}
+  .noteta{width:100%;min-height:80px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2);color:var(--ink);padding:9px 11px;font-size:12.5px;resize:vertical;}
+  .noteta:focus{outline:none;border-color:var(--brand);}
+  .rel a{display:flex;gap:9px;align-items:center;padding:9px 0;border-top:1px solid var(--line);cursor:pointer;}
+  .rel a:first-child{border-top:none;}
+  .rel .rl-co{font-size:12.5px;font-weight:500;color:var(--ink);}
+  .rel .rl-wf{font-size:11px;color:var(--ink-3);}
+  .fitcard{background:var(--brand-soft);border:1px solid color-mix(in srgb,var(--brand) 30%,transparent);border-radius:10px;padding:14px 16px;margin-bottom:14px;}
+  .fitcard .k{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--brand-ink);margin-bottom:6px;}
+  .fitcard p{margin:0;font-size:13px;color:var(--ink);line-height:1.5;}
+  .tr-panel{max-height:300px;overflow-y:auto;border:1px solid var(--line);border-radius:9px;background:var(--panel-2);}
+  .tr-line{display:flex;gap:14px;padding:11px 15px;border-bottom:1px solid var(--line);}
+  .tr-line:last-child{border-bottom:none;}
+  .tr-ts{font-family:var(--mono);font-size:11px;color:var(--brand-ink);flex:0 0 auto;width:50px;padding-top:1px;}
+  .tr-line>div{font-size:13px;color:var(--ink-2);line-height:1.55;}
+  .tr-sp{font-weight:600;color:var(--ink);}
+  .tr-foot{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:12px;}
+  .tr-rights{font-family:var(--mono);font-size:10px;color:var(--ink-3);flex:1;min-width:180px;line-height:1.5;}
+
+  /* compare */
+  .cmpwrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);}
+  table.cmp{border-collapse:collapse;width:100%;min-width:680px;font-size:13px;}
+  table.cmp th,table.cmp td{text-align:left;padding:14px 16px;border-bottom:1px solid var(--line);border-right:1px solid var(--line);vertical-align:top;}
+  table.cmp th:last-child,table.cmp td:last-child{border-right:none;}
+  table.cmp thead th{background:var(--panel-2);position:sticky;top:0;}
+  table.cmp .rl{font-family:var(--mono);font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3);background:var(--panel-2);width:150px;white-space:nowrap;}
+  table.cmp tbody tr:last-child td{border-bottom:none;}
+  .cmp-co{font-weight:600;font-size:15px;color:var(--ink);}
+  .emptycmp{text-align:center;padding:50px 20px;}
+
+  /* benchmarks */
+  .bar-row{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+  .bar-row .bl{width:130px;font-size:12.5px;color:var(--ink-2);flex-shrink:0;}
+  .bar-track{flex:1;height:22px;background:var(--panel-2);border-radius:6px;overflow:hidden;position:relative;}
+  .bar-fill{height:100%;border-radius:6px;background:var(--brand);display:flex;align-items:center;justify-content:flex-end;padding-right:8px;color:#fff;font-size:11px;font-weight:600;font-family:var(--mono);min-width:26px;}
+  .bar-fill.gAf{background:var(--gA);}.bar-fill.gBf{background:var(--gB);}.bar-fill.gCf{background:var(--gC);}.bar-fill.gDf{background:var(--gD);}
+
+  /* chat */
+  .chatwrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;height:calc(100vh - 150px);}
+  .chatlog{flex:1;overflow-y:auto;padding:6px 2px 16px;display:flex;flex-direction:column;gap:16px;}
+  .msg{max-width:88%;font-size:14px;line-height:1.55;}
+  .msg.u{align-self:flex-end;background:var(--brand);color:#fff;padding:10px 15px;border-radius:14px 14px 4px 14px;}
+  .msg.a .who{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--brand-ink);margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+  .msg.a .bub{background:var(--panel);border:1px solid var(--line);padding:13px 16px;border-radius:4px 14px 14px 14px;color:var(--ink-2);}
+  .msg.a .bub b{color:var(--ink);}
+  .cites{margin-top:11px;display:flex;flex-wrap:wrap;gap:7px;}
+  .cite{font-family:var(--mono);font-size:10px;padding:4px 10px;border:1px solid var(--brand);color:var(--brand-ink);border-radius:20px;background:var(--brand-soft);cursor:pointer;}
+  .cite.warn{border-color:var(--warn);color:var(--warn);background:var(--warn-s);cursor:default;}
+  .suggest{display:flex;flex-wrap:wrap;gap:8px;padding:10px 0;}
+  .suggest button{font-size:12.5px;color:var(--ink-2);border:1px solid var(--line);border-radius:20px;padding:7px 13px;background:var(--panel);}
+  .suggest button:hover{border-color:var(--brand);color:var(--ink);}
+  .chatin{display:flex;gap:9px;padding-top:12px;border-top:1px solid var(--line);}
+  .chatin input{flex:1;padding:11px 15px;border:1px solid var(--line);border-radius:22px;background:var(--panel);color:var(--ink);font-size:14px;}
+  .chatin input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft);}
+  .chatin button{width:42px;height:42px;border-radius:50%;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .disc{font-family:var(--mono);font-size:10px;color:var(--ink-3);text-align:center;margin-top:10px;line-height:1.5;}
+
+  /* modal / toast */
+  .modal{position:fixed;inset:0;background:rgba(10,14,20,.55);z-index:80;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .modal .mbox{background:var(--panel);border:1px solid var(--line-2);border-radius:16px;max-width:440px;width:100%;padding:26px;box-shadow:var(--shadow-lg);}
+  .mbox .logo{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--brand-2),var(--brand));display:flex;align-items:center;justify-content:center;color:#fff;margin-bottom:14px;}
+  .mbox h3{font-family:var(--display);font-weight:600;font-size:1.4rem;margin:0 0 6px;color:var(--ink);}
+  .mbox p{font-size:13px;color:var(--ink-2);margin:0 0 16px;}
+  .mbox label{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);display:block;margin:12px 0 6px;}
+  .mbox select{width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:9px;background:var(--panel-2);color:var(--ink);font-size:13.5px;}
+  .mbox .go{margin-top:20px;width:100%;padding:12px;border-radius:10px;background:var(--brand);color:#fff;font-weight:600;font-size:13.5px;}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--panel);padding:11px 20px;border-radius:10px;font-size:13px;z-index:90;opacity:0;transition:.25s;box-shadow:var(--shadow-lg);pointer-events:none;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  .empty{text-align:center;padding:46px 20px;color:var(--ink-3);}
+  .eic{width:46px;height:46px;border-radius:13px;background:var(--panel-2);display:inline-flex;align-items:center;justify-content:center;margin:0 auto 15px;}
+  .eic svg{width:20px;height:20px;color:var(--ink-3);}
+
+  @media print{
+    .sidebar,.topbar,.side-panel,.crumb{display:none!important;}
+    .app{display:block;}.content{padding:0;max-width:none;}.dwrap{display:block;}
+    .sec{break-inside:avoid;box-shadow:none;border:1px solid #ccc;}
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app" style="display:none">
+  <aside class="sidebar" id="sidebar">
+    <div class="side-brand">
+      <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16M4 12h16M4 19h10"/></svg></div>
+      <div class="wm">FieldNote<i>.</i></div>
+    </div>
+    <nav class="side-nav" id="nav"></nav>
+    <div class="side-foot">
+      <button class="side-user" id="userBtn">
+        <div class="av" id="uav">?</div>
+        <div><div class="nm" id="unm">Set your role</div><div class="rl" id="url">click to edit</div></div>
+      </button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <button class="tbtn hamb" id="hamb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+      <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="gsearch" placeholder="Search deployments, companies, models…"></div>
+      <div class="topsp"></div>
+      <button class="tbtn" id="cmpBtn" title="Compare"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3v18M15 3v18M3 9h18M3 15h18" opacity=".4"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg><span class="dot" id="cmpDot" style="display:none">0</span></button>
+      <button class="tbtn" id="themeBtn" title="Theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19"/></svg></button>
+    </div>
+    <div class="content" id="view"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  var LS=(function(){try{var k="__t";localStorage.setItem(k,"1");localStorage.removeItem(k);return localStorage;}catch(e){var m={};return{getItem:function(k){return k in m?m[k]:null;},setItem:function(k,v){m[k]=String(v);},removeItem:function(k){delete m[k];}};}})();
+  function jget(k,d){try{return JSON.parse(LS.getItem(k))||d;}catch(e){return d;}}
+  function jset(k,v){try{LS.setItem(k,JSON.stringify(v));}catch(e){}}
+
+  /* icons */
+  var IC={
+    dashboard:'<path d="M3 3h8v8H3zM13 3h8v5h-8zM13 11h8v10h-8zM3 13h8v8H3z"/>',
+    library:'<path d="M4 5h16v14H4z"/><path d="M4 9h16M9 5v14"/>',
+    compare:'<rect x="3" y="4" width="7" height="16" rx="1"/><rect x="14" y="4" width="7" height="16" rx="1"/>',
+    collections:'<path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1Z"/>',
+    bench:'<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>',
+    ask:'<path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+    method:'<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/>',
+    bookmark:'<path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1Z"/>',
+    plus:'<path d="M12 5v14M5 12h14"/>',
+    check:'<path d="M20 6 9 17l-5-5"/>',
+    ext:'<path d="M15 3h6v6M10 14 21 3M18 13v8H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h8"/>',
+    print:'<path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/>',
+    arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>',
+    x:'<path d="M18 6 6 18M6 6l12 12"/>',
+    send:'<path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/>',
+    spark:'<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2 2M16 16l2 2M18 6l-2 2M8 16l-2 2"/>'
+  };
+  function svg(n,w){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="'+(w||2)+'" stroke-linecap="round" stroke-linejoin="round">'+IC[n]+'</svg>';}
+
+  /* ---------------- DATA (real scrubbed records + labelled candidates) ---------------- */
+  var RECORDS=[
+    { id:"FN-CS-0001", company:"Klarna", industry:"Fintech", workflow:"Tier-1 deflection", models:["OpenAI"], grade:"B", status:"verified", fresh:"Feb 2024",
+      speaker:"Sebastian Siemiatkowski, Co-founder & CEO",
+      title:"Klarna automated two-thirds of support chats with OpenAI",
+      watch:"https://www.youtube.com/watch?v=m3niSE-8ZvE",
+      transcript:[
+        {ts:"0:00",sp:"Host",t:"Klarna recently made its mark in the world of AI… Sebastian, welcome to the show."},
+        {ts:"~7:23",sp:"Siemiatkowski",t:"One of the rules that we agreed on was, that the customer should always know if they speak to AI or if they speak to a human."},
+        {ts:"~8:51",sp:"Siemiatkowski",t:"It's basically an employee that turns out to work every day and has forgotten everything about what Klarna is, how it works."},
+        {ts:"~10:21",sp:"Siemiatkowski",t:"If you feed data models with bad things, you're going to get bad results."},
+        {ts:"~14:22",sp:"Siemiatkowski",t:"The average time of resolution of a customer service chat is about 14 minutes. And when we move to AI, it's two minutes."}
+      ],
+      fit:"Success is gated on documentation quality, and telling customers when they’re talking to AI protects trust.",
+      tldr:"An OpenAI-powered assistant handled ~two-thirds of customer-service chats within a month at CSAT on par with humans — but the 'before' baseline is stated two ways across sources, and quality issues surfaced later.",
+      problem:"High volume of repetitive customer-service contacts across 23 markets and 35+ languages; long resolution times and heavy reliance on ~700 outsourced full-time agents.",
+      solution:"A customer-facing AI assistant built on OpenAI models, evolved from internal 'co-pilots' that first assisted agents on complex tasks before going client-facing.",
+      architecture:"LLM assistant over Klarna's own support documentation/FAQs; human-in-the-loop origins; hard transparency rule that the customer is always told if they're talking to AI.",
+      deployment:"Built fast via a direct OpenAI relationship ('a joint Slack channel'); success gated on documentation quality; rolled from internal co-pilot to customer-facing.",
+      metrics:[{v:"~2/3",l:"CS chats handled, 1st month"},{v:"2.3M",l:"conversations"},{v:"~700",l:"FTE agents' work equiv."},{v:"25%",l:"drop in repeat inquiries"},{v:"<2 min",l:"resolution (was 11/14 min*)"},{v:"~$40M",l:"projected 2024 profit"}],
+      conflict:"The 'before' resolution time is 11 minutes in the press release but 14 minutes in the CEO's spoken account. Reported as a range pending re-confirmation — not silently averaged.",
+      boundaries:"Company-reported, no clean baseline/control; '$40M' is projected. 'Handled two-thirds' is contact containment, not verified resolution. Later walked back on quality (see FN-CS-0002).",
+      evidence:[
+        {q:"It's basically an employee that turns out to work every day and has forgotten everything about what Klarna is, how it works.",c:"Siemiatkowski · Sequoia 'Training Data' (YouTube m3niSE-8ZvE) · 8:51"},
+        {q:"One of the rules that we agreed on was, that the customer should always know if they speak to AI or if they speak to a human.",c:"Siemiatkowski · Sequoia 'Training Data' · ~7:23"}
+      ],
+      sources:["Klarna press release, 27 Feb 2024 (first-party)","Sequoia 'Training Data' podcast, YouTube m3niSE-8ZvE, 23 Jul 2024 (firsthand video)"] },
+
+    { id:"FN-CS-0002", company:"Klarna", industry:"Fintech", workflow:"Tier-1 deflection", models:["OpenAI"], grade:"D", status:"hold", fresh:"2025",
+      speaker:"Attributed to Sebastian Siemiatkowski — journalist-reported", hold:true,
+      title:"Klarna walks back the AI-only push and reinvests in humans",
+      tldr:"~A year after the win, Klarna reportedly acknowledged the aggressive AI cost-cutting hurt service quality and began rehiring humans — while keeping AI at ~two-thirds of volume.",
+      claim:"The AI-driven cost cutting 'ended up with lower quality'; 'really investing in the quality of the human support is the way of the future for us.'",
+      claimcite:"Attributed to Siemiatkowski via Bloomberg / CX Dive, 2025 — SECONDARY, journalist-reported",
+      whyd:"Under FieldNote's firsthand rule this quote is out of scope until confirmed at source. Do not publish until the firsthand clip is located and its timestamp logged.",
+      sources:["Bloomberg / CX Dive, 2025 (secondary — journalist-reported)"] },
+
+    { id:"FN-CS-0003", company:"Chime", industry:"Fintech", workflow:"Tier-1 deflection", workflows:["Tier-1 deflection","Disputes & transactions"], models:[], grade:"B", status:"verified", fresh:"Jan 2026",
+      speaker:"Janelle Sallenave, Chief Operating Officer",
+      title:"Chime’s AI self-service handles 70% of member support",
+      watch:"https://www.youtube.com/watch?v=hNgmlAb-xr8",
+      excerpts:[
+        {sp:"Janelle Sallenave, COO",t:"Technology should make financial services feel more personal, not less."},
+        {sp:"Janelle Sallenave, COO",t:"We’ve seen that technology and empathy can scale together."},
+        {sp:"Interviewer (Wrap Up)",t:"Today, actually, I wanted to discuss how you guys are implementing AI."}
+      ],
+      fit:"Lead with experience, not cost — pair AI self-service with seamless human escalation and CSAT can rise, not fall.",
+      tldr:"AI self-service now starts ~70% of member support interactions; the gen-AI voicebot resolves ~66% of calls (up from under 20%) and the chatbot ~75% of chats, with dispute time roughly halved — reported first-party with clear before/after.",
+      problem:"Chime supported ~50 million member service interactions in 2024 and needed to scale support without degrading experience; dispute resolution took ~42 minutes.",
+      solution:"Generative-AI voicebot and chatbot as the self-service front door, escalating seamlessly to human CX reps. Base models / vendors are not named in first-party sources.",
+      architecture:"AI-first self-service across voice and chat with human-in-the-loop escalation; the member-facing agent is branded ‘Jade’, positioned as a brand extension rather than a cost-cutting bot.",
+      deployment:"Rolled across voice and chat channels; framed as treating AI 'like a member of the team' and measured on member satisfaction, not just deflection.",
+      metrics:[{v:"70%",l:"start with AI self-service"},{v:"~66%",l:"voicebot resolution (was <20%)"},{v:"~75%",l:"chatbot resolution"},{v:"+20–40pp",l:"resolution-rate lift"},{v:"+80%",l:"member sat since 2023"},{v:"−50%",l:"dispute time (42→<20 min)"}],
+      boundaries:"All figures are company-reported (first-party), no independent control. Base models undisclosed. '70% start with AI' is entry, not resolution — resolution is the ~66% (voice) / ~75% (chat).",
+      evidence:[
+        {q:"Technology should make financial services feel more personal, not less.",c:"Janelle Sallenave, COO · Chime newsroom, 14 Jan 2026 (first-party)"},
+        {q:"We’ve seen that technology and empathy can scale together.",c:"Janelle Sallenave, COO · Chime newsroom, 14 Jan 2026"}
+      ],
+      sources:["Chime newsroom, 'How Chime Is Using AI to Redefine Member Experience', 14 Jan 2026 (first-party)","Janelle Sallenave (COO), firsthand talk, YouTube hNgmlAb-xr8"] },
+
+    { id:"FN-CS-0005", company:"Nubank", industry:"Fintech", workflow:"Agent-assist", models:["OpenAI","Anthropic","Mistral"], grade:"C", status:"verified", fresh:"Sep 2024",
+      speaker:"Kevin Rossell, Lead Data Scientist",
+      title:"Nubank’s ‘Agent Copilot’ empowers CX at 100M-customer scale",
+      watch:"https://building.nu.com/empowering-customer-support-agents-with-generative-ai/",
+      excerpts:[
+        {sp:"Kevin Rossell, Lead Data Scientist",t:"The agent copilot is a set of tools for CX agents; they are meant to empower these agents to better answer customers’ questions, using LLMs."},
+        {sp:"Nubank engineering",t:"Retrieval Augmented Generation (RAG), which is basically ingesting your knowledge and inserting it into the prompt, is the industry standard."},
+        {sp:"Nubank engineering",t:"Nowadays, we rely on traditional metrics for NLP/NLU tasks like translation and summarization, such as Rouge, Jaccard similarity metrics, as well as Ragas, which is LLM-based."},
+        {sp:"Nubank engineering",t:"For answer suggestions, for example, we measure how much our suggestions are being used or even how much they are edited."}
+      ],
+      fit:"Treat the evaluation suite as the product, and use AI to empower agents rather than replace them — but note this record has no disclosed ROI yet.",
+      tldr:"Nubank built an 'Agent Copilot' that uses RAG to suggest answers and summarise interaction history for human CX agents across 100M+ customers. Richly documented on approach — but the first-party sources disclose no outcome numbers.",
+      problem:"Support CX agents serving 100M+ customers needed to answer questions faster and more accurately without losing the human touch.",
+      solution:"An 'Agent Copilot' of LLM tools that suggest answers and actions and summarise history, built on RAG + in-context learning. Models: OpenAI, Anthropic, Mistral, Lamini.",
+      architecture:"RAG + in-context learning; evaluation via Rouge, Jaccard similarity and Ragas, plus implicit feedback from usage and agent edit-rates — an evaluation-driven loop.",
+      deployment:"Copilot to empower (not replace) CX agents; an evaluation suite is central to iterating safely at scale.",
+      metrics:[],
+      boundaries:"No ROI or outcome numbers are disclosed in the first-party sources — value is described qualitatively and through engineering rigor. Graded C until measured outcomes are published.",
+      evidence:[
+        {q:"The agent copilot is a set of tools for CX agents; they are meant to empower these agents to better answer customers’ questions, using LLMs.",c:"Kevin Rossell, Lead Data Scientist · Nubank engineering blog, 20 Sep 2024 (first-party)"}
+      ],
+      sources:["Nubank engineering blog, 'Empowering customer support agents with generative AI', 20 Sep 2024 (first-party)","Aman Gupta, 'Building AI Agents for 127 Million Customers', QCon AI New York 2025 (firsthand talk)"] },
+
+    { id:"FN-CS-0004", company:"Lightspeed", industry:"Retail / commerce", workflow:"Agent-assist", models:[], grade:"—", status:"candidate", fresh:"candidate", speaker:"VP Support (firsthand talk)", tldr:"Firsthand candidate — VP of Support on 'change management is the hard part'. Awaiting SCRUB.", srcHint:"Intercom Pioneer spotlight" },
+    { id:"FN-CS-0006", company:"Cisco", industry:"Enterprise tech", workflow:"Agent-assist", models:[], grade:"—", status:"candidate", fresh:"candidate", speaker:"Support leader (firsthand talk)", tldr:"Firsthand candidate — MTTR reduction via agent-assist. Awaiting SCRUB.", srcHint:"conference talk" },
+    { id:"FN-CS-0007", company:"Playtomic", industry:"Consumer app", workflow:"Tier-1 deflection", models:[], grade:"—", status:"candidate", fresh:"candidate", speaker:"Named operator (firsthand talk)", tldr:"Firsthand candidate — 'deflection is gameable' cautionary lesson. Awaiting SCRUB.", srcHint:"podcast" }
+  ];
+  function rec(id){return RECORDS.filter(function(r){return r.id===id;})[0];}
+  function wfsOf(r){return (r.workflows&&r.workflows.length)?r.workflows:[r.workflow];}
+
+  /* ---------------- STATE ---------------- */
+  var S={
+    view: LS.getItem("fn_view")||"dashboard",
+    role: LS.getItem("fn_role")||"", industry: LS.getItem("fn_industry")||"",
+    open:null, q:"", company:"", workflow:"", grade:"", verifiedOnly:false, sort:"relevance",
+    saved: jget("fn_saved",[]), compare: jget("fn_compare",[]), notes: jget("fn_notes",{}), recent: jget("fn_recent",[]),
+    chat:[]
+  };
+  function persist(){jset("fn_saved",S.saved);jset("fn_compare",S.compare);jset("fn_notes",S.notes);jset("fn_recent",S.recent);LS.setItem("fn_view",S.view);}
+
+  var view=document.getElementById("view");
+
+  /* helpers */
+  function esc(s){return (s||"").replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+  function initials(n){return n.replace(/[^A-Za-z0-9 ]/g,"").split(" ").filter(Boolean).slice(0,2).map(function(w){return w[0];}).join("").toUpperCase();}
+  function gcls(g){return g==="A"?"gA":g==="B"?"gB":g==="C"?"gC":g==="D"?"gD":"gX";}
+  function verified(){return RECORDS.filter(function(r){return r.status==="verified";});}
+  function toast(m){var t=document.getElementById("toast");t.textContent=m;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove("show");},1900);}
+
+  function isSaved(id){return S.saved.indexOf(id)>=0;}
+  function toggleSave(id){var i=S.saved.indexOf(id);if(i>=0){S.saved.splice(i,1);toast("Removed from collections");}else{S.saved.unshift(id);toast("Saved to collections");}persist();render();}
+  function inCompare(id){return S.compare.indexOf(id)>=0;}
+  function toggleCompare(id){var i=S.compare.indexOf(id);if(i>=0){S.compare.splice(i,1);}else{if(S.compare.length>=3){toast("Compare holds up to 3");return;}S.compare.push(id);toast("Added to compare");}persist();render();}
+  function pushRecent(id){S.recent=[id].concat(S.recent.filter(function(x){return x!==id;})).slice(0,6);persist();}
+
+  /* ---------------- NAV ---------------- */
+  var NAV=[
+    {v:"dashboard",ic:"dashboard",t:"Dashboard"},
+    {v:"library",ic:"library",t:"Library"},
+    {v:"compare",ic:"compare",t:"Compare",badge:function(){return S.compare.length;}},
+    {v:"collections",ic:"collections",t:"Collections",badge:function(){return S.saved.length;}},
+    {v:"benchmarks",ic:"bench",t:"Benchmarks"},
+    {v:"chat",ic:"ask",t:"Ask FieldNote"},
+    {v:"method",ic:"method",t:"Methodology"}
+  ];
+  function renderNav(){
+    var h='<div class="side-lab">Workspace</div>';
+    NAV.forEach(function(n){
+      var b=n.badge?n.badge():0;
+      h+='<button class="nav-i'+(S.view===n.v?" on":"")+'" data-nav="'+n.v+'">'+svg(n.ic)+'<span>'+n.t+'</span>'+(b?'<span class="ct">'+b+'</span>':'')+'</button>';
+    });
+    document.getElementById("nav").innerHTML=h;
+    // topbar compare dot
+    var cd=document.getElementById("cmpDot");cd.textContent=S.compare.length;cd.style.display=S.compare.length?"flex":"none";
+    // user
+    document.getElementById("uav").textContent=S.role?initials(S.role):"?";
+    document.getElementById("unm").textContent=S.role||"Set your role";
+    document.getElementById("url").textContent=S.industry||"click to edit";
+  }
+
+  /* ---------------- RECORD CARD ---------------- */
+  function badge(r){return r.status==="verified"?'<span class="badge b-ver">'+svg('check')+'verified</span>':r.status==="hold"?'<span class="badge b-hold">on hold</span>':'<span class="badge b-cand">candidate</span>';}
+  function rcard(r){
+    var mt=(r.models||[]).slice(0,3).map(function(m){return '<span class="tag mdl">'+esc(m)+'</span>';}).join("");
+    var sv=isSaved(r.id), cp=inCompare(r.id);
+    return '<div class="card rcard" data-open="'+r.id+'">'+
+      '<div class="top"><div class="logo-sq">'+initials(r.company)+'</div>'+
+        '<div style="flex:1"><div class="co">'+esc(r.company)+'</div><div class="sp">'+esc((r.speaker||"").split(",")[0])+'</div></div>'+
+        '<span class="grade '+gcls(r.grade)+'">'+r.grade+'</span></div>'+
+      '<div class="tt">'+esc(r.title||r.company)+'</div>'+
+      '<div class="dk">'+esc(r.tldr)+'</div>'+
+      '<div class="foot"><span class="tag">'+esc(r.workflow)+'</span>'+mt+badge(r)+
+        '<span class="acts">'+
+          '<button class="iconbtn'+(cp?" on":"")+'" data-cmp="'+r.id+'" title="Compare">'+svg('compare')+'</button>'+
+          '<button class="iconbtn'+(sv?" on":"")+'" data-save="'+r.id+'" title="Save">'+svg('bookmark',sv?0:2)+'</button>'+
+        '</span></div>'+
+      '</div>';
+  }
+
+  /* ---------------- VIEW: DASHBOARD ---------------- */
+  function vDashboard(){
+    var vs=verified();
+    var role=S.role||"there";
+    var avg=(function(){var m={A:4,B:3,C:2,D:1},s=0,n=0;vs.forEach(function(r){if(m[r.grade]){s+=m[r.grade];n++;}});var a=n?s/n:0;return a>=3.5?"A–":a>=2.5?"B":a>=1.5?"C":"—";})();
+    var cos=(function(){var o={};RECORDS.forEach(function(r){o[r.company]=1;});return Object.keys(o).length;})();
+    var wfs=(function(){var o={};vs.forEach(function(r){wfsOf(r).forEach(function(w){o[w]=1;});});return Object.keys(o).length;})();
+    var reco=vs.filter(function(r){return r.industry===S.industry;});if(!reco.length)reco=vs;
+    var recents=S.recent.map(rec).filter(Boolean);
+
+    var h='<div class="page-h"><div class="eyebrow">Welcome back</div><h1>Good to see you, '+esc((role.split(" ")[0]||role))+'.</h1></div>'+
+      '<div class="page-sub">Here’s what other teams actually did with AI — verified, graded and ready to inform your next decision.</div>'+
+      '<div class="kpis">'+
+        kpi("library","Verified records",vs.length,"firsthand, human-scrubbed")+
+        kpi("bench","Avg. evidence grade",avg,"across the corpus")+
+        kpi("compare","CS workflows",wfs,"covered so far")+
+        kpi("collections","Companies",cos,"named operators")+
+      '</div>'+
+      '<div class="wrap-h"><h2>Recommended for you</h2><span class="lnk" data-nav="library">Browse all →</span></div>'+
+      '<div class="rgrid">'+reco.slice(0,2).map(rcard).join("")+'</div>';
+
+    if(recents.length){
+      h+='<div class="wrap-h"><h2>Recently viewed</h2></div><div class="rgrid">'+recents.slice(0,2).map(rcard).join("")+'</div>';
+    }
+    // coverage
+    var wfAll=["Tier-1 deflection","Agent-assist","Disputes & transactions"];
+    var wfc=function(w){return vs.filter(function(r){return wfsOf(r).indexOf(w)>=0;}).length;};
+    h+='<div class="wrap-h"><h2>Coverage by workflow</h2><span class="muted">verified records</span></div><div class="card" style="padding:18px 20px">';
+    var maxc=Math.max.apply(null,wfAll.map(wfc).concat([1]));
+    wfAll.forEach(function(w){var c=wfc(w);
+      h+='<div class="bar-row"><div class="bl">'+w+'</div><div class="bar-track"><div class="bar-fill" style="width:'+(c?Math.max(12,c/maxc*100):3)+'%">'+(c||"0")+'</div></div></div>';
+    });
+    h+='<div class="muted" style="margin-top:6px">A record can span more than one workflow — e.g. Chime covers deflection and disputes.</div></div>';
+    return h;
+  }
+  function kpi(ic,lab,val,sub){return '<div class="card kpi"><div class="lab">'+svg(ic)+lab+'</div><div class="val">'+val+'</div><div class="sub">'+sub+'</div></div>';}
+
+  /* ---------------- VIEW: LIBRARY ---------------- */
+  function filtered(){
+    var arr=RECORDS.filter(function(r){
+      if(S.verifiedOnly && r.status!=="verified")return false;
+      if(S.company && r.company!==S.company)return false;
+      if(S.workflow && wfsOf(r).indexOf(S.workflow)<0)return false;
+      if(S.grade && r.grade!==S.grade)return false;
+      if(S.q){var b=(r.company+" "+r.workflow+" "+(r.models||[]).join(" ")+" "+(r.title||"")+" "+r.tldr+" "+(r.speaker||"")).toLowerCase();if(b.indexOf(S.q.toLowerCase())<0)return false;}
+      return true;
+    });
+    var ord={A:4,B:3,C:2,D:1,"—":0};
+    if(S.sort==="grade")arr.sort(function(a,b){return (ord[b.grade]||0)-(ord[a.grade]||0);});
+    else if(S.sort==="company")arr.sort(function(a,b){return a.company.localeCompare(b.company);});
+    else arr.sort(function(a,b){return (b.status==="verified")-(a.status==="verified");});
+    return arr;
+  }
+  function vLibrary(){
+    var companies=uniq(RECORDS.map(function(r){return r.company;}));
+    var wfs=uniq([].concat.apply([],RECORDS.map(wfsOf)));
+    var recs=filtered();
+    var h='<div class="page-h"><h1>Library</h1></div><div class="page-sub">Every verified deployment record, filterable by company, workflow, models and evidence grade.</div>';
+    h+='<div class="fbar">'+
+      '<select class="selct" data-sort><option value="relevance"'+(S.sort==="relevance"?" selected":"")+'>Sort: Relevance</option><option value="grade"'+(S.sort==="grade"?" selected":"")+'>Sort: Evidence grade</option><option value="company"'+(S.sort==="company"?" selected":"")+'>Sort: Company</option></select>'+
+      '<button class="fchip'+(S.verifiedOnly?" on":"")+'" data-vonly>'+(S.verifiedOnly?"✓ ":"")+'Verified only</button>'+
+      '<div class="chips">'+wfs.map(function(w){return '<button class="fchip'+(S.workflow===w?" on":"")+'" data-f="workflow" data-v="'+esc(w)+'">'+esc(w)+'</button>';}).join("")+'</div>'+
+      (S.company||S.workflow||S.grade||S.q?'<button class="fchip" data-clear>Clear</button>':'')+
+      '</div>';
+    h+='<div class="muted" style="margin-bottom:12px">'+recs.length+' record'+(recs.length!==1?"s":"")+'</div>';
+    h+=recs.length?'<div class="rgrid">'+recs.map(rcard).join("")+'</div>':'<div class="empty"><span class="eic">'+svg('library')+'</span><div>No records match these filters.</div></div>';
+    return h;
+  }
+  function uniq(a){var o={};a.forEach(function(x){o[x]=1;});return Object.keys(o);}
+
+  /* ---------------- VIEW: RECORD DETAIL ---------------- */
+  function vDetail(r){
+    if(r.hold)return vHold(r);
+    var mt=(r.models||[]).map(function(m){return '<span class="tag mdl">'+esc(m)+'</span>';}).join("");
+    var mets=(r.metrics||[]).map(function(m){return '<div><b>'+esc(m.v)+'</b><span>'+esc(m.l)+'</span></div>';}).join("");
+    var evs=(r.evidence||[]).map(function(e){return '<div class="quote">“'+esc(e.q)+'”<cite>'+esc(e.c)+'</cite></div>';}).join("");
+    var related=verified().filter(function(x){return x.id!==r.id && (x.workflow===r.workflow||x.industry===r.industry);}).slice(0,3);
+    var note=S.notes[r.id]||"";
+    var sv=isSaved(r.id),cp=inCompare(r.id);
+    var trLabel,trBody;
+    if(r.transcript&&r.transcript.length){
+      trLabel="Source transcript — excerpt";
+      trBody='<div class="tr-panel">'+r.transcript.map(function(l){return '<div class="tr-line"><span class="tr-ts">'+esc(l.ts)+'</span><div><span class="tr-sp">'+esc(l.sp)+':</span> '+esc(l.t)+'</div></div>';}).join("")+'</div>';
+    } else if(r.excerpts&&r.excerpts.length){
+      trLabel="Source excerpts — first-party";
+      trBody='<div class="tr-panel">'+r.excerpts.map(function(l){return '<div class="tr-line"><div><span class="tr-sp">'+esc(l.sp)+':</span> “'+esc(l.t)+'”</div></div>';}).join("")+'</div>';
+    } else {
+      trLabel="Source transcript — excerpt";
+      trBody='<p style="font-style:italic;color:var(--ink-3)">Transcript excerpt not yet captured for this record — read the verified quotes above, and open the original source below.</p>';
+    }
+    var trHtml='<div class="card sec"><h3>'+trLabel+'</h3>'+trBody+
+      '<div class="tr-foot">'+(r.watch?'<a class="btn sm" href="'+esc(r.watch)+'" target="_blank" rel="noopener">'+svg('ext')+'Watch / read the original</a>':'')+
+      '<span class="tr-rights">Short excerpt for research &amp; commentary — attributed and linked to source. FieldNote never hosts the media.</span></div></div>';
+
+    var left='<div class="dhead"><div class="logo-sq">'+initials(r.company)+'</div><div>'+
+        '<h2 class="dtitle">'+esc(r.title||r.company)+'</h2><div class="muted">'+esc(r.speaker)+'</div></div></div>'+
+      '<div class="dmeta"><span class="grade '+gcls(r.grade)+'">'+r.grade+'</span>'+badge(r)+wfsOf(r).map(function(w){return '<span class="tag">'+esc(w)+'</span>';}).join("")+mt+'<span class="muted">'+esc(r.fresh)+'</span></div>'+
+      (S.role?'<div class="fitcard"><div class="k">Why this matters to you</div><p>You’re '+esc(S.role)+' in '+esc(S.industry)+'. '+(r.industry===S.industry?'This is a '+esc(r.industry.toLowerCase())+' peer — directly comparable.':esc(r.company)+' is '+esc(r.industry.toLowerCase())+', so treat specifics as directional — but the lesson transfers.')+' '+esc(r.fit||"")+'</p></div>':'')+
+      '<div class="card sec"><h3>Summary</h3><div class="fld"><p style="font-size:15px;color:var(--ink)">'+esc(r.tldr)+'</p></div></div>'+
+      '<div class="card sec"><h3>Decision card</h3>'+
+        fld("Problem",r.problem)+fld("Solution & models",r.solution)+fld("Architecture",r.architecture)+fld("Deployment",r.deployment)+
+        '<div class="fld"><div class="l">Outcomes</div>'+(mets?'<div class="mtx">'+mets+'</div>':'<p style="font-style:italic;color:var(--ink-3)">Not disclosed in the firsthand sources — recorded as not_disclosed.</p>')+
+          (r.conflict?'<div class="flagbar"><b>Metric conflict caught:</b> '+esc(r.conflict)+'</div>':'')+'</div>'+
+        fld("Boundaries & caveats",r.boundaries)+'</div>'+
+      '<div class="card sec"><h3>Evidence — quotes & sources</h3>'+evs+
+        '<div class="fld"><div class="l">Sources</div><p>'+r.sources.map(function(s){return "▸ "+esc(s);}).join("<br>")+'</p></div>'+
+        '<div class="fld"><div class="l">Grade rationale — '+r.grade+'</div><p>Graded on source strength, baseline presence and metric hygiene. First-party/firsthand disclosures with numbers land around B; directional claims without measured outcomes land at C. Company-reported figures never reach A without an independent control.</p></div></div>'+trHtml;
+
+    var right='<div class="side-panel">'+
+      '<div class="card sp-card"><h4>Actions</h4><div class="actgrid">'+
+        '<button class="btn '+(sv?"on":"")+'" data-save="'+r.id+'">'+svg('bookmark',sv?0:2)+(sv?"Saved":"Save to collections")+'</button>'+
+        '<button class="btn '+(cp?"on":"")+'" data-cmp="'+r.id+'">'+svg('compare')+(cp?"In compare":"Add to compare")+'</button>'+
+        '<button class="btn" data-print>'+svg('print')+'Export / print</button>'+
+      '</div></div>'+
+      '<div class="card sp-card"><h4>Your notes</h4><textarea class="noteta" data-note="'+r.id+'" placeholder="Jot a note for your team… (saved locally)">'+esc(note)+'</textarea></div>'+
+      (related.length?'<div class="card sp-card"><h4>Related records</h4><div class="rel">'+related.map(function(x){return '<a data-open="'+x.id+'"><span class="logo-sq" style="width:26px;height:26px;font-size:10px">'+initials(x.company)+'</span><span style="flex:1"><span class="rl-co">'+esc(x.company)+'</span><br><span class="rl-wf">'+esc(x.workflow)+'</span></span><span class="grade '+gcls(x.grade)+'">'+x.grade+'</span></a>';}).join("")+'</div></div>':'')+
+      '</div>';
+
+    return '<div class="crumb"><a data-nav="library">Library</a> <span style="opacity:.4;margin:0 7px">›</span> '+esc(r.company)+'</div>'+
+      '<div class="dwrap"><div>'+left+'</div>'+right+'</div>';
+  }
+  function fld(l,v){return '<div class="fld"><div class="l">'+l+'</div><p>'+esc(v)+'</p></div>';}
+  function vHold(r){
+    return '<div class="crumb"><a data-nav="library">Library</a> <span style="opacity:.4;margin:0 7px">›</span> '+esc(r.company)+'</div>'+
+      '<div style="max-width:760px"><div class="dhead"><div class="logo-sq">'+initials(r.company)+'</div><div><h2 class="dtitle">'+esc(r.title)+'</h2><div class="muted">'+esc(r.speaker)+'</div></div></div>'+
+      '<div class="dmeta"><span class="grade gD">D</span><span class="badge b-hold">HOLD — not published</span><span class="tag">'+esc(r.workflow)+'</span></div>'+
+      '<div class="card sec" style="border-color:var(--crit);"><h3 style="color:var(--crit)">Held by the SCRUB</h3><div class="fld"><p>'+esc(r.whyd)+'</p></div>'+
+        '<div class="fld"><div class="l">Reported claim (secondary)</div><div class="quote">“'+esc(r.claim)+'”<cite>'+esc(r.claimcite)+'</cite></div></div>'+
+        '<div class="fld"><div class="l">Sources</div><p>'+r.sources.map(function(s){return "▸ "+esc(s);}).join("<br>")+'</p></div></div></div>';
+  }
+
+  /* ---------------- VIEW: COMPARE ---------------- */
+  function vCompare(){
+    var recs=S.compare.map(rec).filter(Boolean);
+    var h='<div class="page-h"><h1>Compare</h1></div><div class="page-sub">Put deployments side by side to inform a decision. Add up to three from any record.</div>';
+    if(!recs.length)return h+'<div class="card empty"><span class="eic">'+svg('compare')+'</span><div>No records in compare yet.</div><div class="muted" style="margin-top:8px">Open a record and click <b>Add to compare</b>, or use the compare icon on any card.</div><button class="btn pri" style="margin-top:16px" data-nav="library">Browse the library</button></div>';
+    var rows=[
+      ["Evidence grade",function(r){return '<span class="grade '+gcls(r.grade)+'">'+r.grade+'</span>';}],
+      ["Workflow",function(r){return esc(r.workflow);}],
+      ["Speaker",function(r){return esc(r.speaker);}],
+      ["Models",function(r){return (r.models&&r.models.length)?r.models.map(esc).join(", "):"not disclosed";}],
+      ["Problem",function(r){return esc(r.problem||"—");}],
+      ["Solution",function(r){return esc(r.solution||"—");}],
+      ["Outcomes",function(r){return (r.metrics&&r.metrics.length)?'<div class="mtx" style="grid-template-columns:1fr">'+r.metrics.slice(0,4).map(function(m){return '<div><b style="font-size:1rem">'+esc(m.v)+'</b><span>'+esc(m.l)+'</span></div>';}).join("")+'</div>':'<span style="font-style:italic;color:var(--ink-3)">not_disclosed</span>';}],
+      ["Boundaries",function(r){return esc(r.boundaries||"—");}],
+      ["Source date",function(r){return esc(r.fresh);}]
+    ];
+    var t='<div class="cmpwrap"><table class="cmp"><thead><tr><th class="rl"></th>'+recs.map(function(r){return '<th><div class="row"><div class="logo-sq" style="width:28px;height:28px;font-size:11px">'+initials(r.company)+'</div><span class="cmp-co">'+esc(r.company)+'</span></div><div style="margin-top:8px"><button class="btn sm" data-cmp="'+r.id+'">'+svg('x')+'Remove</button> <button class="btn sm" data-open="'+r.id+'">Open</button></div></th>';}).join("")+'</tr></thead><tbody>';
+    rows.forEach(function(row){t+='<tr><td class="rl">'+row[0]+'</td>'+recs.map(function(r){return '<td>'+row[1](r)+'</td>';}).join("")+'</tr>';});
+    t+='</tbody></table></div>';
+    return h+t;
+  }
+
+  /* ---------------- VIEW: COLLECTIONS ---------------- */
+  function vCollections(){
+    var recs=S.saved.map(rec).filter(Boolean);
+    var h='<div class="page-h"><h1>Collections</h1></div><div class="page-sub">Your saved records — a shortlist you can return to, compare and export. Saved on this device.</div>';
+    if(!recs.length)return h+'<div class="card empty"><span class="eic">'+svg('collections')+'</span><div>Nothing saved yet.</div><div class="muted" style="margin-top:8px">Click the bookmark on any record to build your shortlist.</div><button class="btn pri" style="margin-top:16px" data-nav="library">Browse the library</button></div>';
+    return h+'<div class="rgrid">'+recs.map(rcard).join("")+'</div>';
+  }
+
+  /* ---------------- VIEW: BENCHMARKS ---------------- */
+  function vBenchmarks(){
+    var vs=verified();
+    var gc={A:0,B:0,C:0,D:0};vs.forEach(function(r){if(gc[r.grade]!==undefined)gc[r.grade]++;});
+    var maxg=Math.max(1,gc.A,gc.B,gc.C,gc.D);
+    var h='<div class="page-h"><h1>Benchmarks</h1></div><div class="page-sub">Patterns across the verified corpus. Indicative only — a small, honest sample, never averaged across incompatible metrics.</div>';
+    h+='<div class="wrap-h"><h2>Evidence-grade distribution</h2></div><div class="card" style="padding:18px 20px">';
+    ["A","B","C","D"].forEach(function(g){h+='<div class="bar-row"><div class="bl">Grade '+g+'</div><div class="bar-track"><div class="bar-fill '+gcls(g)+'f" style="width:'+(gc[g]?Math.max(10,gc[g]/maxg*100):2)+'%">'+gc[g]+'</div></div></div>';});
+    h+='<div class="muted" style="margin-top:6px">Most firsthand records land at B/C — real numbers, rarely an independent control. That honesty is the point.</div></div>';
+    // outcome highlights
+    var hl=[
+      {co:"Chime",m:"~66%",l:"voicebot resolution, up from <20%"},
+      {co:"Chime",m:"−50%",l:"dispute handling time (42→<20 min)"},
+      {co:"Klarna",m:"~2/3",l:"chats contained in month one"},
+      {co:"Klarna",m:"25%",l:"drop in repeat inquiries"}
+    ];
+    h+='<div class="wrap-h"><h2>Outcome highlights</h2><span class="muted">from verified records</span></div><div class="rgrid">'+hl.map(function(x){return '<div class="card" style="padding:16px 18px;display:flex;align-items:center;gap:14px"><div class="mtx" style="border:none;background:none;padding:0"><div style="background:none;padding:0"><b style="font-size:1.7rem;color:var(--brand-ink)">'+x.m+'</b></div></div><div><div style="font-weight:600">'+x.co+'</div><div class="muted">'+x.l+'</div></div></div>';}).join("")+'</div>';
+    h+='<div class="card" style="padding:16px 18px;margin-top:14px"><div class="row" style="gap:10px;color:var(--ink-2);font-size:13px">'+svg('spark')+'<span><b style="color:var(--ink)">Metric hygiene note:</b> deflection ≠ resolution ≠ containment. FieldNote never blends these into a single benchmark number — each figure keeps its definition and its source.</span></div></div>';
+    return h;
+  }
+
+  /* ---------------- VIEW: CHAT ---------------- */
+  var STOP={what:1,did:1,do:1,does:1,done:1,for:1,the:1,and:1,are:1,was:1,were:1,how:1,they:1,them:1,their:1,its:1,you:1,your:1,our:1,that:1,this:1,use:1,used:1,using:1,get:1,got:1,about:1,tell:1,with:1,from:1,into:1,any:1,all:1,can:1,could:1,would:1,should:1,have:1,has:1,had:1,who:1,when:1,where:1,which:1,there:1,were:1};
+  var CSVOCAB={customer:1,customers:1,support:1,service:1,cx:1,chat:1,chats:1,deflection:1,deflect:1,agent:1,agents:1,assist:1,assistant:1,automation:1,automate:1,automated:1,ai:1,bot:1,chatbot:1,voicebot:1,llm:1,roi:1,"return":1,results:1,result:1,outcome:1,outcomes:1,cost:1,costs:1,save:1,savings:1,saved:1,profit:1,model:1,models:1,openai:1,anthropic:1,mistral:1,rag:1,deploy:1,deployment:1,deployed:1,build:1,built:1,architecture:1,resolution:1,resolve:1,csat:1,ticket:1,tickets:1,quality:1,risk:1,risks:1,challenge:1,challenges:1,fail:1,failed:1,failure:1,wrong:1,walk:1,contain:1,containment:1,dispute:1};
+  function wordsOf(s){var o={};(s||"").toLowerCase().split(/[^a-z0-9]+/).forEach(function(w){if(w)o[w]=1;});return o;}
+  function answer(qq){
+    var ql=qq.toLowerCase();var terms=ql.split(/[^a-z0-9]+/).filter(function(t){return t.length>2&&!STOP[t];});
+    var scored=verified().map(function(r){var rw=wordsOf(r.company+" "+r.workflow+" "+(r.models||[]).join(" ")+" "+(r.speaker||""));var s=0;terms.forEach(function(t){if(rw[t]||CSVOCAB[t])s++;});return {r:r,s:s};}).sort(function(a,b){return b.s-a.s;});
+    var top=scored[0];
+    if(!top||top.s===0){
+      var cand=RECORDS.filter(function(r){return r.status==="candidate";}).some(function(r){return ql.indexOf(r.company.toLowerCase())>=0;});
+      if(cand)return {t:"I have a <b>candidate</b> record for that company, but it hasn’t passed verification yet, so I can’t answer from it. Grounded answers come only from verified records.",cites:[{t:"no verified source",warn:true}]};
+      return {t:"That isn’t in the verified library yet. I only answer from scrubbed, verified records — I won’t guess. Try <b>Klarna</b>, <b>Chime</b> or <b>Nubank</b>.",cites:[{t:"not in corpus",warn:true}]};
+    }
+    var r=top.r,body="";
+    if(/roi|result|outcome|number|metric|save|saving|impact|profit|dispute|resolution/.test(ql)) body="For <b>"+r.company+"</b>: "+((r.metrics&&r.metrics.length)?r.metrics.slice(0,4).map(function(m){return m.v+" "+m.l;}).join("; "):"no outcome figures were disclosed in the firsthand sources")+"."+(r.conflict?" ⚠️ "+esc(r.conflict):"");
+    else if(/model|tech|architect|build|rag|how/.test(ql)) body="<b>"+r.company+"</b> — "+esc(r.solution);
+    else if(/risk|challenge|wrong|fail|caveat|boundary|quality|problem/.test(ql)) body="The honest boundary for <b>"+r.company+"</b>: "+esc(r.boundaries);
+    else body=esc(r.tldr);
+    return {t:body,cites:[{t:r.id+" · "+r.company+" ("+r.grade+")",id:r.id}]};
+  }
+  function vChat(){
+    var log=S.chat.map(function(m){
+      if(m.role==="u")return '<div class="msg u">'+esc(m.text)+'</div>';
+      var c=(m.cites||[]).map(function(x){return '<span class="cite'+(x.warn?" warn":"")+'"'+(x.id?' data-open="'+x.id+'"':"")+'>'+esc(x.t)+'</span>';}).join("");
+      return '<div class="msg a"><div class="who">'+svg('spark')+'FieldNote · grounded</div><div class="bub">'+m.text+(c?'<div class="cites">'+c+'</div>':'')+'</div></div>';
+    }).join("");
+    if(!S.chat.length)log='<div class="msg a"><div class="who">'+svg('spark')+'FieldNote · grounded</div><div class="bub">Hi — I answer <b>only from verified records</b> and cite them. Ask me about a deployment; if it’s not in the library, I’ll say so rather than guess.</div></div>';
+    var sugg=["What did Klarna do for customer support?","What were Chime’s results?","What models did Nubank use?","What are the risks or caveats?"];
+    return '<div class="chatwrap"><div class="chatlog" id="chatlog">'+log+'</div>'+
+      '<div class="suggest">'+sugg.map(function(s){return '<button data-ask="'+esc(s)+'">'+esc(s)+'</button>';}).join("")+'</div>'+
+      '<div class="chatin"><input id="cin" placeholder="Ask about a deployment…"><button id="csend">'+svg('send')+'</button></div>'+
+      '<div class="disc">Grounded, deterministic retrieval over verified records — a faithful stand-in for the server-side RAG assistant. Never invents; out-of-corpus questions are refused; costs you no tokens.</div></div>';
+  }
+
+  /* ---------------- VIEW: METHODOLOGY ---------------- */
+  function vMethod(){
+    return '<div class="page-h"><h1>Methodology</h1></div><div class="page-sub">How a record earns its place — and why you can trust what you read.</div>'+
+      '<div class="card sec"><h3>The firsthand rule</h3><div class="fld"><p>A record exists only if a <b>named person from a named company</b> describes <b>their own</b> deployment in their <b>own public words</b> — a talk, interview, podcast, or the company’s own writing. Test: “would that person recognise this as their own public statement?” Vendor case studies, press articles and analyst reports are out.</p></div></div>'+
+      '<div class="card sec"><h3>Evidence grades</h3>'+
+        gline("A","gA","Independent / production evidence with a baseline")+
+        gline("B","gB","Named first-party disclosure with numbers, partial baseline")+
+        gline("C","gC","Directional claim, no baseline or single-source")+
+        gline("D","gD","Announcement, aspirational, or later walked back")+
+        '<div class="fld"><p style="font-size:12.5px;color:var(--ink-3)">Metric hygiene is enforced: deflection ≠ resolution ≠ containment ≠ handle-rate.</p></div></div>'+
+      '<div class="card sec"><h3>The SCRUB</h3><div class="fld"><p>Before publishing, a human confirms every quote against the source, logs its timestamp, checks the metric definitions, and assigns the grade. No number, model or claim appears without a verbatim quote — anything unstated is shown as <b>not_disclosed</b>. Nothing reaches the library unverified.</p></div></div>'+
+      '<div class="card sec"><h3>Rights</h3><div class="fld"><p>Short excerpts, always attributed and linked to the source with a timestamp; we never host or republish the media. Transformative research and commentary.</p></div></div>';
+  }
+  function gline(g,c,t){return '<div class="fld" style="display:flex;gap:12px;align-items:flex-start"><span class="grade '+c+'">'+g+'</span><p style="flex:1">'+t+'</p></div>';}
+
+  /* ---------------- ROUTER ---------------- */
+  function render(){
+    renderNav();
+    var h="";
+    if(S.view==="dashboard")h=vDashboard();
+    else if(S.view==="library")h=S.open?vDetail(rec(S.open)):vLibrary();
+    else if(S.view==="compare")h=vCompare();
+    else if(S.view==="collections")h=vCollections();
+    else if(S.view==="benchmarks")h=vBenchmarks();
+    else if(S.view==="chat")h=vChat();
+    else if(S.view==="method")h=vMethod();
+    view.innerHTML=h;
+    bind();
+    var cl=document.getElementById("chatlog");if(cl)cl.scrollTop=cl.scrollHeight;
+  }
+  function go(v){S.view=v;S.open=null;persist();window.scrollTo(0,0);document.body.classList.remove("nav-open");render();}
+  function openRec(id){S.view="library";S.open=id;pushRecent(id);persist();window.scrollTo(0,0);render();}
+
+  function bind(){
+    view.querySelectorAll("[data-open]").forEach(function(el){el.onclick=function(e){if(e.target.closest("[data-save],[data-cmp]"))return;openRec(el.getAttribute("data-open"));};});
+    view.querySelectorAll("[data-nav]").forEach(function(el){el.onclick=function(){go(el.getAttribute("data-nav"));};});
+    view.querySelectorAll("[data-save]").forEach(function(el){el.onclick=function(e){e.stopPropagation();toggleSave(el.getAttribute("data-save"));};});
+    view.querySelectorAll("[data-cmp]").forEach(function(el){el.onclick=function(e){e.stopPropagation();toggleCompare(el.getAttribute("data-cmp"));};});
+    view.querySelectorAll("[data-f]").forEach(function(el){el.onclick=function(){var f=el.getAttribute("data-f"),v=el.getAttribute("data-v");S[f]=S[f]===v?"":v;render();};});
+    var vo=view.querySelector("[data-vonly]");if(vo)vo.onclick=function(){S.verifiedOnly=!S.verifiedOnly;render();};
+    var so=view.querySelector("[data-sort]");if(so)so.onchange=function(){S.sort=so.value;render();};
+    var cl=view.querySelector("[data-clear]");if(cl)cl.onclick=function(){S.company=S.workflow=S.grade=S.q="";S.verifiedOnly=false;document.getElementById("gsearch").value="";render();};
+    var pr=view.querySelector("[data-print]");if(pr)pr.onclick=function(){window.print();};
+    view.querySelectorAll("[data-note]").forEach(function(el){el.oninput=function(){S.notes[el.getAttribute("data-note")]=el.value;persist();};});
+    // chat
+    var ci=view.querySelector("#cin"),cs=view.querySelector("#csend");
+    function ask(t){if(!t.trim())return;S.chat.push({role:"u",text:t});var a=answer(t);S.chat.push({role:"a",text:a.t,cites:a.cites});render();}
+    if(cs)cs.onclick=function(){ask(ci.value);};
+    if(ci)ci.onkeydown=function(e){if(e.key==="Enter")ask(ci.value);};
+    view.querySelectorAll("[data-ask]").forEach(function(el){el.onclick=function(){ask(el.getAttribute("data-ask"));};});
+  }
+
+  /* ---------------- ROLE MODAL ---------------- */
+  function roleModal(force){
+    var roles=["Head of CX","VP Customer Support","Support Operations Lead","Director of Customer Service","Founder / CEO"];
+    var inds=["Fintech","Retail / commerce","SaaS / tech","Consumer app","Telecom","Other"];
+    var m=document.createElement("div");m.className="modal";
+    m.innerHTML='<div class="mbox"><div class="logo">'+svg('spark')+'</div><h3>Welcome to FieldNote</h3><p>Pick a role so the workspace can tell you why each deployment matters to you. That’s the whole profile — no onboarding call.</p>'+
+      '<label>Your role</label><select id="mR">'+roles.map(function(r){return '<option '+(S.role===r?"selected":"")+'>'+r+'</option>';}).join("")+'</select>'+
+      '<label>Your industry</label><select id="mI">'+inds.map(function(i){return '<option '+(S.industry===i?"selected":"")+'>'+i+'</option>';}).join("")+'</select>'+
+      '<button class="go" id="mG">Enter workspace</button></div>';
+    document.body.appendChild(m);
+    m.querySelector("#mG").onclick=function(){S.role=m.querySelector("#mR").value;S.industry=m.querySelector("#mI").value;LS.setItem("fn_role",S.role);LS.setItem("fn_industry",S.industry);document.body.removeChild(m);render();};
+    if(force)m.onclick=function(e){if(e.target===m)document.body.removeChild(m);};
+  }
+
+  /* ---------------- TOP-LEVEL CONTROLS ---------------- */
+  document.getElementById("app").style.display="grid";
+  document.getElementById("hamb").onclick=function(){document.body.classList.toggle("nav-open");};
+  document.getElementById("themeBtn").onclick=function(){var c=document.documentElement.getAttribute("data-theme");document.documentElement.setAttribute("data-theme",c==="dark"?"light":"dark");};
+  document.getElementById("cmpBtn").onclick=function(){go("compare");};
+  document.getElementById("userBtn").onclick=function(){roleModal(true);};
+  var gs=document.getElementById("gsearch");
+  gs.oninput=function(){S.q=gs.value;if(S.view!=="library"||S.open){S.view="library";S.open=null;}render();gs.focus();};
+  // sidebar nav clicks (delegated since re-rendered)
+  document.getElementById("nav").addEventListener("click",function(e){var b=e.target.closest("[data-nav]");if(b)go(b.getAttribute("data-nav"));});
+
+  // boot
+  if(!S.role)roleModal(false); else render();
+  render();
+})();
+</script>
+</body>
+</html>

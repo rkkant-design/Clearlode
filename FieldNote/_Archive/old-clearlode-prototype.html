@@ -1,0 +1,683 @@
+<title>Clearlode Portal</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  :root{
+    --paper:#F6F7F9;--surface:#FFFFFF;--surface-2:#EEF1F5;--ink:#14181F;--ink-2:#434B57;--ink-3:#6B7482;
+    --line:#DCE1E8;--line-2:#C9D0DA;--slate:#2C4A6E;--slate-soft:#E4EAF1;--signal:#B0761A;--signal-soft:#F6ECD8;
+    --good:#2E6E4E;--good-soft:#DDEEE4;--warn:#9A6410;--warn-soft:#F5E8D2;--crit:#9A3838;--crit-soft:#F2DDDD;
+    --mute:#5C6470;--mute-soft:#E6E9EE;
+    --shadow:0 1px 2px rgba(20,24,31,.05),0 8px 24px -12px rgba(20,24,31,.14);
+    --display:'Newsreader',Georgia,serif;--body:'IBM Plex Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace;
+  }
+  :root:not([data-theme="light"]){@media (prefers-color-scheme:dark){
+    --paper:#0F1216;--surface:#171B21;--surface-2:#1E242C;--ink:#EAEEF3;--ink-2:#B4BDC9;--ink-3:#838E9C;
+    --line:#2A313A;--line-2:#38414C;--slate:#8FB2D6;--slate-soft:#1C2A3A;--signal:#E0A94A;--signal-soft:#2E2513;
+    --good:#6FC095;--good-soft:#16281E;--warn:#DDA043;--warn-soft:#2C2411;--crit:#E28B8B;--crit-soft:#2E1919;
+    --mute:#9AA4B1;--mute-soft:#22272F;--shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px -14px rgba(0,0,0,.7);
+  }}
+  :root[data-theme="dark"]{
+    --paper:#0F1216;--surface:#171B21;--surface-2:#1E242C;--ink:#EAEEF3;--ink-2:#B4BDC9;--ink-3:#838E9C;
+    --line:#2A313A;--line-2:#38414C;--slate:#8FB2D6;--slate-soft:#1C2A3A;--signal:#E0A94A;--signal-soft:#2E2513;
+    --good:#6FC095;--good-soft:#16281E;--warn:#DDA043;--warn-soft:#2C2411;--crit:#E28B8B;--crit-soft:#2E1919;
+    --mute:#9AA4B1;--mute-soft:#22272F;--shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px -14px rgba(0,0,0,.7);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;}
+  body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;}
+  button{font-family:inherit;cursor:pointer;}
+  em{font-style:italic;}
+
+  header.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:color-mix(in srgb,var(--paper) 90%,transparent);backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line);}
+  .bar-inner{max-width:1000px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .bar-mark{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);white-space:nowrap;}
+  .bar-mark span{color:var(--signal);}
+  .badge{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--signal);border:1px solid var(--signal);border-radius:100px;padding:2px 8px;}
+  .tabs{margin-left:auto;display:flex;gap:3px;background:var(--surface-2);border:1px solid var(--line);border-radius:100px;padding:3px;}
+  .tab{border:none;background:transparent;color:var(--ink-3);font-size:12px;font-weight:500;padding:5px 12px;border-radius:100px;white-space:nowrap;}
+  .tab.active{background:var(--surface);color:var(--ink);box-shadow:var(--shadow);}
+  .link{background:none;border:none;color:var(--ink-3);font-size:12.5px;text-decoration:underline;padding:6px;}
+
+  main{max-width:1000px;margin:0 auto;padding:20px;}
+
+  /* company context */
+  .org{display:flex;align-items:center;gap:13px;flex-wrap:wrap;padding:14px 16px;background:var(--slate-soft);border:1px solid var(--line);border-radius:12px;margin-bottom:14px;}
+  .org .av{width:38px;height:38px;border-radius:9px;background:var(--slate);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:1.1rem;}
+  .org .nm{font-weight:600;color:var(--ink);}
+  .org .meta{font-family:var(--mono);font-size:11px;color:var(--slate);}
+  .spacer{margin-left:auto;}
+  .bar-sub{font-family:var(--mono);font-size:11px;color:var(--slate);}
+
+  /* the noise -> signal funnel (the engine, made visible) */
+  .scan{display:flex;align-items:stretch;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:16px;background:var(--surface);}
+  .scan .sg{flex:1;padding:13px 16px;position:relative;}
+  .scan .sg + .sg{border-left:1px solid var(--line);}
+  .scan .sg b{font-family:var(--display);font-size:1.5rem;line-height:1;display:block;font-variant-numeric:tabular-nums;}
+  .scan .sg span{font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:var(--ink-3);display:block;margin-top:6px;line-height:1.35;}
+  .scan .sg.final{background:var(--signal-soft);}
+  .scan .sg.final b{color:var(--signal);}
+  .scan .sg.final span{color:var(--signal);}
+  @media (max-width:560px){.scan{flex-direction:column;}.scan .sg + .sg{border-left:none;border-top:1px solid var(--line);}}
+
+  /* priority group */
+  .prio{margin-bottom:22px;}
+  .prio-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid var(--line);}
+  .prio-h .pn{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--signal);}
+  .prio-h .pl{font-family:var(--display);font-size:1.2rem;color:var(--ink);font-weight:500;}
+  .prio-h .cnt{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-left:auto;}
+
+  /* stats mini */
+  .mini3{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+  .m3{flex:1;min-width:120px;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:10px 13px;}
+  .m3 b{font-family:var(--display);font-size:1.3rem;display:block;line-height:1;}
+  .m3 span{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);display:block;margin-top:6px;}
+  .m3.rev b{color:var(--signal);}
+
+  /* card */
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow);margin-bottom:11px;overflow:hidden;}
+  .card.watch{opacity:.92;}
+  .card-top{padding:14px 16px;display:flex;flex-direction:column;gap:9px;cursor:pointer;}
+  .kick{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);}
+  .ct{font-family:var(--display);font-size:1.16rem;font-weight:500;color:var(--ink);line-height:1.18;}
+  .whyyou{background:var(--slate-soft);border-radius:8px;padding:9px 12px;font-size:12.8px;color:var(--ink);line-height:1.4;}
+  .whyyou b{color:var(--slate);}
+  .row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+  .gr{font-family:var(--mono);font-weight:600;font-size:10.5px;padding:2px 7px;border-radius:6px;}
+  .gr.a{background:var(--good-soft);color:var(--good);}.gr.b{background:var(--slate-soft);color:var(--slate);}
+  .gr.c{background:var(--warn-soft);color:var(--warn);}.gr.d{background:var(--mute-soft);color:var(--mute);}
+  .opp{font-family:var(--mono);font-size:10.5px;font-weight:500;padding:2px 9px;border-radius:100px;letter-spacing:.02em;}
+  .opp.high{background:var(--good-soft);color:var(--good);}
+  .opp.medium{background:var(--warn-soft);color:var(--warn);}
+  .opp.watch{background:var(--mute-soft);color:var(--mute);}
+  .impact{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);display:inline-flex;gap:4px;align-items:center;}
+  .impact i{letter-spacing:1px;color:var(--signal);font-style:normal;}
+  .pill{font-family:var(--mono);font-size:10.5px;padding:3px 9px;border-radius:100px;font-weight:500;white-space:nowrap;}
+  .pill.ignore{background:var(--mute-soft);color:var(--mute);}
+  .pill.monitor,.pill.investigate{background:var(--slate-soft);color:var(--slate);}
+  .pill.pilot{background:var(--warn-soft);color:var(--warn);}
+  .pill.adopt{background:var(--good-soft);color:var(--good);}
+  .pill.replace{background:var(--crit-soft);color:var(--crit);}
+  .pill.none{background:var(--surface-2);color:var(--ink-3);border:1px dashed var(--line-2);}
+  .tag{font-family:var(--mono);font-size:10.5px;background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2);padding:1px 7px;border-radius:6px;}
+  .star{border:1px solid var(--line-2);background:var(--surface);color:var(--ink-3);border-radius:8px;padding:4px 9px;font-size:12px;}
+  .star.on{background:var(--signal-soft);border-color:var(--signal);color:var(--signal);}
+  .sig{color:var(--ink-2);font-size:13px;}
+
+  .detail{border-top:1px solid var(--line);display:none;}
+  .card.open .detail{display:block;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);}
+  .fld{background:var(--surface);padding:12px 16px;}
+  .fld.full{grid-column:1/-1;}
+  .fld .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4px;}
+  .fld .v{font-size:13px;color:var(--ink);line-height:1.45;}
+  .meter{display:flex;align-items:center;gap:6px;}.meter i{width:20px;height:5px;border-radius:2px;background:var(--line-2);display:block;}.meter i.on{background:var(--signal);}
+  @media (max-width:560px){.grid{grid-template-columns:1fr;}}
+  .actions{padding:13px 16px;border-top:1px solid var(--line);background:var(--surface-2);display:flex;flex-direction:column;gap:10px;}
+  .arow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .arow .lab{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);}
+  .vbtns{display:flex;gap:4px;flex-wrap:wrap;}
+  .vbtn{border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2);font-size:11px;padding:5px 10px;border-radius:8px;text-transform:capitalize;}
+  .vbtn.sel{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+  .note{width:100%;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);border-radius:8px;padding:8px 10px;font-size:12.5px;font-family:inherit;resize:vertical;min-height:38px;}
+
+  .filters{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
+  .chip{border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2);font-size:12px;padding:5px 11px;border-radius:100px;}
+  .chip.on{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+  .search{flex:1;min-width:150px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);border-radius:9px;padding:7px 11px;font-size:13px;}
+  .flabel{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);}
+  .empty{text-align:center;color:var(--ink-3);font-family:var(--mono);font-size:12px;padding:40px 0;}
+
+  /* THE MOAT: verified outcomes + claim-vs-reality */
+  .edge{border:1px solid var(--signal);background:var(--signal-soft);border-radius:12px;padding:14px 16px;margin-bottom:16px;}
+  .edge-t{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--signal);margin-bottom:9px;}
+  .edge-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:9px;}
+  .edge-chips span{font-size:12px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:100px;padding:4px 11px;}
+  .edge-val{font-size:12.5px;color:var(--ink-2);line-height:1.4;}
+  .edge-val b{color:var(--ink);}
+  .proof{font-family:var(--mono);font-size:10.5px;color:var(--signal);background:var(--signal-soft);border:1px solid var(--signal);border-radius:7px;padding:4px 9px;display:inline-flex;align-items:center;gap:6px;align-self:flex-start;}
+  .fld.moat{background:var(--signal-soft);}
+  .fld.moat .k{color:var(--signal);}
+  .cvr{display:flex;gap:9px;align-items:baseline;flex-wrap:wrap;}
+  .cvr .claim{color:var(--ink-3);text-decoration:line-through;font-size:12.5px;}
+  .cvr .ar{color:var(--signal);font-family:var(--mono);}
+  .cvr .ver{color:var(--ink);font-weight:600;font-size:13px;}
+  .fitnote{font-family:var(--mono);font-size:11px;color:var(--slate);margin-top:7px;}
+
+  /* audience toggle */
+  .atog{display:flex;gap:3px;background:var(--surface-2);border:1px solid var(--line);border-radius:100px;padding:3px;}
+  .ab{border:none;background:transparent;color:var(--ink-3);font-size:11px;font-weight:500;padding:5px 11px;border-radius:100px;white-space:nowrap;}
+  .ab.active{background:var(--signal);color:#fff;}
+  @media (max-width:520px){.atog{order:3;}}
+
+  /* competitive positioning */
+  .comp{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:6px;background:var(--surface);}
+  .crow{display:grid;grid-template-columns:170px 1fr 1fr;border-top:1px solid var(--line);}
+  .crow:first-child{border-top:none;}
+  .crow .cw{padding:11px 14px;font-weight:600;font-size:13px;background:var(--surface-2);border-right:1px solid var(--line);color:var(--ink);}
+  .crow .cg{padding:11px 14px;font-size:12.5px;color:var(--ink-2);border-right:1px solid var(--line);}
+  .crow .cg:last-child{border-right:none;}
+  .crow.head .cw,.crow.head .cg{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:500;background:var(--surface-2);}
+  .crow.us .cw{background:var(--signal-soft);color:var(--signal);}
+  .crow.us .cg{background:var(--signal-soft);color:var(--ink);font-weight:500;}
+  @media (max-width:600px){.crow{grid-template-columns:1fr;}.crow .cw,.crow .cg{border-right:none;}.crow .cg{border-top:1px solid var(--line);}}
+
+  /* recommendation basis / scorecard */
+  .fld.basis{background:var(--slate-soft);}
+  .fld.basis .k{color:var(--slate);}
+  .sc{display:grid;grid-template-columns:auto 1fr;gap:5px 14px;margin:8px 0 11px;}
+  .sc dt{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);align-self:center;}
+  .sc dd{margin:0;color:var(--ink);font-size:12.5px;display:flex;align-items:center;gap:8px;}
+  .basisrule{font-size:12.8px;color:var(--ink);border-left:2px solid var(--slate);padding-left:11px;line-height:1.45;}
+  .basisrule b{color:var(--slate);}
+  .dlrow{padding:10px 16px;border-top:1px solid var(--line);background:var(--surface);}
+  .dl{border:1px solid var(--slate);background:var(--surface);color:var(--slate);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:500;}
+
+  /* print one use case */
+  @media print{
+    body.printing header.bar,body.printing .org,body.printing .edge,body.printing .scan,body.printing .mini3,body.printing .prio-h,body.printing .foot,body.printing #view-intro,body.printing #view-onboard{display:none !important;}
+    body.printing .card:not(.printtarget){display:none !important;}
+    body.printing .card.printtarget{box-shadow:none;border:1px solid #ccc;}
+    body.printing .card.printtarget .card-top{cursor:default;}
+    body.printing .actions,body.printing .dlrow,body.printing .star{display:none !important;}
+    body.printing .card.printtarget .detail{display:block !important;}
+  }
+
+  /* intro + onboarding */
+  .eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--signal);display:flex;align-items:center;gap:10px;margin:6px 0 16px;}
+  .eyebrow::before{content:"";width:22px;height:1.5px;background:var(--signal);display:inline-block;}
+  .hero h1{font-family:var(--display);font-weight:500;font-size:clamp(2rem,5.5vw,3rem);line-height:1.05;letter-spacing:-.015em;margin:0 0 16px;max-width:17ch;}
+  .hero .lead{font-family:var(--display);font-size:clamp(1.05rem,2.2vw,1.28rem);line-height:1.45;color:var(--ink);max-width:60ch;margin:0 0 26px;}
+  .transform{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center;margin:8px 0 30px;}
+  @media (max-width:600px){.transform{grid-template-columns:1fr;}.transform .arrow{transform:rotate(90deg);}}
+  .raw{background:var(--surface-2);border:1px dashed var(--line-2);border-radius:12px;padding:16px;}
+  .raw .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-bottom:8px;}
+  .raw .h{font-weight:600;color:var(--ink-2);font-size:15px;line-height:1.3;}
+  .raw .m{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);margin-top:10px;line-height:1.4;}
+  .arrow{font-family:var(--mono);color:var(--signal);font-size:22px;justify-self:center;}
+  .mini{background:var(--surface);border:1px solid var(--signal);border-radius:12px;padding:16px;box-shadow:var(--shadow);}
+  .mini .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--signal);margin-bottom:8px;}
+  .mini .h{font-family:var(--display);font-size:1.08rem;color:var(--ink);line-height:1.2;margin-bottom:10px;}
+  .mini .r{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:9px;}
+  .mini .rec{font-size:12.5px;color:var(--ink-2);line-height:1.4;}
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:2px 0 28px;}
+  @media (max-width:600px){.steps{grid-template-columns:1fr;}}
+  .step{border:1px solid var(--line);border-left:3px solid var(--slate);border-radius:11px;background:var(--surface);padding:14px 15px;}
+  .step .n{font-family:var(--mono);font-size:11px;color:var(--signal);}
+  .step h5{margin:4px 0 3px;font-size:13.5px;color:var(--ink);}
+  .step p{margin:0;font-size:12.5px;color:var(--ink-2);}
+  .cta{border:1px solid var(--slate);background:var(--slate);color:#fff;border-radius:10px;padding:11px 20px;font-size:14px;font-weight:500;}
+  .intro-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .obox{border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:18px;margin-top:4px;}
+  .oblk{margin-bottom:16px;}
+  .oblk .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin-bottom:8px;}
+  .opt{border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2);font-size:12.5px;padding:6px 12px;border-radius:100px;margin:0 6px 6px 0;}
+  .opt.on{background:var(--signal-soft);border-color:var(--signal);color:var(--ink);}
+  .opt:disabled{opacity:.4;cursor:not-allowed;}
+
+  /* brief */
+  .brief-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px;}
+  .brief-title{font-family:var(--display);font-size:1.6rem;font-weight:500;}
+  .brief-sub{font-family:var(--mono);font-size:11px;color:var(--ink-3);}
+  .btn{border:1px solid var(--slate);background:var(--slate);color:#fff;border-radius:9px;padding:8px 14px;font-size:12.5px;font-weight:500;}
+  .bgroup{margin-top:18px;}
+  .bgroup h4{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--signal);margin:0 0 8px;display:flex;align-items:center;gap:8px;}
+  .bgroup h4::after{content:"";flex:1;height:1px;background:var(--line);}
+  .bitem{border-left:3px solid var(--line-2);padding:9px 0 9px 14px;margin-bottom:10px;}
+  .bitem .bt{font-weight:600;color:var(--ink);font-size:14px;}
+  .bitem .bm{font-size:12.5px;color:var(--ink-2);margin-top:2px;}
+  .bitem.investigate,.bitem.monitor{border-left-color:var(--slate);}.bitem.pilot{border-left-color:var(--warn);}.bitem.adopt{border-left-color:var(--good);}
+
+  .foot{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);text-align:center;padding:24px 0 8px;line-height:1.6;}
+  @media print{header.bar,.tabs,.filters,.scan,.mini3,.org,.foot{display:none !important;}.btn{display:none;}}
+</style>
+
+<header class="bar">
+  <div class="bar-inner">
+    <div class="bar-mark">CLEARLODE<span>.</span></div>
+    <span class="badge">Prototype</span>
+    <div class="atog"><button class="ab active" id="ab-publisher" onclick="setMode('publisher')">Publisher view</button><button class="ab" id="ab-investor" onclick="setMode('investor')">Investor view</button></div>
+    <div class="tabs" id="navTabs" hidden>
+      <button class="tab active" id="tab-you" onclick="showTab('you')">For you</button>
+      <button class="tab" id="tab-all" onclick="showTab('all')">All signals</button>
+      <button class="tab" id="tab-brief" onclick="showTab('brief')">Brief</button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- INTRO -->
+  <section id="view-intro">
+    <div class="hero">
+      <div class="eyebrow">What Clearlode does</div>
+      <h1 id="introH1">Stop guessing which AI is worth it.</h1>
+      <p class="lead" id="introLead">AI is reshaping ad revenue, yield and subscriptions faster than your team can track — and 95% of AI pilots show no ROI. Clearlode reads every development through <em>your</em> business, checks the hype against what actually happened at other publishers, and hands you the few worth your time.</p>
+      <div class="transform">
+        <div class="raw">
+          <div class="lbl">A newsletter / an AI summary gives you</div>
+          <div class="h">"SSP launches AI floor-price optimization — vendors report 20–30% RPM uplift!"</div>
+          <div class="m">…a repackaged press release. Same for everyone. Impossible to act on safely.</div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="mini">
+          <div class="lbl">Clearlode gives you</div>
+          <div class="h">Answers your priority: "lift yield without more ad-ops headcount"</div>
+          <div class="r"><span class="opp high">Opportunity: High</span><span class="gr c">Evidence C</span><span class="pill investigate">Investigate</span></div>
+          <div class="rec"><span class="cvr"><span class="claim">vendor: +20–30% RPM</span><span class="ar">→</span><span class="ver">verified +7%</span></span><br><strong>Across 34 tracked pilots</strong> — 4 rolled back. Pilot on remnant inventory vs a control first.</div>
+        </div>
+      </div>
+      <div class="steps">
+        <div class="step"><div class="n">01</div><h5>Filter to your business</h5><p>Every development read through your industry, functions and stated problems.</p></div>
+        <div class="step"><div class="n">02</div><h5>Check claim vs. reality</h5><p>Vendor claims graded against verified outcomes from real, tracked pilots.</p></div>
+        <div class="step"><div class="n">03</div><h5>Tell you what to do</h5><p>Rank the opportunity, name the action, show where it worked and where it didn't.</p></div>
+      </div>
+      <div class="edge" style="margin-bottom:26px">
+        <div class="edge-t" id="introEdgeTitle">The moat — why this can't be copied by an AI summary</div>
+        <div class="edge-val" id="introEdgeVal">Anyone can summarize the news. Clearlode's edge is a growing record of <b>what actually happened when companies acted</b> — proprietary outcome data that compounds with every pilot, and that a competitor (or an LLM) simply doesn't have.</div>
+      </div>
+
+      <div style="margin-bottom:26px">
+        <div class="eyebrow" id="compEyebrow">Where else would you get this?</div>
+        <h2 id="compTitle" style="font-family:var(--display);font-weight:500;font-size:clamp(1.5rem,3.5vw,2rem);margin:0 0 12px;">Your alternatives — and why they don't fit.</h2>
+        <p class="lead" id="compIntro" style="font-size:clamp(1rem,2vw,1.15rem);margin-bottom:18px;">To decide on AI today you'd hire Gartner (too slow, too dear), commission a consultant (months), dig through AlphaSense (search, not answers), or trust a newsletter (hype). None tells a publisher your size what to do — and backs it with what actually happened.</p>
+        <div class="comp">
+          <div class="crow head"><div class="cw">Option</div><div class="cg">What it gives you</div><div class="cg">Where it falls short</div></div>
+          <div class="crow"><div class="cw">Gartner / Forrester</div><div class="cg">Deep analyst research &amp; frameworks</div><div class="cg">Slow, generic to your firm, $30–500K/yr</div></div>
+          <div class="crow"><div class="cw">AlphaSense</div><div class="cg">AI search across millions of documents</div><div class="cg">Finds what's <em>said</em> — not what to <em>do</em></div></div>
+          <div class="crow"><div class="cw">Deloitte &amp; consultancies</div><div class="cg">AI use-case libraries + engagements</div><div class="cg">Consulting-gated, static, not continuous</div></div>
+          <div class="crow"><div class="cw">Newsletters / AI summaries</div><div class="cg">The week's AI headlines, fast &amp; cheap</div><div class="cg">Hype, no personalization, no verified outcomes</div></div>
+          <div class="crow us"><div class="cw">Clearlode</div><div class="cg">Verified, ranked decisions for <em>your</em> company, continuously</div><div class="cg">Combines all four — at mid-market cost</div></div>
+        </div>
+      </div>
+      <div class="intro-actions">
+        <button class="cta" onclick="showView('onboard')">Set up a company →</button>
+        <button class="link" onclick="generate()">Skip to a sample</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ONBOARD -->
+  <section id="view-onboard" hidden>
+    <div class="hero">
+      <div class="eyebrow">Step 1 · your company</div>
+      <h1 style="font-size:clamp(1.7rem,4.5vw,2.4rem);max-width:20ch">Tell Clearlode who to advise.</h1>
+      <p class="lead">This is the whole point: the same week's AI news becomes a different set of decisions for each company. Here's the sample we'll use — Meridian Media, a mid-market digital publisher.</p>
+      <div class="obox">
+        <div class="oblk"><div class="k">Industry</div>
+          <button class="opt on">Digital publisher</button><button class="opt" disabled>Logistics · soon</button><button class="opt" disabled>Fintech · soon</button></div>
+        <div class="oblk"><div class="k">Functions to watch</div><div id="onFnOpts"></div></div>
+        <div class="oblk" style="margin-bottom:0"><div class="k">Top problems right now (these drive your feed)</div><div id="onPrio"></div></div>
+      </div>
+      <div class="intro-actions" style="margin-top:16px">
+        <button class="cta" onclick="generate()">See what this week means for us →</button>
+        <button class="link" onclick="showView('intro')">← Back</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- APP -->
+  <div id="view-app" hidden>
+    <div class="org">
+      <div class="av">M</div>
+      <div><div class="nm">Meridian Media</div><div class="meta">Digital publisher · Yield · Ad Ops · Revenue · India / Global</div></div>
+      <div class="spacer"></div>
+      <div class="bar-sub">Week of 15–21 Sep</div>
+      <button class="link" onclick="showView('intro')" style="margin-left:4px">↺ Intro</button>
+    </div>
+
+    <!-- FOR YOU -->
+    <section id="view-you">
+      <div class="edge">
+        <div class="edge-t" id="appEdgeTitle">Clearlode's edge — why this isn't AI news</div>
+        <div class="edge-chips"><span>✓ Human-verified evidence, graded A–D</span><span>✓ Outcomes from 190+ tracked AI pilots</span><span>✓ Every vendor claim checked against reality</span></div>
+        <div class="edge-val" id="appEdgeVal">This week for Meridian: <b>~18 hrs of research avoided</b> · <b>1 costly bet flagged</b> before you made it · every call backed by real outcomes, not press releases.</div>
+      </div>
+      <div class="scan">
+        <div class="sg"><b>218</b><span>developments scanned this week</span></div>
+        <div class="sg"><b>14</b><span>relevant to digital publishers</span></div>
+        <div class="sg final"><b>6</b><span>matter to Meridian → ranked below</span></div>
+      </div>
+      <div class="mini3" id="mini3"></div>
+      <div id="prioFeed"></div>
+    </section>
+
+    <!-- ALL SIGNALS -->
+    <section id="view-all" hidden>
+      <div class="filters">
+        <span class="flabel">Function</span><span id="fnFilters"></span>
+        <span class="flabel" style="margin-left:6px">Evidence</span>
+        <button class="chip on" data-grade="all" onclick="setGrade('all',this)">All</button>
+        <button class="chip" data-grade="A" onclick="setGrade('A',this)">A</button>
+        <button class="chip" data-grade="B" onclick="setGrade('B',this)">B</button>
+        <button class="chip" data-grade="C" onclick="setGrade('C',this)">C</button>
+        <button class="chip" data-grade="D" onclick="setGrade('D',this)">D</button>
+        <input class="search" id="search" placeholder="Search…" oninput="renderAll()">
+      </div>
+      <div id="allFeed"></div>
+    </section>
+
+    <!-- BRIEF -->
+    <section id="view-brief" hidden>
+      <div class="brief-head">
+        <div><div class="brief-title">Executive brief</div><div class="brief-sub">Meridian Media · Week of 15–21 Sep 2026 · prepared by Clearlode</div></div>
+        <button class="btn" onclick="window.print()">Print / Save PDF</button>
+      </div>
+      <div id="briefBody"></div>
+    </section>
+  </div>
+
+  <div class="foot">Clearlode portal — working prototype · sample company &amp; data, no live AI · your decisions are saved in this browser only.<br>A Trueinfo Labs product.</div>
+</main>
+
+<script>
+const VERDICTS=['ignore','monitor','investigate','pilot','adopt','replace'];
+const VLABEL={ignore:'Ignore',monitor:'Monitor',investigate:'Investigate',pilot:'Pilot',adopt:'Adopt',replace:'Replace'};
+const FUNCTIONS=['Yield mgmt','Ad operations','Revenue','Audience','Subscriptions','Content ops'];
+
+// Meridian's problems — the spine of the "For you" view
+const PRIORITIES=[
+ {id:'P1',label:'Defend ad revenue as generative search erodes traffic'},
+ {id:'P2',label:'Lift programmatic yield without more ad-ops headcount'},
+ {id:'P3',label:'Grow subscriptions and cut churn'},
+ {id:'P4',label:'Protect revenue integrity — fraud, IVT, brand safety'},
+];
+
+const CARDS=[
+ {id:'c2',prio:'P1',impact:'high',date:'18 Sep',source:'Search-platform blog + trade press',type:'market shift',grade:'B',rec:'pilot',
+  title:'Generative search answers are measurably cutting publisher referral traffic',
+  fns:['Audience','Revenue'],complexity:3,
+  why:'Meridian gets ~40% of its traffic from search. This is the mechanism behind your #1 problem — and it is already happening, not a forecast.',
+  sig:'AI Overviews reduce click-through from search, eroding open-web impressions and programmatic revenue.',
+  source_status:'Multiple corroborating trade reports + your own analytics. Evidence grade B.',
+  relevance:'High for search-dependent publishers; pushes strategy toward owned audience and direct-sold.',
+  usecase:'Stand up first-party data capture + a direct-sold / newsletter revenue pivot.',
+  value:'Protects a revenue base directly at risk; builds audience less exposed to search.',
+  reqs:'Consent-based capture · CDP · direct-sales motion · newsletter stack.',
+  risks:'Slow payoff · resourcing · measuring substitution.',
+  measures:'Referral share · first-party reach · direct-sold % · revenue/session.',
+  evidence:'Trade coverage · your first-party analytics.',
+  claim:'Industry line: "AI search won\'t dent publisher traffic"', verified:'−18% median search referral, 60+ tracked news publishers, 9 mo', pilots:60,
+  track:'Publishers who moved early to first-party + direct-sold retained 2–3× more at-risk revenue than those who waited and watched.', fit:'Act now if search is >30% of your traffic.'},
+
+ {id:'c5',prio:'P1',impact:'low',date:'15 Sep',source:'Vendor demo',type:'capability release',grade:'D',rec:'monitor',
+  title:'Generative tool auto-writes SEO summaries and section pages at scale',
+  fns:['Content ops'],complexity:1,
+  why:'Tempting as a traffic-recovery shortcut for P1 — but it risks a search penalty on the very domain your revenue depends on. Flagged so you do NOT chase it.',
+  sig:'Bulk-generates summaries/landing pages — cheap traffic play with real quality and brand risk.',
+  source_status:'Demo/announcement only, no results. Evidence grade D.',
+  relevance:'High temptation, high risk — reputational and search-policy exposure.',
+  usecase:'(If at all) assist human editors — never unattended publishing.',
+  value:'Lower content cost, offset by quality/brand and search-policy risk.',
+  reqs:'Editorial review · disclosure policy · search-policy check.',
+  risks:'Search penalties · brand damage · commodity content.',
+  measures:'Editor time saved · engagement · penalty incidents.',
+  evidence:'Vendor demo only — not independently verified.',
+  claim:'Vendor: "3× organic traffic"', verified:'Of 18 tracked, 6 hit by search penalties in 6 mo; net traffic flat-to-negative', pilots:18,
+  track:'The cheap-traffic play backfired more often than it worked — which is why Clearlode grades this "watch, don\'t chase". A summary would have sold you the upside.', fit:'Only viable as human-assisted editing, never unattended publishing.'},
+
+ {id:'c1',prio:'P2',impact:'high',date:'19 Sep',source:'SSP release notes',type:'capability release',grade:'C',rec:'investigate',
+  title:'SSP releases automated floor-price optimization for publisher inventory',
+  fns:['Yield mgmt','Ad operations'],complexity:2,
+  why:'Your yield team sets floors by hand across 3 SSPs — this targets exactly that manual effort, the core of your P2.',
+  sig:'Sets floor prices and allocates impressions automatically — could lift RPM without manual trafficking.',
+  source_status:'Vendor announcement only. No independent production benchmark. Evidence grade C.',
+  relevance:'Relevant given your auction volume and ability to run a controlled test.',
+  usecase:'Optimize floors on a limited slice of remnant web inventory.',
+  value:'Possible RPM lift; less manual analysis. No uplift estimate before baseline.',
+  reqs:'Auction-level data · experiment design · SSP access · guardrails.',
+  risks:'Revenue volatility · opaque logic · single-SSP dependency.',
+  measures:'RPM · fill rate · bid density · latency · net revenue — vs a control.',
+  evidence:'SSP release notes · 2 vendor case studies (unverified).',
+  claim:'SSP markets "20–30% RPM uplift"', verified:'+7% median across 34 tracked pilots; 9 saw <2%; 4 rolled back', pilots:34,
+  track:'The uplift is real but far below the pitch, and concentrated in publishers with high remnant volume. Below that, it is not worth the volatility.', fit:'Best when floors are static and remnant volume is high.'},
+
+ {id:'c3',prio:'P2',impact:'medium',date:'17 Sep',source:'Vendor + independent benchmark',type:'capability release',grade:'C',rec:'pilot',
+  title:'Cookieless contextual-targeting model claims brand-safe CPM uplift',
+  fns:['Ad operations','Revenue'],complexity:2,
+  why:'About a third of your open inventory is cookieless and sells cheap. This is the most direct lever on that specific gap.',
+  sig:'Contextual model targets and screens brand-safety without cookies — could lift CPMs on open inventory.',
+  source_status:'Vendor claim with one third-party benchmark. Evidence grade C.',
+  relevance:'Relevant as third-party cookies wind down; fits low-yield inventory.',
+  usecase:'Pilot contextual targeting on a section with weak addressability.',
+  value:'Potential CPM lift; better fill on cookieless inventory.',
+  reqs:'Ad-server integration · taxonomy mapping · brand-safety rules.',
+  risks:'Accuracy on edge content · classification errors · vendor lock-in.',
+  measures:'CPM · viewability · brand-safety incidents · fill rate.',
+  evidence:'Vendor benchmark · 1 independent test.',
+  claim:'Vendor: "+25% CPM on cookieless"', verified:'+11% median across 41 tracked pilots; wide variance by content vertical', pilots:41,
+  track:'Worked best for editorial/news with a clean contextual taxonomy; weak on thin or mixed content. Fit matters more than the average.', fit:'Strong fit for structured editorial inventory.'},
+
+ {id:'c4',prio:'P3',impact:'high',date:'16 Sep',source:'Peer case study',type:'capability release',grade:'B',rec:'pilot',
+  title:'Churn-prediction model for subscription publishers cuts cancellations in a peer test',
+  fns:['Subscriptions','Revenue'],complexity:2,
+  why:'Your subscription line runs ~5% monthly churn. A named peer cut theirs with this — the top-risk decile is where it pays back.',
+  sig:'Predicts at-risk subscribers and triggers retention offers; a peer reports lower churn.',
+  source_status:'Named peer case study with method. Evidence grade B.',
+  relevance:'High given a paid subscription with meaningful monthly churn.',
+  usecase:'Score subscribers weekly; trigger save-offers to the top-risk decile.',
+  value:'Lower churn; higher LTV — directly measurable.',
+  reqs:'Subscription event data · offer engine · holdout group.',
+  risks:'Offer cannibalization · data quality · privacy.',
+  measures:'Churn · save-rate · LTV · offer margin — vs holdout.',
+  evidence:'Peer case study · methodology shared.',
+  claim:'Peer case study: "−30% churn"', verified:'−14% median across 12 tracked subscription publishers', pilots:12,
+  track:'Meaningful for publishers with enough subscribers to model; below ~20k subs the signal is drowned in noise.', fit:'Best above ~20k paying subscribers.'},
+
+ {id:'c6',prio:'P4',impact:'medium',date:'15 Sep',source:'Independent benchmark',type:'capability release',grade:'B',rec:'adopt',
+  title:'ML invalid-traffic detection outperforms rule-based filters in independent test',
+  fns:['Ad operations','Revenue'],complexity:2,
+  why:'IVT is quietly taxing your programmatic revenue and your standing with demand partners — a low-drama win for P4.',
+  sig:'Catches sophisticated invalid traffic that rules miss; protects revenue and advertiser trust.',
+  source_status:'Independent benchmark with named method and result. Evidence grade B.',
+  relevance:'Broadly relevant; IVT wastes ad spend and risks demand relationships.',
+  usecase:'Layer ML IVT detection ahead of the ad server; block/flag pre-bid.',
+  value:'Recovers wasted impressions; protects advertiser confidence and fill.',
+  reqs:'Pre-bid integration · traffic logs · demand-partner alignment.',
+  risks:'False positives · latency.',
+  measures:'IVT rate · blocked-good rate · complaints · net revenue.',
+  evidence:'Independent benchmark · reproducible method.',
+  claim:'Vendor: "catches 99% of invalid traffic"', verified:'+6% net revenue recovered, median, 27 tracked publishers; low downside', pilots:27,
+  track:'A consistent, low-drama win — one of the few "adopt" grades precisely because the downside across pilots stayed small.', fit:'Broadly applicable; more upside at higher programmatic volume.'},
+];
+
+// the decision rule behind each verdict — the "on what basis" answer
+const FITR={high:'Strong',medium:'Moderate',low:'Weak'};
+const BASIS={
+ c1:'Real but modest upside (+7%, not the 20–30% claimed) on vendor-only Grade-C evidence, with 4 of 34 rolling back → don\'t adopt blind. <b>Investigate</b>: get the methodology and references, then run a controlled pilot.',
+ c2:'Grade-B evidence of an <em>already-happening</em> threat to your #1 revenue source, strong fit, but a high-effort response → <b>Pilot</b> the first-party / direct-sold shift now; waiting for certainty is the expensive option.',
+ c3:'Positive verified outcome (+11% across 41) with strong fit for editorial inventory, but Grade-C evidence and wide variance by vertical → <b>Pilot</b> on one section against a control to confirm it works for you.',
+ c4:'Grade-B peer evidence, a clear measurable outcome (−14% churn across 12) and strong fit → <b>Pilot</b> on your top-risk decile with a holdout so the result is bankable.',
+ c5:'Grade-D evidence and a <em>negative</em> track record (6 of 18 penalised; net traffic flat-to-negative) → <b>Watch, don\'t chase</b>; the downside outweighs the upside.',
+ c6:'Grade-B independent evidence, a consistent positive outcome (+6% across 27) and low downside → <b>Adopt</b>; the risk-adjusted case is strong enough to roll out, not just test.'
+};
+
+const IMP={high:3,medium:2,low:1}, GRD={A:3,B:3,C:2,D:1};
+function oppLevel(c){const p=IMP[c.impact]+GRD[c.grade];return p>=5?'high':(p===4?'medium':'watch');}
+function oppLabel(c){return {high:'Opportunity: High',medium:'Opportunity: Medium',watch:'Watch'}[oppLevel(c)];}
+function impactDots(c){return {high:'●●●',medium:'●●○',low:'●○○'}[c.impact];}
+
+const SEED={c6:{decision:'adopt',brief:true},c4:{decision:'pilot',brief:true},c2:{decision:'pilot',brief:true}};
+const KEY='clearlode_proto_v2';
+let store={};
+try{store=JSON.parse(localStorage.getItem(KEY))||{};}catch(e){store={};}
+if(!store||!Object.keys(store).length){store=JSON.parse(JSON.stringify(SEED));}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(store));}catch(e){}}
+function st(id){return store[id]||(store[id]={});}
+
+let fnFilter='all',gradeFilter='all',tab='you';
+
+// onboarding chips
+(function(){
+  const f=document.getElementById('onFnOpts');
+  f.innerHTML=FUNCTIONS.map((x,i)=>`<button class="opt ${i<3?'on':''}" onclick="this.classList.toggle('on')">${x}</button>`).join('');
+  document.getElementById('onPrio').innerHTML=PRIORITIES.map(p=>`<button class="opt on" onclick="this.classList.toggle('on')">${p.label}</button>`).join('');
+  document.getElementById('fnFilters').innerHTML=`<button class="chip on" data-fn="all" onclick="setFn('all',this)">All</button>`+FUNCTIONS.map(x=>`<button class="chip" data-fn="${x}" onclick="setFn('${x}',this)">${x}</button>`).join('');
+})();
+function setFn(v,el){fnFilter=v;document.querySelectorAll('[data-fn]').forEach(c=>c.classList.remove('on'));el.classList.add('on');renderAll();}
+function setGrade(v,el){gradeFilter=v;document.querySelectorAll('[data-grade]').forEach(c=>c.classList.remove('on'));el.classList.add('on');renderAll();}
+
+function showView(v){
+  document.getElementById('view-intro').hidden=v!=='intro';
+  document.getElementById('view-onboard').hidden=v!=='onboard';
+  document.getElementById('view-app').hidden=v!=='app';
+  document.getElementById('navTabs').hidden=v!=='app';
+  try{window.scrollTo(0,0);}catch(e){}
+}
+function showTab(t){tab=t;
+  document.getElementById('view-you').hidden=t!=='you';
+  document.getElementById('view-all').hidden=t!=='all';
+  document.getElementById('view-brief').hidden=t!=='brief';
+  ['you','all','brief'].forEach(x=>document.getElementById('tab-'+x).classList.toggle('active',x===t));
+  if(t==='you')renderYou(); if(t==='all')renderAll(); if(t==='brief')renderBrief();
+}
+function generate(){showView('app');showTab('you');}
+
+function meter(n){let s='';for(let i=0;i<3;i++)s+=`<i class="${i<n?'on':''}"></i>`;return `<span class="meter">${s}</span>`;}
+
+function cardHTML(c){
+  const s=st(c.id),d=s.decision,lvl=oppLevel(c);
+  const pill=d?`<span class="pill ${d}">${VLABEL[d]}</span>`:`<span class="pill none">Your call?</span>`;
+  const vbtns=VERDICTS.map(v=>`<button class="vbtn ${d===v?'sel':''}" onclick="setVerdict('${c.id}','${v}')">${VLABEL[v]}</button>`).join('');
+  return `<div class="card ${lvl==='watch'?'watch':''}" id="card-${c.id}">
+    <div class="card-top" onclick="toggle('${c.id}',event)">
+      <div class="kick"><span>${c.date}</span><span>·</span><span>${c.source}</span><span>·</span><span>${c.type}</span></div>
+      <div class="ct">${c.title}</div>
+      <div class="whyyou"><b>Why this matters to Meridian:</b> ${c.why}</div>
+      <div class="row">
+        <span class="opp ${lvl}">${oppLabel(c)}</span>
+        <span class="gr ${c.grade.toLowerCase()}">Evidence ${c.grade}</span>
+        <span class="impact">Impact <i>${impactDots(c)}</i></span>
+        ${pill}
+        <span class="spacer"></span>
+        <button class="star ${s.brief?'on':''}" onclick="toggleBrief('${c.id}',event)">${s.brief?'★ In brief':'☆ Add to brief'}</button>
+      </div>
+      <div class="proof">◆ ${c.pilots} real pilots tracked — vendor claim checked against reality</div>
+    </div>
+    <div class="detail">
+      <div class="grid">
+        <div class="fld full basis"><div class="k">Why Clearlode recommends: ${VLABEL[c.rec]}</div>
+          <dl class="sc">
+            <dt>Evidence</dt><dd><span class="gr ${c.grade.toLowerCase()}">Grade ${c.grade}</span> ${c.source}</dd>
+            <dt>Verified outcome</dt><dd>${c.verified}</dd>
+            <dt>Fit to you</dt><dd>${FITR[c.impact]} — ${c.fit}</dd>
+            <dt>Complexity / risk</dt><dd>${meter(c.complexity)}</dd>
+          </dl>
+          <div class="basisrule"><b>Decision rule:</b> ${BASIS[c.id]}</div>
+        </div>
+        <div class="fld full moat"><div class="k">Vendor claim → verified reality</div><div class="v"><div class="cvr"><span class="claim">${c.claim}</span><span class="ar">→</span><span class="ver">${c.verified}</span></div></div></div>
+        <div class="fld full moat"><div class="k">Track record — what actually happened · ${c.pilots} pilots</div><div class="v">${c.track}<div class="fitnote">Best fit: ${c.fit}</div></div></div>
+        <div class="fld full"><div class="k">What happened</div><div class="v">${c.sig}</div></div>
+        <div class="fld full"><div class="k">Source status</div><div class="v">${c.source_status}</div></div>
+        <div class="fld"><div class="k">Possible use case</div><div class="v">${c.usecase}</div></div>
+        <div class="fld"><div class="k">Expected value</div><div class="v">${c.value}</div></div>
+        <div class="fld"><div class="k">Adoption complexity</div><div class="v">${meter(c.complexity)}</div></div>
+        <div class="fld"><div class="k">Requirements</div><div class="v">${c.reqs}</div></div>
+        <div class="fld"><div class="k">Key risks</div><div class="v">${c.risks}</div></div>
+        <div class="fld full"><div class="k">Success measures</div><div class="v" style="color:var(--slate)">${c.measures}</div></div>
+        <div class="fld full"><div class="k">Evidence</div><div class="v">${c.evidence}</div></div>
+      </div>
+      <div class="actions">
+        <div class="arow"><span class="lab">Clearlode recommends</span><span class="pill ${c.rec}">${VLABEL[c.rec]}</span></div>
+        <div class="arow"><span class="lab">Your call</span><div class="vbtns">${vbtns}</div></div>
+        <textarea class="note" placeholder="Note for your team…" oninput="setNote('${c.id}',this.value)">${s.note||''}</textarea>
+      </div>
+      <div class="dlrow"><button class="dl" onclick="printCase('${c.id}',event)">⤓ Download this use case (PDF)</button> <span style="font-family:var(--mono);font-size:10.5px;color:var(--ink-3)">full evidence-backed case, ready to share</span></div>
+    </div>
+  </div>`;
+}
+function printCase(id,e){e.stopPropagation();
+  document.querySelectorAll('.card').forEach(c=>c.classList.remove('printtarget'));
+  const el=document.getElementById('card-'+id);el.classList.add('open','printtarget');st(id)._open=true;
+  document.body.classList.add('printing');
+  try{window.print();}catch(err){}
+  setTimeout(()=>document.body.classList.remove('printing'),600);
+}
+function reopen(list){list.forEach(c=>{if(st(c.id)._open){const el=document.getElementById('card-'+c.id);if(el)el.classList.add('open');}});}
+
+function renderMini(){
+  let need=0,act=0,ado=0;
+  CARDS.forEach(c=>{const d=st(c.id).decision;if(!d)need++;if(d==='investigate'||d==='pilot')act++;if(d==='adopt')ado++;});
+  document.getElementById('mini3').innerHTML=
+   `<div class="m3 rev"><b>${need}</b><span>Need your call</span></div>
+    <div class="m3"><b>${act}</b><span>Investigating / piloting</span></div>
+    <div class="m3"><b>${ado}</b><span>Adopted</span></div>`;
+}
+function renderYou(){
+  renderMini();
+  const wrap=document.getElementById('prioFeed');let html='';
+  PRIORITIES.forEach(p=>{
+    const items=CARDS.filter(c=>c.prio===p.id).sort((a,b)=>(IMP[b.impact]+GRD[b.grade])-(IMP[a.impact]+GRD[a.grade]));
+    if(!items.length)return;
+    html+=`<div class="prio"><div class="prio-h"><span class="pn">Your priority</span><span class="pl">${p.label}</span><span class="cnt">${items.length} opportunit${items.length>1?'ies':'y'}</span></div>${items.map(cardHTML).join('')}</div>`;
+  });
+  wrap.innerHTML=html;
+  reopen(CARDS);
+}
+function renderAll(){
+  const q=(document.getElementById('search').value||'').toLowerCase();
+  const list=CARDS.filter(c=>{
+    if(fnFilter!=='all'&&!c.fns.includes(fnFilter))return false;
+    if(gradeFilter!=='all'&&c.grade!==gradeFilter)return false;
+    if(q&&!(c.title+' '+c.sig+' '+c.why).toLowerCase().includes(q))return false;
+    return true;
+  }).sort((a,b)=>new Date(b.date+' 2026')-new Date(a.date+' 2026'));
+  document.getElementById('allFeed').innerHTML=list.length?list.map(cardHTML).join(''):`<div class="empty">No signals match.</div>`;
+  reopen(list);
+}
+function toggle(id,e){if(e.target.closest('.star'))return;const el=document.getElementById('card-'+id);el.classList.toggle('open');st(id)._open=el.classList.contains('open');}
+function setVerdict(id,v){const s=st(id);s.decision=(s.decision===v?null:v);save();if(tab==='you')renderMini();}
+function toggleBrief(id,e){e.stopPropagation();const s=st(id);s.brief=!s.brief;save();const b=e.target;b.classList.toggle('on',s.brief);b.textContent=s.brief?'★ In brief':'☆ Add to brief';}
+function setNote(id,val){st(id).note=val;save();}
+
+function renderBrief(){
+  const picked=CARDS.filter(c=>st(c.id).brief);
+  const body=document.getElementById('briefBody');
+  if(!picked.length){body.innerHTML=`<div class="empty">No items yet. Star signals with "Add to brief".</div>`;return;}
+  const groups={};picked.forEach(c=>{const d=st(c.id).decision||c.rec;(groups[d]=groups[d]||[]).push(c);});
+  const order=['adopt','pilot','investigate','monitor','replace','ignore'];
+  let html=`<p style="color:var(--ink-2);font-size:13.5px;max-width:70ch;">${picked.length} developments this week warrant a decision at Meridian, grouped by recommended action.</p>`;
+  order.filter(g=>groups[g]).forEach(g=>{
+    html+=`<div class="bgroup"><h4>${VLABEL[g]} · ${groups[g].length}</h4>`;
+    groups[g].forEach(c=>{const note=st(c.id).note;
+      html+=`<div class="bitem ${g}"><div class="bt">${c.title}</div><div class="bm">${c.why}</div>
+        <div class="bm" style="margin-top:5px;"><span style="color:var(--ink-3);text-decoration:line-through;">${c.claim}</span> <span style="color:var(--signal);font-family:var(--mono);">→ ${c.verified}</span></div>
+        <div class="bm" style="font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-top:4px;">Evidence ${c.grade} · ${oppLabel(c)} · ${c.pilots} pilots tracked${note?' · Note: '+note:''}</div></div>`;
+    });
+    html+='</div>';
+  });
+  body.innerHTML=html;
+}
+
+// ---- audience framing (Publisher <-> Investor) ----
+let mode='publisher';
+const FRAME={
+ publisher:{
+  h1:`Stop guessing which AI is worth it.`,
+  lead:`AI is reshaping ad revenue, yield and subscriptions faster than your team can track — and 95% of AI pilots show no ROI. Clearlode reads every development through <em>your</em> business, checks the hype against what actually happened at other publishers, and hands you the few worth your time.`,
+  edgeT:`The edge — why not a newsletter or a consultant`,
+  edgeV:`Anyone can send you AI headlines. Clearlode tells you <b>what actually happened when other publishers tried it</b> — so you don't pay to learn the hard way.`,
+  compE:`Where else would you get this?`,
+  compT:`Your alternatives — and why they don't fit.`,
+  compI:`To decide on AI today you'd hire Gartner (too slow, too dear), commission a consultant (months), dig through AlphaSense (search, not answers), or trust a newsletter (hype). None tells a publisher your size what to do — and backs it with what actually happened.`,
+  appT:`Clearlode's edge — why this isn't AI news`,
+  appV:`This week for Meridian: <b>~18 hrs of research avoided</b> · <b>1 costly bet flagged</b> before you made it · every call backed by real outcomes, not press releases.`
+ },
+ investor:{
+  h1:`The decision layer for AI adoption.`,
+  lead:`The research-and-intelligence market is being reshaped by AI, but incumbents are slow, generic and priced for the Fortune 500. Clearlode turns AI noise into verified, company-specific decisions — starting with digital publishers — and compounds a proprietary outcomes moat with every pilot.`,
+  edgeT:`The moat — why this compounds`,
+  edgeV:`A growing proprietary ledger of <b>verified outcomes per pilot</b>. Competitors can summarize the same news; they can't reproduce what actually happened. The asset — and the switching cost — grows with every customer.`,
+  compE:`The competitive wedge`,
+  compT:`Four incumbents, one gap none of them fills.`,
+  compI:`AI intelligence is fragmented across research (Gartner), search (AlphaSense), use-case libraries (Deloitte) and news (newsletters). Each owns a slice; none delivers verified, personalized decisions continuously at mid-market cost. Clearlode combines them — and the outcomes ledger compounds into a moat.`,
+  appT:`The compounding moat`,
+  appV:`Per customer per week, Clearlode replaces ~18 analyst-hours and a Gartner-tier subscription — and every logged decision <b>deepens the outcomes ledger</b> that competitors can't clone.`
+ }
+};
+function setHTML(id,h){const e=document.getElementById(id);if(e)e.innerHTML=h;}
+function applyFrame(){const f=FRAME[mode];setHTML('introH1',f.h1);setHTML('introLead',f.lead);setHTML('introEdgeTitle',f.edgeT);setHTML('introEdgeVal',f.edgeV);setHTML('compEyebrow',f.compE);setHTML('compTitle',f.compT);setHTML('compIntro',f.compI);setHTML('appEdgeTitle',f.appT);setHTML('appEdgeVal',f.appV);}
+function setMode(m){mode=m;document.getElementById('ab-publisher').classList.toggle('active',m==='publisher');document.getElementById('ab-investor').classList.toggle('active',m==='investor');applyFrame();}
+
+applyFrame();
+renderYou();
+showView('intro');
+</script>

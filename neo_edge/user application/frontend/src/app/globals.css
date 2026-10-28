@@ -1,0 +1,132 @@
+@import "tailwindcss";
+@plugin "tailwindcss-animate";
+
+:root {
+  /* Light Mode Variables */
+  --neo-bg: #F8F9FA;
+  --neo-bg-gradient-start: #F8F9FA;
+  --neo-bg-gradient-end: #FFFFFF;
+  
+  --neo-panel: rgba(0, 0, 0, 0.03);
+  --neo-panel-hover: rgba(0, 0, 0, 0.06);
+  
+  --neo-accent-a: #1D4ED8; /* Blue-700 for better contrast on light */
+  --neo-accent-b: #B45309; /* Amber-700 for better contrast on light */
+  --neo-accent-c: #047857; /* Emerald-700 for better contrast on light */
+  
+  --neo-text-primary: #111827;
+  --neo-text-secondary: #4B5563;
+  
+  --neo-divider: rgba(0, 0, 0, 0.08);
+
+  /* Scrollbar for light mode */
+  --scrollbar-thumb: rgba(0, 0, 0, 0.2);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.3);
+}
+
+.dark {
+  /* Dark Mode Variables (Original) */
+  --neo-bg: #0E1013;
+  --neo-bg-gradient-start: #0E1013;
+  --neo-bg-gradient-end: #1A1C22;
+  
+  --neo-panel: rgba(255, 255, 255, 0.04);
+  --neo-panel-hover: rgba(255, 255, 255, 0.08);
+  
+  --neo-accent-a: #3A6CF4;
+  --neo-accent-b: #E0B973;
+  --neo-accent-c: #42C7A0;
+  
+  --neo-text-primary: #EAEAEA;
+  --neo-text-secondary: #A3A6B2;
+  
+  --neo-divider: rgba(255, 255, 255, 0.06);
+
+  /* Scrollbar for dark mode */
+  --scrollbar-thumb: rgba(255, 255, 255, 0.1);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.2);
+}
+
+@theme {
+  --color-neo-bg: var(--neo-bg);
+  --color-neo-bg-gradient-start: var(--neo-bg-gradient-start);
+  --color-neo-bg-gradient-end: var(--neo-bg-gradient-end);
+  
+  --color-neo-panel: var(--neo-panel);
+  --color-neo-panel-hover: var(--neo-panel-hover);
+  
+  --color-neo-accent-a: var(--neo-accent-a);
+  --color-neo-accent-b: var(--neo-accent-b);
+  --color-neo-accent-c: var(--neo-accent-c);
+  
+  --color-neo-text-primary: var(--neo-text-primary);
+  --color-neo-text-secondary: var(--neo-text-secondary);
+  
+  --color-neo-divider: var(--neo-divider);
+
+  --font-inter: var(--font-inter);
+  --font-ibm-plex-sans: var(--font-ibm-plex-sans);
+  --font-ibm-plex-mono: var(--font-ibm-plex-mono);
+  
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui;
+  --font-secondary: var(--font-ibm-plex-sans), ui-sans-serif, system-ui;
+  --font-mono: var(--font-ibm-plex-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas;
+}
+
+body {
+  background: linear-gradient(to bottom, var(--neo-bg-gradient-start), var(--neo-bg-gradient-end));
+  background-attachment: fixed;
+  color: var(--neo-text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.neo-container {
+  width: min(100%, 1440px);
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 4vw, 3rem);
+  padding-block: clamp(1.5rem, 3vw, 3rem);
+}
+
+.neo-section-grid {
+  display: grid;
+  gap: clamp(1rem, 3vw, 2rem);
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.neo-fluid-text {
+  font-size: clamp(1rem, 2vw, 1.15rem);
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  body {
+    padding-bottom: 4rem;
+  }
+
+  .neo-container {
+    padding-inline: 1.25rem;
+    padding-block: 1.5rem;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}

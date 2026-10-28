@@ -1,0 +1,203 @@
+<title>FieldNote Oct Delivery Plan</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  :root{
+    --paper:#F6F7F9;--surface:#FFFFFF;--surface-2:#EEF1F5;--ink:#14181F;--ink-2:#434B57;--ink-3:#6B7482;
+    --line:#DCE1E8;--line-2:#C9D0DA;--slate:#2C4A6E;--slate-soft:#E4EAF1;--signal:#B0761A;--signal-soft:#F6ECD8;
+    --good:#2E6E4E;--good-soft:#DDEEE4;--warn:#9A6410;--warn-soft:#F5E8D2;--crit:#9A3838;--crit-soft:#F2DDDD;--mute:#5C6470;--mute-soft:#E6E9EE;
+    --display:'Newsreader',Georgia,serif;--body:'IBM Plex Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace;
+  }
+  :root:not([data-theme="light"]){@media (prefers-color-scheme:dark){
+    --paper:#0F1216;--surface:#171B21;--surface-2:#1E242C;--ink:#EAEEF3;--ink-2:#B4BDC9;--ink-3:#838E9C;
+    --line:#2A313A;--line-2:#38414C;--slate:#8FB2D6;--slate-soft:#1C2A3A;--signal:#E0A94A;--signal-soft:#2E2513;
+    --good:#6FC095;--good-soft:#16281E;--warn:#DDA043;--warn-soft:#2C2411;--crit:#E28B8B;--crit-soft:#2E1919;--mute:#9AA4B1;--mute-soft:#22272F;
+  }}
+  :root[data-theme="dark"]{
+    --paper:#0F1216;--surface:#171B21;--surface-2:#1E242C;--ink:#EAEEF3;--ink-2:#B4BDC9;--ink-3:#838E9C;
+    --line:#2A313A;--line-2:#38414C;--slate:#8FB2D6;--slate-soft:#1C2A3A;--signal:#E0A94A;--signal-soft:#2E2513;
+    --good:#6FC095;--good-soft:#16281E;--warn:#DDA043;--warn-soft:#2C2411;--crit:#E28B8B;--crit-soft:#2E1919;--mute:#9AA4B1;--mute-soft:#22272F;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.55;-webkit-font-smoothing:antialiased;}
+  header.bar{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--paper) 90%,transparent);backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line);}
+  .bar-inner{max-width:900px;margin:0 auto;padding:11px 22px;display:flex;align-items:baseline;gap:14px;}
+  .bar-mark{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);}
+  .bar-mark span{color:var(--signal);}
+  .bar-tag{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-left:auto;}
+  @media (max-width:620px){.bar-tag{display:none;}}
+  main{max-width:900px;margin:0 auto;padding:0 22px;}
+  .wrap{max-width:800px;}
+  section{padding-block:36px;border-top:1px solid var(--line);}
+  section:first-of-type{border-top:none;}
+  .eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--signal);display:flex;align-items:center;gap:10px;margin:0 0 15px;}
+  .eyebrow::before{content:"";width:22px;height:1.5px;background:var(--signal);display:inline-block;}
+  h1{font-family:var(--display);font-weight:500;font-size:clamp(2rem,5vw,3rem);line-height:1.05;letter-spacing:-.015em;margin:0 0 18px;text-wrap:balance;max-width:18ch;}
+  h2{font-family:var(--display);font-weight:500;font-size:clamp(1.45rem,3.2vw,2rem);line-height:1.12;margin:0 0 14px;text-wrap:balance;}
+  h3{font-family:var(--body);font-weight:600;font-size:1rem;margin:20px 0 6px;}
+  p{margin:0 0 14px;color:var(--ink-2);max-width:74ch;}
+  p.lead{font-family:var(--display);font-size:clamp(1.1rem,2.1vw,1.35rem);line-height:1.44;color:var(--ink);}
+  strong{color:var(--ink);font-weight:600;}em{font-style:italic;}
+  code{font-family:var(--mono);font-size:.85em;background:var(--surface-2);padding:1px 5px;border-radius:4px;color:var(--ink);}
+  .caption{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-top:10px;line-height:1.5;}
+
+  .verdict{border-radius:14px;padding:22px 24px;margin-top:24px;background:var(--warn-soft);border:1px solid var(--warn);}
+  .verdict .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--warn);margin-bottom:8px;display:block;}
+  .verdict p{color:var(--ink);margin:0;max-width:none;font-size:1.02rem;}
+  .verdict b{color:var(--ink);}
+
+  .callout{border-left:3px solid var(--signal);background:var(--signal-soft);padding:15px 19px;border-radius:0 10px 10px 0;margin:18px 0;}
+  .callout p{color:var(--ink);margin:0;max-width:none;}
+  .callout .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--signal);margin-bottom:6px;display:block;}
+  .callout.slate{border-left-color:var(--slate);background:var(--slate-soft);}.callout.slate .k{color:var(--slate);}
+  .callout.crit{border-left-color:var(--crit);background:var(--crit-soft);}.callout.crit .k{color:var(--crit);}
+  .callout.good{border-left-color:var(--good);background:var(--good-soft);}.callout.good .k{color:var(--good);}
+
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;margin:8px 0;-webkit-overflow-scrolling:touch;}
+  table.cmp{border-collapse:collapse;width:100%;min-width:560px;font-size:.88rem;}
+  table.cmp th,table.cmp td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top;}
+  table.cmp thead th{font-family:var(--mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);background:var(--surface-2);font-weight:500;}
+  table.cmp tbody tr:last-child td{border-bottom:none;}
+  table.cmp td.name{font-weight:600;color:var(--ink);white-space:nowrap;}
+  table.cmp td.mono{font-family:var(--mono);font-size:.82rem;}
+  table.cmp tbody tr:nth-child(even) td{background:color-mix(in srgb,var(--surface-2) 45%,transparent);}
+  table.cmp td.wk{font-family:var(--mono);font-size:.8rem;color:var(--slate);white-space:nowrap;}
+  .pill{font-family:var(--mono);font-size:9px;font-weight:500;letter-spacing:.04em;padding:1px 6px;border-radius:20px;text-transform:uppercase;vertical-align:1px;}
+  .pill.keep{background:var(--good-soft);color:var(--good);}.pill.add{background:var(--signal-soft);color:var(--signal);}.pill.mig{background:var(--slate-soft);color:var(--slate);}
+
+  ul.clean{list-style:none;padding:0;margin:6px 0 0;}
+  ul.clean li{padding:8px 0 8px 24px;border-top:1px solid var(--line);position:relative;font-size:.92rem;color:var(--ink-2);}
+  ul.clean li:first-child{border-top:none;}
+  ul.clean li::before{content:"→";position:absolute;left:0;top:8px;color:var(--signal);font-family:var(--mono);}
+  ul.clean li strong{color:var(--ink);}
+  ol.cut{margin:6px 0 0;padding-left:20px;}
+  ol.cut li{font-size:.92rem;color:var(--ink-2);margin-bottom:6px;}
+  ol.cut li strong{color:var(--ink);}
+  .trackgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px;}
+  @media(max-width:640px){.trackgrid{grid-template-columns:1fr;}}
+  .track{border:1px solid var(--line);border-radius:12px;padding:15px 17px;background:var(--surface);}
+  .track.a{border-top:3px solid var(--slate);}.track.b{border-top:3px solid var(--signal);}
+  .track .tag{font-family:var(--mono);font-size:10px;letter-spacing:.08em;}
+  .track.a .tag{color:var(--slate);}.track.b .tag{color:var(--signal);}
+  .track h3{margin:3px 0 6px;}.track p{font-size:.87rem;margin:0;max-width:none;}
+
+  footer{padding:26px 22px 46px;max-width:900px;margin:0 auto;}
+  footer p{font-family:var(--mono);font-size:11px;color:var(--ink-3);max-width:none;line-height:1.7;}
+</style>
+
+<header class="bar">
+  <div class="bar-inner">
+    <div class="bar-mark">FIELDNOTE<span>.</span></div>
+    <div class="bar-tag">Delivery plan · v2 · adapt NEO → AWS · go-live 31 Oct 2026</div>
+  </div>
+</header>
+
+<main>
+  <section class="wrap">
+    <div class="eyebrow">Delivery plan · v2 · built on NEO</div>
+    <h1>Live by 31 October — building on what we already have.</h1>
+    <p class="lead">We're not starting from zero. NEO already does YouTube ingestion, quote-grounded extraction, a filtered feed and a working RAG chatbot. FieldNote is NEO, re-pointed to firsthand customer-support records, verified and graded, migrated onto AWS. That reuse is what makes the date possible.</p>
+    <div class="verdict">
+      <span class="k">Verdict — achievable but tight</span>
+      <p><b>Two demanding choices, together:</b> migrate NEO to AWS <em>now</em> and enforce strict firsthand-CS scope. Each is the slower option on its axis, so 31 Oct is the aggressive end of a 4–6 week effort against ~4.5 weeks of calendar. <b>We make it</b> by running engineering and curation as parallel tracks and launching on a small <em>verified</em> corpus (~40–60 records), not volume — with a stack-fallback if the migration runs long.</p>
+    </div>
+  </section>
+
+  <section class="wrap">
+    <div class="eyebrow">What NEO gives us — and the delta</div>
+    <h2>Keep the machinery. Add the moat. Move the stack.</h2>
+    <p>NEO's plumbing (ingestion, extraction, feed, chatbot) was never the hard part — the moat is the firsthand curation, grading and verification that NEO doesn't yet do. So the real work is the differentiating work.</p>
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th>Capability</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td class="name">YouTube ingestion</td><td><span class="pill mig">migrate</span></td><td>Move to AWS Lambda; re-point to firsthand CS registry</td></tr>
+        <tr><td class="name">Quote-grounded extraction</td><td><span class="pill keep">keep</span></td><td>Reuse schema; already emits problem / impact / risks / tech with quotes</td></tr>
+        <tr><td class="name">Filtered feed + search + vendor filter</td><td><span class="pill keep">keep</span></td><td>Reuse; add Models &amp; ROI facets</td></tr>
+        <tr><td class="name">RAG chatbot</td><td><span class="pill mig">migrate</span></td><td>Swap OpenAI → Bedrock (fixes the out-of-credits break); ground on verified records only</td></tr>
+        <tr><td class="name">Evidence grading A–D + baselines</td><td><span class="pill add">add</span></td><td>New field + UI badge; metric hygiene (deflection≠resolution…)</td></tr>
+        <tr><td class="name">Human SCRUB + "verified" badge</td><td><span class="pill add">add</span></td><td>Review step; nothing publishes unverified</td></tr>
+        <tr><td class="name">Role profile + "why this matters to you"</td><td><span class="pill add">add</span></td><td>Minimal profile; fit note per record</td></tr>
+        <tr><td class="name">Off-scope corpus (Oracle marketing, generic AI)</td><td><span class="pill add">quarantine</span></td><td>Exclude from FieldNote's verified library at launch</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="wrap">
+    <div class="eyebrow">How we run it</div>
+    <h2>Two parallel tracks.</h2>
+    <div class="trackgrid">
+      <div class="track a"><span class="tag">TRACK A · ENGINEERING (1–2 devs)</span><h3>NEO → AWS + the delta</h3><p>Port NEO to AWS (Aurora + pgvector, Lambda ingestion, Bedrock chatbot). Add grading, SCRUB tool + verified badge, Models/ROI facets, role profile. Rebrand NEO → FieldNote.</p></div>
+      <div class="track b"><span class="tag">TRACK B · CONTENT (1 curator)</span><h3>Firsthand CS corpus</h3><p>Build the firsthand customer-support source registry, run the gate, SCRUB to verified + graded. Target ~40–60 records. Quarantine NEO's off-scope content from the FieldNote library.</p></div>
+    </div>
+    <div class="callout slate"><span class="k">Why parallel matters</span><p>The tracks are independent — curation doesn't wait on the AWS migration, and vice versa. Run them together from day one or the date slips.</p></div>
+  </section>
+
+  <section class="wrap">
+    <div class="eyebrow">AWS target — managed &amp; serverless</div>
+    <h2>Migrate the core; let AWS do the heavy lifting.</h2>
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th>Layer</th><th>From (NEO)</th><th>To (AWS)</th></tr></thead>
+      <tbody>
+        <tr><td class="name">Hosting</td><td class="mono">Netlify</td><td class="mono">Amplify / App Runner</td></tr>
+        <tr><td class="name">Chatbot LLM + embeddings</td><td class="mono">OpenAI (out of credits)</td><td class="mono">Bedrock — Claude + Knowledge Bases (managed RAG)</td></tr>
+        <tr><td class="name">Records + vectors</td><td class="mono">current store</td><td class="mono">Aurora Serverless v2 (Postgres + pgvector)</td></tr>
+        <tr><td class="name">Ingestion</td><td class="mono">current jobs</td><td class="mono">EventBridge + Lambda + Step Functions</td></tr>
+        <tr><td class="name">Gate + extraction</td><td class="mono">OpenAI</td><td class="mono">Bedrock (cheap model gates, capable model extracts)</td></tr>
+        <tr><td class="name">Scrub queue + auth</td><td class="mono">—</td><td class="mono">Step Functions (task token) + Cognito</td></tr>
+      </tbody>
+    </table></div>
+    <p class="caption">Migrate only the core for launch. NEO's "launching soon" modules (Vendor Explorer, Demo Catalog) stay deferred.</p>
+  </section>
+
+  <section class="wrap">
+    <div class="eyebrow">Week by week</div>
+    <h2>The critical path.</h2>
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th>Week</th><th>Track A — Engineering</th><th>Track B — Content</th></tr></thead>
+      <tbody>
+        <tr><td class="wk">Sep 29–Oct 5</td><td>AWS env; port DB → Aurora+pgvector; swap chatbot → Bedrock (fixes credits); rebrand shell</td><td>Firsthand CS registry; start SCRUB → ~15 verified</td></tr>
+        <tr><td class="wk">Oct 6–12</td><td>Migrate ingestion → Lambda; Bedrock KB RAG on verified records; add grading fields</td><td>SCRUB → ~30; quarantine off-scope corpus</td></tr>
+        <tr><td class="wk">Oct 13–19</td><td>Models/ROI facets; SCRUB tool + verified badge; role profile + fit note</td><td>SCRUB → ~45; add fit notes</td></tr>
+        <tr><td class="wk">Oct 20–26</td><td>Integration; hardening; staging QA on AWS; rate caps</td><td>SCRUB → ~55; final verification pass</td></tr>
+        <tr><td class="wk">Oct 27–31</td><td>Production deploy on AWS; final QA; <strong>go live</strong></td><td>→ ~60 verified, graded records</td></tr>
+      </tbody>
+    </table></div>
+    <p class="caption">Assumes 1–2 devs + 1 curator from day one; AWS + Bedrock access and API quota resolved in week 1.</p>
+  </section>
+
+  <section class="wrap">
+    <div class="eyebrow">Risks &amp; how we hold the date</div>
+    <h2>What could slip — named plainly.</h2>
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th>Risk</th><th>Mitigation</th></tr></thead>
+      <tbody>
+        <tr><td class="name">AWS migration is the critical path</td><td>Migrate core only; use Bedrock Knowledge Bases (managed RAG); defer "launching soon" modules</td></tr>
+        <tr><td class="name">Strict firsthand-CS shrinks the corpus</td><td>That's intended — launch ~40–60 verified records; quality is the differentiator, not volume</td></tr>
+        <tr><td class="name">Bedrock/AWS learning curve</td><td>Keep NEO's app logic intact; change infra + LLM layer only, not the product</td></tr>
+        <tr><td class="name">SCRUB throughput</td><td>Extraction pre-fills; curator verifies, doesn't author; start day one</td></tr>
+      </tbody>
+    </table></div>
+    <h3>If we start slipping, in order</h3>
+    <ol class="cut">
+      <li><strong>Stack fallback:</strong> if the AWS migration runs long, <strong>launch on NEO's current stack on/before 31 Oct</strong> and complete the AWS cutover in early Nov. Protects the date without abandoning AWS.</li>
+      <li><strong>Chatbot → grounded search</strong> first; add the conversational layer post-launch.</li>
+      <li><strong>Fewer records</strong> (~40 strong) rather than 60.</li>
+      <li><strong>Never cut the SCRUB</strong> — unverified records destroy the one thing FieldNote sells.</li>
+    </ol>
+  </section>
+
+  <section class="wrap">
+    <div class="eyebrow">To hold 31 Oct, we need — this week</div>
+    <h2>Dependencies.</h2>
+    <ul class="clean">
+      <li><strong>Team:</strong> 1–2 developers (familiar with NEO's codebase) + 1 curator, starting now.</li>
+      <li><strong>AWS:</strong> account, Bedrock model access enabled, budget approved.</li>
+      <li><strong>NEO handoff:</strong> repo access, current data store, and API keys.</li>
+      <li><strong>Decisions in writing:</strong> ~40–60 verified-record launch target; off-scope corpus quarantined; stack-fallback accepted as the date insurance.</li>
+      <li><strong>Name:</strong> clear "FieldNote" (or decide to launch as NEO and rename later).</li>
+    </ul>
+  </section>
+</main>
+
+<footer>
+  <p>FieldNote — a Trueinfo Labs product · Oct 2026 delivery plan v2 · adapt NEO → AWS (Bedrock + Aurora), strict firsthand customer-support scope, ~40–60 verified records at launch. Supersedes delivery plan v1 (fresh AWS build). Companion: Functional Spec, Build Case, Strategy Memo. Timeline assumes stated team &amp; dependencies.</p>
+</footer>

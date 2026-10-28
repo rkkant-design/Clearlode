@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FieldNote Prototype</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  :root{
+    --paper:#F4F1E9;--surface:#FCFAF5;--surface-2:#EBE7DD;--ink:#1B1A15;--ink-2:#4C4A40;--ink-3:#807D70;
+    --line:#E0DBCF;--line-2:#CDC7B8;--slate:#3B372C;--slate-soft:#EAE6DB;--signal:#1F5140;--signal-soft:#E1EAE4;
+    --good:#2E6E4E;--good-soft:#DEEAE1;--warn:#8C6212;--warn-soft:#F2E7CF;--crit:#8C3A34;--crit-soft:#F0DEDC;--mute:#6B6656;--mute-soft:#E9E5DB;
+    --display:'Fraunces',Georgia,serif;--body:'Inter',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace;
+  }
+  :root:not([data-theme="light"]){@media (prefers-color-scheme:dark){
+    --paper:#15140E;--surface:#1E1C14;--surface-2:#26231A;--ink:#EEEADF;--ink-2:#B8B2A2;--ink-3:#847F6E;
+    --line:#302D22;--line-2:#403C2E;--slate:#B7AF9C;--slate-soft:#252217;--signal:#83BBA3;--signal-soft:#182720;
+    --good:#6FBF95;--good-soft:#16281E;--warn:#D8A24A;--warn-soft:#2B2411;--crit:#E0908A;--crit-soft:#2E1918;--mute:#9A9482;--mute-soft:#221F16;
+  }}
+  :root[data-theme="dark"]{
+    --paper:#15140E;--surface:#1E1C14;--surface-2:#26231A;--ink:#EEEADF;--ink-2:#B8B2A2;--ink-3:#847F6E;
+    --line:#302D22;--line-2:#403C2E;--slate:#B7AF9C;--slate-soft:#252217;--signal:#83BBA3;--signal-soft:#182720;
+    --good:#6FBF95;--good-soft:#16281E;--warn:#D8A24A;--warn-soft:#2B2411;--crit:#E0908A;--crit-soft:#2E1918;--mute:#9A9482;--mute-soft:#221F16;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+  input{font-family:inherit;}
+  .mono{font-family:var(--mono);}
+
+  /* top bar */
+  header.bar{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line);}
+  .bar-in{max-width:1120px;margin:0 auto;padding:10px 18px;display:flex;align-items:center;gap:16px;}
+  .brand{font-family:var(--display);font-size:19px;font-weight:500;letter-spacing:.015em;color:var(--ink);}
+  .brand span{color:var(--signal);}
+  nav.tabs{display:flex;gap:20px;margin-left:16px;}
+  nav.tabs button{padding:8px 2px;font-size:.9rem;color:var(--ink-3);font-weight:500;position:relative;}
+  nav.tabs button:hover{color:var(--ink-2);}
+  nav.tabs button.on{color:var(--ink);box-shadow:inset 0 -2px 0 var(--signal);}
+  .spacer{margin-left:auto;}
+  .rolechip{display:flex;align-items:center;gap:7px;padding:5px 11px;border:1px solid var(--line);border-radius:20px;font-size:.8rem;color:var(--ink-2);background:var(--surface);}
+  .rolechip b{color:var(--ink);font-weight:600;}
+  .rolechip .edit{color:var(--signal);font-family:var(--mono);font-size:.7rem;}
+  .iconbtn{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:.9rem;color:var(--ink-2);}
+  @media(max-width:640px){.rolechip .r-txt{display:none;} nav.tabs button{padding:6px 9px;}}
+
+  main{max-width:1120px;margin:0 auto;padding:20px 18px 60px;}
+
+  /* library layout */
+  .lib{display:grid;grid-template-columns:230px 1fr;gap:22px;}
+  @media(max-width:800px){.lib{grid-template-columns:1fr;}}
+  .filters{align-self:start;position:sticky;top:70px;}
+  @media(max-width:800px){.filters{position:static;}}
+  .fgroup{margin-bottom:18px;}
+  .fgroup .h{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);margin-bottom:8px;}
+  .search{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);font-size:.9rem;}
+  .search::placeholder{color:var(--ink-3);}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{padding:5px 10px;border:1px solid var(--line);border-radius:20px;font-size:.78rem;color:var(--ink-2);background:var(--surface);}
+  .chip.on{background:var(--slate);color:#fff;border-color:var(--slate);}
+  .chip.g.on{background:var(--slate);}
+  .toggle{display:flex;align-items:center;gap:8px;font-size:.84rem;color:var(--ink-2);cursor:pointer;}
+  .toggle input{accent-color:var(--signal);}
+  .clearf{font-size:.78rem;color:var(--signal);margin-top:4px;}
+
+  .count{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-bottom:12px;}
+  .cards{display:flex;flex-direction:column;gap:12px;}
+  .card{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:16px 18px;cursor:pointer;transition:border-color .12s,transform .12s;}
+  .card:hover{border-color:var(--line-2);transform:translateY(-1px);}
+  .card .row1{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;}
+  .logo{width:30px;height:30px;border-radius:7px;background:var(--slate-soft);color:var(--slate);font-weight:600;font-size:.8rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .card h3{font-family:var(--display);font-weight:500;font-size:1.16rem;margin:0;line-height:1.2;flex:1;min-width:180px;}
+  .card .tldr{font-size:.88rem;color:var(--ink-2);margin:6px 0 10px;}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+  .tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.02em;padding:2px 7px;border-radius:5px;background:var(--surface-2);color:var(--ink-2);text-transform:uppercase;}
+  .tag.mdl{background:var(--slate-soft);color:var(--slate);}
+  .grade{font-family:var(--mono);font-weight:600;font-size:11px;color:#fff;min-width:20px;height:20px;padding:0 5px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;}
+  .gA{background:var(--good);}.gB{background:var(--slate);}.gC{background:var(--warn);}.gD{background:var(--crit);}.gX{background:var(--mute);}
+  .badge{font-family:var(--mono);font-size:9px;font-weight:500;letter-spacing:.03em;padding:2px 7px;border-radius:20px;text-transform:uppercase;}
+  .badge.ver{background:var(--good-soft);color:var(--good);}
+  .badge.cand{background:var(--warn-soft);color:var(--warn);}
+  .badge.hold{background:var(--crit-soft);color:var(--crit);}
+  .fresh{font-family:var(--mono);font-size:10px;color:var(--ink-3);margin-left:auto;}
+
+  /* detail */
+  .detail{max-width:780px;margin:0 auto;}
+  .back{font-size:.85rem;color:var(--signal);margin-bottom:16px;display:inline-flex;gap:6px;align-items:center;}
+  .dhead{display:flex;gap:14px;align-items:flex-start;margin-bottom:6px;}
+  .dhead .logo{width:44px;height:44px;font-size:1.05rem;border-radius:10px;}
+  .detail h2{font-family:var(--display);font-weight:500;font-size:clamp(1.5rem,3.4vw,2.1rem);line-height:1.12;margin:0 0 4px;}
+  .detail .speaker{font-size:.9rem;color:var(--ink-2);}
+  .drow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0;}
+  .fitbox{border-left:3px solid var(--signal);background:var(--signal-soft);padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;}
+  .fitbox .k{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--signal);margin-bottom:5px;}
+  .fitbox p{margin:0;font-size:.9rem;color:var(--ink);}
+  .tier{border:1px solid var(--line);border-radius:12px;margin:12px 0;overflow:hidden;}
+  .tier .th{padding:11px 16px;background:var(--surface-2);font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);display:flex;justify-content:space-between;cursor:pointer;}
+  .tier .tb{padding:4px 16px 14px;}
+  .field{padding:12px 0;border-bottom:1px solid var(--line);}
+  .field:last-child{border-bottom:none;}
+  .field .l{font-family:var(--mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--slate);margin-bottom:5px;}
+  .field p{margin:0;font-size:.92rem;color:var(--ink-2);}
+  .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:2px 0;}
+  .metrics div{background:var(--surface);padding:9px 11px;}
+  .metrics b{font-family:var(--display);font-size:1.15rem;display:block;line-height:1;}
+  .metrics span{font-size:.68rem;color:var(--ink-2);display:block;margin-top:5px;line-height:1.3;}
+  @media(max-width:520px){.metrics{grid-template-columns:1fr 1fr;}}
+  .quote{border-left:2px solid var(--signal);padding:3px 0 3px 12px;margin:9px 0;font-family:var(--display);font-style:italic;color:var(--ink);font-size:.96rem;line-height:1.4;}
+  .quote .c{display:block;font-family:var(--mono);font-style:normal;font-size:9.5px;color:var(--ink-3);margin-top:5px;}
+  .flagline{font-size:.85rem;color:var(--ink-2);background:var(--warn-soft);border-radius:8px;padding:9px 12px;margin:8px 0;}
+  .flagline b{color:var(--warn);}
+  .srcs{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);line-height:1.7;}
+  .holdnote{background:var(--crit-soft);border-radius:10px;padding:14px 16px;font-size:.9rem;color:var(--ink);}
+  .holdnote b{color:var(--crit);}
+
+  /* chat */
+  .chat{max-width:720px;margin:0 auto;}
+  .chatwin{border:1px solid var(--line);border-radius:16px;background:var(--surface);overflow:hidden;display:flex;flex-direction:column;height:min(66vh,560px);}
+  .chatlog{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:14px;}
+  .msg{max-width:86%;font-size:.92rem;line-height:1.5;}
+  .msg.u{align-self:flex-end;background:var(--slate);color:#fff;padding:9px 14px;border-radius:14px 14px 3px 14px;}
+  .msg.a{align-self:flex-start;color:var(--ink-2);}
+  .msg.a .who{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--signal);margin-bottom:5px;}
+  .msg.a .bubble{background:var(--surface-2);padding:11px 15px;border-radius:3px 14px 14px 14px;}
+  .msg.a .bubble strong{color:var(--ink);}
+  .cites{margin-top:9px;display:flex;flex-wrap:wrap;gap:6px;}
+  .cite{font-family:var(--mono);font-size:9.5px;padding:3px 9px;border:1px solid var(--slate);color:var(--slate);border-radius:20px;background:var(--slate-soft);}
+  .cite.warn{border-color:var(--warn);color:var(--warn);background:var(--warn-soft);}
+  .suggest{display:flex;flex-wrap:wrap;gap:7px;padding:0 18px 12px;}
+  .suggest button{font-size:.8rem;color:var(--ink-2);border:1px solid var(--line);border-radius:20px;padding:6px 12px;background:var(--surface);text-align:left;}
+  .suggest button:hover{border-color:var(--slate);color:var(--ink);}
+  .chatin{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line);}
+  .chatin input{flex:1;padding:10px 14px;border:1px solid var(--line);border-radius:22px;background:var(--paper);color:var(--ink);font-size:.9rem;}
+  .chatin button{width:40px;height:40px;border-radius:50%;background:var(--slate);color:#fff;font-size:1rem;flex-shrink:0;}
+  .disclaimer{font-family:var(--mono);font-size:10px;color:var(--ink-3);text-align:center;margin-top:12px;line-height:1.5;}
+
+  /* modal */
+  .modal{position:fixed;inset:0;background:rgba(10,14,20,.55);z-index:60;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .modal .box{background:var(--surface);border:1px solid var(--line-2);border-radius:16px;max-width:440px;width:100%;padding:26px;}
+  .modal h3{font-family:var(--display);font-weight:500;font-size:1.5rem;margin:0 0 6px;}
+  .modal p{font-size:.88rem;color:var(--ink-2);margin:0 0 16px;}
+  .modal label{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);display:block;margin:12px 0 5px;}
+  .modal select,.modal input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--paper);color:var(--ink);font-size:.9rem;}
+  .modal .go{margin-top:20px;width:100%;padding:11px;border-radius:10px;background:var(--signal);color:#fff;font-weight:600;font-size:.92rem;}
+  .eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--signal);margin-bottom:10px;}
+  .note{font-family:var(--mono);font-size:10px;color:var(--ink-3);text-align:center;padding:14px;}
+
+  /* home */
+  .home{max-width:880px;margin:0 auto;}
+  .hero{padding:26px 0 6px;}
+  .hero .eyebrow{margin-bottom:12px;}
+  .hero h1{font-family:var(--display);font-weight:500;font-size:clamp(2rem,5vw,3rem);line-height:1.04;letter-spacing:-.015em;margin:0 0 14px;max-width:16ch;}
+  .hero .sub{font-family:var(--display);font-size:clamp(1.05rem,2vw,1.28rem);line-height:1.44;color:var(--ink-2);max-width:60ch;margin:0;}
+  .cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;}
+  .cta .primary{background:var(--signal);color:#fff;padding:11px 20px;border-radius:10px;font-weight:600;font-size:.92rem;}
+  .cta .ghost{border:1px solid var(--line-2);padding:11px 20px;border-radius:10px;color:var(--ink);font-size:.92rem;background:var(--surface);}
+  .homestats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:26px 0 6px;}
+  .homestats div{background:var(--surface);padding:14px 16px;}
+  .homestats b{font-family:var(--display);font-size:1.5rem;display:block;line-height:1;}
+  .homestats b.sg{color:var(--signal);}.homestats b.gd{color:var(--good);}
+  .homestats span{font-size:.74rem;color:var(--ink-2);display:block;margin-top:6px;line-height:1.3;}
+  @media(max-width:640px){.homestats{grid-template-columns:1fr 1fr;}}
+  .sec-h{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);margin:36px 0 18px;padding-bottom:10px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline;}
+  .sec-h a{color:var(--signal);font-size:.95em;cursor:pointer;letter-spacing:.04em;}
+  .wfcards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  @media(max-width:640px){.wfcards{grid-template-columns:1fr;}}
+  .wfcard{border:1px solid var(--line);border-radius:12px;padding:16px 17px;cursor:pointer;background:var(--surface);transition:border-color .12s,transform .12s;}
+  .wfcard:hover{border-color:var(--line-2);transform:translateY(-1px);}
+  .wfcard.soon{opacity:.72;cursor:default;}
+  .wfcard h4{font-family:var(--display);font-weight:500;font-size:1.1rem;margin:0 0 6px;color:var(--ink);}
+  .wfcard p{font-size:.83rem;color:var(--ink-2);margin:0 0 10px;}
+  .wfcard .cnt{font-family:var(--mono);font-size:10px;color:var(--slate);}
+  .wfcard .cnt.zero{color:var(--warn);}
+  .pipe{display:flex;flex-direction:column;gap:8px;}
+  .piperow{display:flex;align-items:center;gap:11px;border:1px solid var(--line);border-radius:10px;padding:10px 14px;background:var(--surface);}
+  .piperow .lg{width:26px;height:26px;border-radius:6px;background:var(--slate-soft);color:var(--slate);font-size:.72rem;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .piperow .nm{font-weight:600;font-size:.9rem;}
+  .piperow .ds{font-size:.82rem;color:var(--ink-3);flex:1;}
+  @media(max-width:560px){.piperow .ds{display:none;}}
+  .trust{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--surface-2);}
+  @media(max-width:640px){.trust{grid-template-columns:1fr 1fr;}}
+  .tstep{position:relative;}
+  .tstep .n{font-family:var(--mono);font-size:10px;color:var(--signal);}
+  .tstep b{display:block;font-size:.9rem;margin:3px 0 2px;color:var(--ink);}
+  .tstep span{font-size:.78rem;color:var(--ink-2);line-height:1.35;}
+  .askteaser{border:1px solid var(--line);border-radius:14px;padding:18px 20px;background:var(--surface);display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;}
+  .askteaser .t{font-family:var(--display);font-size:1.15rem;color:var(--ink);}
+  .askteaser .s{font-size:.85rem;color:var(--ink-2);}
+  .askteaser button{background:var(--slate);color:#fff;padding:9px 16px;border-radius:9px;font-size:.86rem;font-weight:500;}
+  /* home refined */
+  .creds{display:flex;flex-wrap:wrap;gap:9px 24px;margin-top:26px;padding-top:20px;border-top:1px solid var(--line);}
+  .creds span{font-family:var(--mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);position:relative;padding-left:15px;}
+  .creds span::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:5px;height:5px;border-radius:50%;background:var(--signal);}
+  .wfcards2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media(max-width:640px){.wfcards2{grid-template-columns:1fr;}}
+  .wfcards2 .wfcard{width:100%;text-align:left;display:block;padding:20px 22px;border-radius:14px;}
+  .wfcards2 .wfcard h4{font-family:var(--display);font-weight:500;font-size:1.2rem;margin:0 0 7px;}
+  .wfcards2 .wfcard p{font-size:.86rem;color:var(--ink-2);margin:0 0 16px;line-height:1.45;}
+  .wfcards2 .wfcard .cnt{display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--slate);border-top:1px solid var(--line);padding-top:12px;}
+  .wfcards2 .wfcard .cnt span{transition:transform .14s;font-size:1rem;}
+  .wfcards2 .wfcard:hover .cnt span{transform:translateX(4px);}
+  .spotlight{border:1px solid var(--line-2);border-top:3px solid var(--signal);border-radius:4px 4px 16px 16px;padding:30px 32px;background:var(--surface);box-shadow:0 18px 44px -28px rgba(27,26,21,.4);}
+  .sp-top{display:flex;gap:9px;align-items:center;margin-bottom:14px;flex-wrap:wrap;}
+  .sp-tag{font-family:var(--mono);font-size:10px;color:var(--ink-3);letter-spacing:.05em;text-transform:uppercase;}
+  .sp-h{font-family:var(--display);font-weight:500;font-size:clamp(1.6rem,3.4vw,2.2rem);line-height:1.1;margin:0 0 10px;letter-spacing:-.01em;}
+  .sp-tldr{font-size:.98rem;color:var(--ink-2);margin:0 0 20px;max-width:64ch;line-height:1.55;}
+  .sp-quote{border-left:3px solid var(--signal);margin:0 0 22px;padding:4px 0 4px 20px;font-family:var(--display);font-style:italic;font-size:clamp(1.1rem,2.2vw,1.35rem);line-height:1.42;color:var(--ink);}
+  .sp-quote cite{display:block;font-family:var(--mono);font-style:normal;font-size:10px;color:var(--ink-3);margin-top:10px;letter-spacing:.02em;}
+  .sp-read{background:var(--signal);color:#fff;padding:11px 20px;border-radius:10px;font-weight:600;font-size:.9rem;}
+  .trust{margin-bottom:10px;}
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="bar-in">
+    <button class="brand" id="brandHome" style="letter-spacing:.14em">FIELDNOTE<span>.</span></button>
+    <nav class="tabs" id="tabs">
+      <button data-v="home" class="on">Home</button>
+      <button data-v="library">Library</button>
+      <button data-v="chat">Ask FieldNote</button>
+    </nav>
+    <div class="spacer"></div>
+    <button class="rolechip" id="roleChip"><span class="r-txt">Role: <b id="roleTxt">—</b></span><span class="edit">edit</span></button>
+    <button class="iconbtn" id="themeBtn" title="Theme">◐</button>
+  </div>
+</header>
+<main id="app"></main>
+
+<script>
+(function(){
+  "use strict";
+  // localStorage shim (opaque-origin safe)
+  var LS=(function(){try{var k="__t";localStorage.setItem(k,"1");localStorage.removeItem(k);return localStorage;}catch(e){var m={};return{getItem:function(k){return k in m?m[k]:null;},setItem:function(k,v){m[k]=String(v);},removeItem:function(k){delete m[k];}};}})();
+
+  /* ---------------- DATA: real scrubbed Klarna records + labelled candidates ---------------- */
+  var RECORDS=[
+    {
+      id:"FN-CS-0001", company:"Klarna", industry:"Fintech", workflow:"Tier-1 deflection",
+      models:["OpenAI"], grade:"B", status:"verified", roi:true, fresh:"Feb 2024",
+      speaker:"Sebastian Siemiatkowski, Co-founder & CEO",
+      title:"Klarna automated two-thirds of support chats with OpenAI",
+      fit:"The transferable lesson: success is gated on documentation quality, and telling customers when they’re talking to AI protects trust.",
+      tldr:"An OpenAI-powered assistant handled ~two-thirds of customer-service chats within a month at CSAT on par with humans — but the 'before' baseline is stated two ways across sources, and quality issues surfaced later.",
+      problem:"High volume of repetitive customer-service contacts across 23 markets and 35+ languages; long resolution times and heavy reliance on ~700 outsourced full-time agents.",
+      solution:"A customer-facing AI assistant built on OpenAI models, evolved from internal 'co-pilots' that first assisted agents on complex tasks (e.g. dispute resolution) before going client-facing.",
+      architecture:"LLM assistant over Klarna's own support documentation/FAQs; human-in-the-loop origins (co-pilot → client-facing); hard transparency rule that the customer is always told if they're talking to AI.",
+      deployment:"Built fast via a direct OpenAI relationship ('a joint Slack channel'); success gated on documentation quality; rolled from internal co-pilot to customer-facing.",
+      metrics:[{v:"~2/3",l:"CS chats handled, 1st month"},{v:"2.3M",l:"conversations"},{v:"~700",l:"FTE agents' work equiv."},{v:"25%",l:"drop in repeat inquiries"},{v:"<2 min",l:"resolution (was 11/14 min*)"},{v:"~$40M",l:"projected 2024 profit"}],
+      boundaries:"Company-reported, no clean baseline/control; '$40M' is projected. 'Handled two-thirds' is contact containment, not verified resolution. Later walked back on quality (see FN-CS-0002).",
+      conflict:"The 'before' resolution time is 11 minutes in the press release but 14 minutes in the CEO's spoken account. Reported as a range pending stream re-confirmation — not silently averaged.",
+      evidence:[
+        {q:"It's basically an employee that turns out to work every day and has forgotten everything about what Klarna is, how it works.", c:"Siemiatkowski · Sequoia 'Training Data' (YouTube m3niSE-8ZvE) · §'How we built this' 8:51"},
+        {q:"One of the rules that we agreed on was, that the customer should always know if they speak to AI or if they speak to a human.", c:"Siemiatkowski · Sequoia 'Training Data' · §'AI & customer perception' ~7:23"},
+        {q:"Shit in, shit out — if you feed data models with bad things, you're going to get bad results.", c:"Siemiatkowski · Sequoia 'Training Data' · §'Detailed instructions for AI success' ~10:21"}
+      ],
+      sources:[
+        {t:"Klarna press release, 27 Feb 2024 (first-party)"},
+        {t:"Sequoia 'Training Data' podcast, YouTube m3niSE-8ZvE, 23 Jul 2024, 51:35 (firsthand video)"}
+      ]
+    },
+    {
+      id:"FN-CS-0002", company:"Klarna", industry:"Fintech", workflow:"Tier-1 deflection",
+      models:["OpenAI"], grade:"D", status:"hold", roi:false, fresh:"2025",
+      speaker:"Attributed to Sebastian Siemiatkowski — journalist-reported",
+      tldr:"~A year after the win, Klarna reportedly acknowledged the aggressive AI cost-cutting hurt service quality and began rehiring humans — while keeping AI at ~two-thirds of volume. The boundary that makes FN-CS-0001 honest.",
+      hold:true,
+      claim:"The AI-driven cost cutting 'ended up with lower quality'; 'really investing in the quality of the human support is the way of the future for us.'",
+      claimcite:"Attributed to Siemiatkowski via Bloomberg / CX Dive, 2025 — SECONDARY, journalist-reported",
+      whyd:"Under FieldNote's firsthand rule this quote is out of scope until confirmed at source — it reaches us through journalists, not the operator's own public words. Do not publish until the firsthand clip (interview / earnings remark) is located and its timestamp logged, at which point it may upgrade to A/B as a genuine 'we went too far' record.",
+      scrub:"HOLD — assigned for firsthand sourcing. If found → upgrade + publish paired with FN-CS-0001. If not → keep only the neutral, corroborated fact that Klarna resumed human hiring.",
+      sources:[{t:"Bloomberg / CX Dive, 2025 (secondary — journalist-reported)"}]
+    },
+    // ---- candidates: real firsthand leads, clearly NOT yet scrubbed, no fabricated metrics ----
+    {
+      id:"FN-CS-0003", company:"Chime", industry:"Fintech", workflow:"Tier-1 deflection",
+      models:[], grade:"B", status:"verified", roi:true, fresh:"Jan 2026",
+      speaker:"Janelle Sallenave, Chief Operating Officer",
+      title:"Chime’s AI self-service handles 70% of member support",
+      fit:"The transferable lesson: lead with experience, not cost — pair AI self-service with seamless human escalation and CSAT can rise, not fall.",
+      tldr:"AI self-service now starts ~70% of member support interactions; the gen-AI voicebot resolves ~66% of calls (up from under 20%) and the chatbot ~75% of chats, with dispute time roughly halved — reported first-party with clear before/after on several metrics.",
+      problem:"Chime supported ~50 million member service interactions in 2024 and needed to scale support without degrading experience; dispute resolution alone took ~42 minutes.",
+      solution:"Generative-AI voicebot and chatbot as the self-service front door, escalating seamlessly to human CX representatives. Base models / vendors are not named in Chime’s first-party sources.",
+      architecture:"AI-first self-service across voice and chat with human-in-the-loop escalation; positioned as a brand extension rather than a cost-cutting bot. Underlying models undisclosed first-party.",
+      deployment:"Rolled across voice and chat channels; framed internally as treating AI ‘like a member of the team’, and measured on member satisfaction, not just deflection.",
+      metrics:[{v:"70%",l:"interactions start with AI self-service"},{v:"~66%",l:"voicebot resolution (was <20%)"},{v:"~75%",l:"chatbot resolution"},{v:"+20–40pp",l:"resolution-rate lift"},{v:"+80%",l:"member satisfaction since 2023"},{v:"−50%",l:"dispute time (42→<20 min)"}],
+      boundaries:"All figures are company-reported (first-party), with no independent control. Base models/vendor undisclosed. ‘70% start with AI’ is the entry point, not resolution — the resolution figures are the ~66% (voice) and ~75% (chat).",
+      evidence:[
+        {q:"Technology should make financial services feel more personal, not less.", c:"Janelle Sallenave, COO · Chime newsroom, 14 Jan 2026 (first-party)"},
+        {q:"We’ve seen that technology and empathy can scale together.", c:"Janelle Sallenave, COO · Chime newsroom, 14 Jan 2026"}
+      ],
+      sources:[
+        {t:"Chime newsroom, ‘How Chime Is Using AI to Redefine Member Experience’, 14 Jan 2026 (first-party)"},
+        {t:"Janelle Sallenave (COO, Chime), firsthand talk, YouTube hNgmlAb-xr8"}
+      ]
+    },
+    {id:"FN-CS-0004", company:"Lightspeed", industry:"Retail / commerce", workflow:"Agent-assist", models:["—"], grade:"—", status:"candidate", roi:false, fresh:"candidate", speaker:"VP Support (firsthand talk)", tldr:"Firsthand candidate — VP of Support on 'change management is the hard part'. Awaiting SCRUB.", srcHint:"Intercom Pioneer spotlight"},
+    {
+      id:"FN-CS-0005", company:"Nubank", industry:"Fintech", workflow:"Agent-assist",
+      models:["OpenAI","Anthropic","Mistral"], grade:"C", status:"verified", roi:false, fresh:"Sep 2024",
+      speaker:"Kevin Rossell, Lead Data Scientist",
+      title:"Nubank’s ‘Agent Copilot’ empowers CX at 100M-customer scale",
+      fit:"The transferable lesson: treat the evaluation suite as the product, and use AI to empower agents rather than replace them — but note this record has no disclosed ROI yet.",
+      tldr:"Nubank built an ‘Agent Copilot’ that uses RAG to suggest answers and summarise interaction history for human CX agents across 100M+ customers. Richly documented on approach and evaluation — but the first-party sources disclose no outcome numbers.",
+      problem:"Support CX agents serving 100M+ customers needed to answer questions faster and more accurately without losing the human touch.",
+      solution:"An ‘Agent Copilot’ of LLM tools that suggest answers and actions and summarise interaction history, built on RAG + in-context learning. Models named: OpenAI, Anthropic, Mistral, Lamini.",
+      architecture:"RAG combined with in-context learning; evaluation via Rouge, Jaccard similarity and Ragas, plus implicit feedback from usage and agent edit-rates — an evaluation-driven development loop.",
+      deployment:"Copilot to empower (not replace) CX agents; an evaluation suite is central to iterating the system safely at scale.",
+      metrics:[],
+      boundaries:"No ROI or outcome numbers are disclosed in the first-party sources — value is described qualitatively and through engineering rigor. Graded C accordingly until measured outcomes are published.",
+      evidence:[
+        {q:"The agent copilot is a set of tools for CX agents; they are meant to empower these agents to better answer customers’ questions, using LLMs.", c:"Kevin Rossell, Lead Data Scientist · Nubank engineering blog, 20 Sep 2024 (first-party)"}
+      ],
+      sources:[
+        {t:"Nubank engineering blog, ‘Empowering customer support agents with generative AI’, 20 Sep 2024 (first-party)"},
+        {t:"Aman Gupta, ‘Building AI Agents for 127 Million Customers’, QCon AI New York 2025 (firsthand talk, Nubank YouTube)"}
+      ]
+    },
+    {id:"FN-CS-0006", company:"Cisco", industry:"Enterprise tech", workflow:"Agent-assist", models:["—"], grade:"—", status:"candidate", roi:false, fresh:"candidate", speaker:"Support leader (firsthand talk)", tldr:"Firsthand candidate — MTTR reduction via agent-assist. Awaiting SCRUB.", srcHint:"conference talk"},
+    {id:"FN-CS-0007", company:"Playtomic", industry:"Consumer app", workflow:"Tier-1 deflection", models:["—"], grade:"—", status:"candidate", roi:false, fresh:"candidate", speaker:"Named operator (firsthand talk)", tldr:"Firsthand candidate — 'deflection is gameable' cautionary lesson. Awaiting SCRUB.", srcHint:"podcast"}
+  ];
+
+  /* ---------------- STATE ---------------- */
+  var state={
+    view:"home",
+    role: LS.getItem("fn_role")||"",
+    industry: LS.getItem("fn_industry")||"",
+    q:"", company:"", workflow:"", model:"", grade:"", verifiedOnly:false,
+    open:null,
+    chat:[]
+  };
+
+  var app=document.getElementById("app");
+  var roleTxt=document.getElementById("roleTxt");
+
+  /* ---------------- helpers ---------------- */
+  function esc(s){return (s||"").replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+  function initials(n){return n.replace(/[^A-Za-z ]/g,"").split(" ").filter(Boolean).slice(0,2).map(function(w){return w[0];}).join("").toUpperCase();}
+  function gcls(g){return g==="A"?"gA":g==="B"?"gB":g==="C"?"gC":g==="D"?"gD":"gX";}
+  function uniq(arr){var o={};arr.forEach(function(x){o[x]=1;});return Object.keys(o);}
+
+  function filtered(){
+    return RECORDS.filter(function(r){
+      if(state.verifiedOnly && r.status!=="verified") return false;
+      if(state.company && r.company!==state.company) return false;
+      if(state.workflow && r.workflow!==state.workflow) return false;
+      if(state.model && (r.models||[]).indexOf(state.model)<0) return false;
+      if(state.grade && r.grade!==state.grade) return false;
+      if(state.q){
+        var blob=(r.company+" "+r.workflow+" "+(r.models||[]).join(" ")+" "+r.tldr+" "+(r.problem||"")+" "+(r.speaker||"")).toLowerCase();
+        if(blob.indexOf(state.q.toLowerCase())<0) return false;
+      }
+      return true;
+    });
+  }
+
+  /* ---------------- RENDER: role modal ---------------- */
+  function roleModal(){
+    var roles=["Head of CX","VP Customer Support","Support Operations Lead","Director of Customer Service","Founder / CEO"];
+    var inds=["Fintech","Retail / commerce","SaaS / tech","Consumer app","Telecom","Other"];
+    var m=document.createElement("div");m.className="modal";
+    m.innerHTML='<div class="box"><div class="eyebrow">Welcome to FieldNote</div><h3>Who are you, roughly?</h3>'+
+      '<p>Pick a role so the library can tell you why each deployment matters to you. That’s the whole profile — no onboarding call.</p>'+
+      '<label>Your role</label><select id="mRole">'+roles.map(function(r){return '<option '+(state.role===r?"selected":"")+'>'+r+'</option>';}).join("")+'</select>'+
+      '<label>Your industry</label><select id="mInd">'+inds.map(function(i){return '<option '+(state.industry===i?"selected":"")+'>'+i+'</option>';}).join("")+'</select>'+
+      '<button class="go" id="mGo">Enter FieldNote</button></div>';
+    document.body.appendChild(m);
+    m.querySelector("#mGo").onclick=function(){
+      state.role=m.querySelector("#mRole").value; state.industry=m.querySelector("#mInd").value;
+      LS.setItem("fn_role",state.role);LS.setItem("fn_industry",state.industry);
+      document.body.removeChild(m); roleTxt.textContent=state.role; render();
+    };
+    m.onclick=function(e){if(e.target===m && state.role){document.body.removeChild(m);} };
+  }
+
+  /* ---------------- RENDER: home ---------------- */
+  function homeView(){
+    var verified=RECORDS.filter(function(r){return r.status==="verified";});
+    var spot=verified[0];
+    var wfcount=function(n){return RECORDS.filter(function(r){return r.workflow===n && r.status!=="hold";}).length;};
+    var role=state.role||"CX leader", ind=state.industry||"your industry";
+
+    var wfdefs=[
+      {n:"Tier-1 deflection",d:"AI that resolves or contains first-line customer contacts before they reach a human."},
+      {n:"Agent-assist",d:"Copilots that draft, summarise and surface answers so human agents resolve faster."}
+    ];
+    var wfcards=wfdefs.map(function(w){
+      var c=wfcount(w.n);
+      return '<button class="wfcard" data-wf="'+esc(w.n)+'"><h4>'+w.n+'</h4><p>'+w.d+'</p>'+
+        '<div class="cnt">'+c+' record'+(c!==1?"s":"")+' <span>→</span></div></button>';
+    }).join("");
+
+    var q=(spot.evidence&&spot.evidence[0])?spot.evidence[0]:null;
+
+    return '<div class="home">'+
+      '<div class="hero"><div class="eyebrow">For '+esc(role)+' · '+esc(ind)+'</div>'+
+        '<h1>See what other teams actually did with AI.</h1>'+
+        '<p class="sub">Firsthand, verified deployment records from named operators — the problem, the models, the results, and the boundaries. In their own words, with the receipts.</p>'+
+        '<div class="cta"><button class="primary" data-goto="library">Explore the library →</button><button class="ghost" data-goto="chat">Ask FieldNote</button></div>'+
+        '<div class="creds"><span>Firsthand only</span><span>Evidence-graded A–D</span><span>Human-verified</span><span>YouTube + first-party</span></div>'+
+      '</div>'+
+
+      '<div class="sec-h"><span>Explore by workflow</span><a data-goto="library">Browse all →</a></div>'+
+      '<div class="wfcards2">'+wfcards+'</div>'+
+
+      '<div class="sec-h"><span>Featured record</span></div>'+
+      '<div class="spotlight">'+
+        '<div class="sp-top"><span class="grade gB">'+spot.grade+'</span><span class="badge ver">verified ✓</span><span class="sp-tag">'+esc(spot.industry)+' · '+esc(spot.workflow)+'</span></div>'+
+        '<h3 class="sp-h">'+esc(spot.company)+'</h3>'+
+        '<p class="sp-tldr">'+esc(spot.tldr)+'</p>'+
+        (q?'<blockquote class="sp-quote">“'+esc(q.q)+'”<cite>'+esc(q.c)+'</cite></blockquote>':"")+
+        '<button class="sp-read" data-open="'+spot.id+'">Read the full record →</button>'+
+      '</div>'+
+
+      '<div class="askteaser"><div><div class="t">Not sure where to look?</div><div class="s">Ask in plain language — answers come only from verified records, always cited, never invented.</div></div><button data-goto="chat">Ask FieldNote →</button></div>'+
+
+      '<div class="sec-h"><span>How every record is made</span></div>'+
+      '<div class="trust">'+
+        '<div class="tstep"><div class="n">01</div><b>Firsthand</b><span>A named operator, in their own public words (YouTube / first-party).</span></div>'+
+        '<div class="tstep"><div class="n">02</div><b>Scrubbed</b><span>A human confirms every quote and timestamp against the source.</span></div>'+
+        '<div class="tstep"><div class="n">03</div><b>Graded</b><span>Evidence rated A–D; metric hygiene enforced; conflicts flagged.</span></div>'+
+        '<div class="tstep"><div class="n">04</div><b>Verified</b><span>Only then does it enter the library with the verified badge.</span></div>'+
+      '</div>'+
+      '</div>';
+  }
+
+  /* ---------------- RENDER: library ---------------- */
+  function facetChips(field,label,values){
+    var cur=state[field];
+    return '<div class="fgroup"><div class="h">'+label+'</div><div class="chips">'+
+      values.map(function(v){
+        var on=cur===v; var cls="chip"+(field==="grade"?" g":"")+(on?" on":"");
+        return '<button class="'+cls+'" data-facet="'+field+'" data-val="'+esc(v)+'">'+esc(v)+'</button>';
+      }).join("")+'</div></div>';
+  }
+
+  function libraryView(){
+    var companies=uniq(RECORDS.map(function(r){return r.company;}));
+    var workflows=uniq(RECORDS.map(function(r){return r.workflow;}));
+    var models=uniq([].concat.apply([],RECORDS.map(function(r){return r.models||[];}))).filter(function(m){return m!=="—";});
+    var grades=["A","B","C","D"];
+    var recs=filtered();
+
+    var filters='<aside class="filters">'+
+      '<div class="fgroup"><div class="h">Search</div><input class="search" id="searchInp" placeholder="Search records…" value="'+esc(state.q)+'"></div>'+
+      '<div class="fgroup"><label class="toggle"><input type="checkbox" id="verOnly" '+(state.verifiedOnly?"checked":"")+'> Verified records only</label></div>'+
+      facetChips("company","Company",companies)+
+      facetChips("workflow","Category / workflow",workflows)+
+      facetChips("model","Models",models)+
+      facetChips("grade","Evidence grade",grades)+
+      '<button class="clearf" id="clearF">Clear all filters</button></aside>';
+
+    var cards=recs.map(function(r){
+      var badge = r.status==="verified"?'<span class="badge ver">verified</span>':
+                  r.status==="hold"?'<span class="badge hold">hold</span>':
+                  '<span class="badge cand">candidate</span>';
+      var mtags=(r.models||[]).filter(function(m){return m!=="—";}).map(function(m){return '<span class="tag mdl">'+esc(m)+'</span>';}).join("");
+      return '<div class="card" data-open="'+r.id+'">'+
+        '<div class="row1"><div class="logo">'+initials(r.company)+'</div>'+
+          '<h3>'+esc(r.company)+'</h3>'+
+          '<span class="grade '+gcls(r.grade)+'">'+r.grade+'</span>'+badge+
+          '<span class="fresh">'+esc(r.fresh)+'</span></div>'+
+        '<div class="tldr">'+esc(r.tldr)+'</div>'+
+        '<div class="tags"><span class="tag">'+esc(r.workflow)+'</span>'+mtags+
+          (r.roi?'<span class="tag" style="background:var(--good-soft);color:var(--good)">ROI disclosed</span>':"")+'</div>'+
+        '</div>';
+    }).join("");
+
+    return '<div class="lib">'+filters+'<section><div class="count">'+recs.length+' record'+(recs.length!==1?"s":"")+' · '+
+      RECORDS.filter(function(r){return r.status==="verified";}).length+' verified in this demo</div>'+
+      '<div class="cards">'+(cards||'<div class="note">No records match these filters.</div>')+'</div></section></div>';
+  }
+
+  /* ---------------- RENDER: detail ---------------- */
+  function fitNote(r){
+    var role=state.role||"a CX leader", ind=state.industry||"your industry";
+    if(r.status!=="verified") return "";
+    var same = (r.industry===ind);
+    var txt="You’re "+role+" in "+ind+". "+(same?"This is a "+r.industry.toLowerCase()+" peer — directly comparable.":r.company+" is "+r.industry.toLowerCase()+", not "+ind.toLowerCase()+", so treat the specifics as directional — but the operating lessons transfer.")+" "+(r.fit||"");
+    return '<div class="fitbox"><div class="k">Why this matters to you</div><p>'+esc(txt)+'</p></div>';
+  }
+
+  function detailView(r){
+    if(r.hold){
+      return '<div class="detail"><button class="back" data-back>← Back to library</button>'+
+        '<div class="dhead"><div class="logo">'+initials(r.company)+'</div><div><h2>'+esc(r.company)+' — the walk-back</h2><div class="speaker">'+esc(r.speaker)+'</div></div></div>'+
+        '<div class="drow"><span class="grade '+gcls(r.grade)+'">'+r.grade+'</span><span class="badge hold">HOLD · not published</span><span class="tag">'+esc(r.workflow)+'</span></div>'+
+        '<div class="holdnote"><b>This record is held by the SCRUB.</b> '+esc(r.whyd)+'</div>'+
+        '<div class="tier"><div class="th"><span>Reported claim (secondary)</span></div><div class="tb"><div class="quote">'+esc(r.claim)+'<span class="c">'+esc(r.claimcite)+'</span></div></div></div>'+
+        '<div class="field"><div class="l">Scrub action</div><p>'+esc(r.scrub)+'</p></div>'+
+        '<div class="field"><div class="l">Sources</div><p class="srcs">'+r.sources.map(function(s){return "▸ "+esc(s.t);}).join("<br>")+'</p></div></div>';
+    }
+    var mtags=(r.models||[]).map(function(m){return '<span class="tag mdl">'+esc(m)+'</span>';}).join("");
+    var mets=(r.metrics||[]).map(function(m){return '<div><b>'+esc(m.v)+'</b><span>'+esc(m.l)+'</span></div>';}).join("");
+    var evs=(r.evidence||[]).map(function(e){return '<div class="quote">'+esc(e.q)+'<span class="c">'+esc(e.c)+'</span></div>';}).join("");
+    return '<div class="detail"><button class="back" data-back>← Back to library</button>'+
+      '<div class="dhead"><div class="logo">'+initials(r.company)+'</div><div><h2>'+esc(r.title||(r.company+" · "+r.workflow))+'</h2><div class="speaker">'+esc(r.speaker)+'</div></div></div>'+
+      '<div class="drow"><span class="grade '+gcls(r.grade)+'">'+r.grade+'</span>'+
+        (r.status==="verified"?'<span class="badge ver">verified ✓</span>':'<span class="badge cand">candidate</span>')+
+        '<span class="tag">'+esc(r.workflow)+'</span>'+mtags+'<span class="fresh">'+esc(r.fresh)+'</span></div>'+
+      fitNote(r)+
+      // TIER 1
+      '<div class="tier"><div class="th"><span>Tier 1 · TL;DR</span></div><div class="tb"><div class="field"><p>'+esc(r.tldr)+'</p></div></div></div>'+
+      // TIER 2
+      '<div class="tier"><div class="th" data-tier="t2"><span>Tier 2 · Decision card</span><span>–</span></div><div class="tb" id="t2">'+
+        '<div class="field"><div class="l">Problem</div><p>'+esc(r.problem)+'</p></div>'+
+        '<div class="field"><div class="l">Solution & models</div><p>'+esc(r.solution)+'</p></div>'+
+        '<div class="field"><div class="l">Architecture</div><p>'+esc(r.architecture)+'</p></div>'+
+        '<div class="field"><div class="l">Deployment</div><p>'+esc(r.deployment)+'</p></div>'+
+        '<div class="field"><div class="l">Outcomes</div>'+
+          (mets?'<div class="metrics">'+mets+'</div>':'<p style="font-style:italic;color:var(--ink-3)">Not disclosed in the firsthand sources — recorded as <code>not_disclosed</code>.</p>')+
+          (r.conflict?'<div class="flagline"><b>Metric conflict caught:</b> '+esc(r.conflict)+'</div>':"")+'</div>'+
+        '<div class="field"><div class="l">Boundaries & caveats</div><p>'+esc(r.boundaries)+'</p></div></div></div>'+
+      // TIER 3
+      '<div class="tier"><div class="th" data-tier="t3"><span>Tier 3 · Evidence (quotes + timestamps)</span><span>+</span></div><div class="tb" id="t3" style="display:none">'+
+        evs+
+        '<div class="field"><div class="l">Sources</div><p class="srcs">'+r.sources.map(function(s){return "▸ "+esc(s.t);}).join("<br>")+'</p></div>'+
+        '<div class="field"><div class="l">Evidence grade — '+r.grade+'</div><p>Graded on source strength, baseline presence and metric hygiene. First-party or firsthand disclosures with numbers land around B; directional claims without measured outcomes land at C. Company-reported figures never reach A without an independent control.</p></div></div></div>';
+  }
+
+  /* ---------------- RENDER: chat ---------------- */
+  var STOP={what:1,did:1,do:1,does:1,done:1,for:1,the:1,and:1,are:1,was:1,were:1,how:1,they:1,them:1,their:1,its:1,you:1,your:1,our:1,that:1,this:1,use:1,used:1,using:1,get:1,got:1,about:1,tell:1,with:1,from:1,into:1,any:1,all:1,can:1,could:1,would:1,should:1,have:1,has:1,had:1,who:1,when:1,where:1,which:1,there:1};
+  var CSVOCAB={customer:1,customers:1,support:1,service:1,cx:1,chat:1,chats:1,deflection:1,deflect:1,agent:1,agents:1,assist:1,assistant:1,automation:1,automate:1,automated:1,ai:1,bot:1,chatbot:1,llm:1,roi:1,"return":1,results:1,result:1,outcome:1,outcomes:1,cost:1,costs:1,save:1,savings:1,saved:1,profit:1,model:1,models:1,openai:1,deploy:1,deployment:1,deployed:1,build:1,built:1,architecture:1,resolution:1,resolve:1,csat:1,ticket:1,tickets:1,quality:1,risk:1,risks:1,challenge:1,challenges:1,fail:1,failed:1,failure:1,wrong:1,walk:1,walkback:1,contain:1,containment:1};
+  function wordsOf(s){var o={};(s||"").toLowerCase().split(/[^a-z0-9]+/).forEach(function(w){if(w)o[w]=1;});return o;}
+  function groundedAnswer(q){
+    var ql=q.toLowerCase();
+    var terms=ql.split(/[^a-z0-9]+/).filter(function(t){return t.length>2 && !STOP[t];});
+    // score verified records: term must be a whole word in the record's own identity OR a customer-support vocabulary word
+    var scored=RECORDS.filter(function(r){return r.status==="verified";}).map(function(r){
+      var rw=wordsOf(r.company+" "+r.workflow+" "+(r.models||[]).join(" ")+" "+(r.speaker||""));
+      var s=0; terms.forEach(function(t){if(rw[t]||CSVOCAB[t])s++;});
+      return {r:r,s:s};
+    }).sort(function(a,b){return b.s-a.s;});
+    var top=scored[0];
+    // out of corpus
+    if(!top||top.s===0){
+      // maybe a candidate matches
+      var cand=RECORDS.filter(function(r){return r.status==="candidate";}).some(function(r){return ql.indexOf(r.company.toLowerCase())>=0;});
+      if(cand) return {t:"I have a <strong>candidate</strong> record for that company, but it hasn’t passed verification yet, so I can’t answer from it. Grounded answers come only from verified records.",cites:[{t:"no verified source",warn:true}]};
+      return {t:"That isn’t in the verified library yet. I only answer from scrubbed, verified records — I won’t guess. Try asking about <strong>Klarna’s customer-support automation</strong>.",cites:[{t:"not in corpus",warn:true}]};
+    }
+    var r=top.r, body="";
+    if(/roi|result|outcome|number|metric|save|saving|impact|profit/.test(ql)){
+      body="For <strong>"+r.company+"</strong>: "+((r.metrics&&r.metrics.length)?r.metrics.slice(0,4).map(function(m){return m.v+" "+m.l;}).join("; "):"no outcome figures were disclosed in the firsthand sources")+"."+(r.conflict?" ⚠️ "+r.conflict:"");
+    } else if(/model|tech|architect|build|how/.test(ql)){
+      body="<strong>"+r.company+"</strong> — "+esc(r.solution);
+    } else if(/risk|challenge|wrong|fail|problem|caveat|boundary|quality/.test(ql)){
+      body="The honest boundary for <strong>"+r.company+"</strong>: "+esc(r.boundaries);
+    } else {
+      body=esc(r.tldr);
+    }
+    return {t:body, cites:[{t:r.id+" · "+r.company+" ("+r.grade+")"}], openId:r.id};
+  }
+
+  function chatView(){
+    var log=state.chat.map(function(m){
+      if(m.role==="u") return '<div class="msg u">'+esc(m.text)+'</div>';
+      var cites=(m.cites||[]).map(function(c){return '<span class="cite'+(c.warn?" warn":"")+'"'+(m.openId?' data-open-cite="'+m.openId+'"':"")+'>'+esc(c.t)+'</span>';}).join("");
+      return '<div class="msg a"><div class="who">FieldNote · grounded</div><div class="bubble">'+m.text+(cites?'<div class="cites">'+cites+'</div>':"")+'</div></div>';
+    }).join("");
+    if(!state.chat.length){
+      log='<div class="msg a"><div class="who">FieldNote · grounded</div><div class="bubble">Hi — I answer <strong>only from verified records</strong> and cite them. Ask me about a deployment. If it’s not in the library, I’ll say so rather than guess.</div></div>';
+    }
+    var sugg=["What did Klarna do for customer support?","What were Chime’s results?","What models did Nubank use?","What are the risks or caveats?"];
+    return '<div class="chat"><div class="chatwin"><div class="chatlog" id="chatlog">'+log+'</div>'+
+      '<div class="suggest">'+sugg.map(function(s){return '<button data-ask="'+esc(s)+'">'+esc(s)+'</button>';}).join("")+'</div>'+
+      '<div class="chatin"><input id="chatInp" placeholder="Ask about a deployment…"><button id="chatSend">↑</button></div></div>'+
+      '<div class="disclaimer">Prototype: answers are generated by deterministic retrieval over the embedded verified records (a faithful stand-in for the grounded, server-side RAG chatbot). It never invents — out-of-corpus questions are refused. Runs on FieldNote’s side; costs the user no tokens.</div></div>';
+  }
+
+  /* ---------------- MAIN RENDER ---------------- */
+  function render(){
+    roleTxt.textContent=state.role||"—";
+    if(state.view==="home"){
+      app.innerHTML = homeView();
+    } else if(state.view==="library"){
+      app.innerHTML = state.open ? detailView(RECORDS.filter(function(r){return r.id===state.open;})[0]) : libraryView();
+    } else {
+      app.innerHTML = chatView();
+      var cl=document.getElementById("chatlog"); if(cl) cl.scrollTop=cl.scrollHeight;
+    }
+    bind();
+    document.querySelectorAll("#tabs button").forEach(function(b){b.classList.toggle("on",b.dataset.v===state.view);});
+  }
+
+  function ask(text){
+    if(!text.trim()) return;
+    state.chat.push({role:"u",text:text});
+    var a=groundedAnswer(text);
+    state.chat.push({role:"a",text:a.t,cites:a.cites,openId:a.openId});
+    render();
+  }
+
+  /* ---------------- EVENT BINDING ---------------- */
+  function bind(){
+    document.querySelectorAll("[data-goto]").forEach(function(el){el.onclick=function(){state.view=el.dataset.goto;state.open=null;window.scrollTo(0,0);render();};});
+    document.querySelectorAll("[data-wf]").forEach(function(el){el.onclick=function(){state.workflow=el.dataset.wf;state.view="library";state.open=null;window.scrollTo(0,0);render();};});
+    document.querySelectorAll("[data-open]").forEach(function(el){el.onclick=function(){state.view="library";state.open=el.dataset.open;window.scrollTo(0,0);render();};});
+    document.querySelectorAll("[data-back]").forEach(function(el){el.onclick=function(){state.open=null;render();};});
+    document.querySelectorAll("[data-facet]").forEach(function(el){el.onclick=function(){
+      var f=el.dataset.facet,v=el.dataset.val; state[f]=state[f]===v?"":v; render();
+    };});
+    var s=document.getElementById("searchInp"); if(s) s.oninput=function(){state.q=s.value; var recs=filtered();
+      // light re-render of just cards would be nicer; full re-render keeps it simple but loses focus, so update count+cards only
+      var host=document.querySelector(".lib > section"); if(host){ var pos=s.selectionStart;
+        host.innerHTML='<div class="count">'+recs.length+' record'+(recs.length!==1?"s":"")+'</div><div class="cards">'+
+          recs.map(function(r){return cardHTML(r);}).join("")+'</div>';
+        document.querySelectorAll("[data-open]").forEach(function(el){el.onclick=function(){state.open=el.dataset.open;window.scrollTo(0,0);render();};});
+      }
+    };
+    var vo=document.getElementById("verOnly"); if(vo) vo.onchange=function(){state.verifiedOnly=vo.checked;render();};
+    var cf=document.getElementById("clearF"); if(cf) cf.onclick=function(){state.q="";state.company="";state.workflow="";state.model="";state.grade="";state.verifiedOnly=false;render();};
+    document.querySelectorAll("[data-tier]").forEach(function(el){el.onclick=function(){var id=el.dataset.tier;var b=document.getElementById(id);if(b){var open=b.style.display!=="none";b.style.display=open?"none":"block";el.querySelector("span:last-child").textContent=open?"+":"–";}};});
+    // chat
+    var ci=document.getElementById("chatInp"),cs=document.getElementById("chatSend");
+    if(cs) cs.onclick=function(){ask(ci.value);};
+    if(ci) ci.onkeydown=function(e){if(e.key==="Enter"){ask(ci.value);}};
+    document.querySelectorAll("[data-ask]").forEach(function(el){el.onclick=function(){ask(el.dataset.ask);};});
+    document.querySelectorAll("[data-open-cite]").forEach(function(el){el.onclick=function(){state.view="library";state.open=el.dataset.openCite;render();};});
+  }
+  function cardHTML(r){
+    var badge = r.status==="verified"?'<span class="badge ver">verified</span>':r.status==="hold"?'<span class="badge hold">hold</span>':'<span class="badge cand">candidate</span>';
+    var mtags=(r.models||[]).filter(function(m){return m!=="—";}).map(function(m){return '<span class="tag mdl">'+esc(m)+'</span>';}).join("");
+    return '<div class="card" data-open="'+r.id+'"><div class="row1"><div class="logo">'+initials(r.company)+'</div><h3>'+esc(r.company)+'</h3><span class="grade '+gcls(r.grade)+'">'+r.grade+'</span>'+badge+'<span class="fresh">'+esc(r.fresh)+'</span></div><div class="tldr">'+esc(r.tldr)+'</div><div class="tags"><span class="tag">'+esc(r.workflow)+'</span>'+mtags+'</div></div>';
+  }
+
+  // top-level controls
+  document.querySelectorAll("#tabs button").forEach(function(b){b.onclick=function(){state.view=b.dataset.v;state.open=null;render();};});
+  document.getElementById("brandHome").onclick=function(){state.view="home";state.open=null;window.scrollTo(0,0);render();};
+  document.getElementById("roleChip").onclick=roleModal;
+  document.getElementById("themeBtn").onclick=function(){
+    var cur=document.documentElement.getAttribute("data-theme");
+    var next=cur==="dark"?"light":(cur==="light"?"dark":"dark");
+    document.documentElement.setAttribute("data-theme",next);
+  };
+
+  // boot
+  if(!state.role){ roleModal(); } else { roleTxt.textContent=state.role; }
+  render();
+})();
+</script>
+</body>
+</html>

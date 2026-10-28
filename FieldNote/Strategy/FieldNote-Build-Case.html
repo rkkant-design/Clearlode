@@ -1,0 +1,260 @@
+<title>FieldNote Build Case</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  :root{
+    --paper:#F6F7F9;--surface:#FFFFFF;--surface-2:#EEF1F5;--ink:#14181F;--ink-2:#434B57;--ink-3:#6B7482;
+    --line:#DCE1E8;--line-2:#C9D0DA;--slate:#2C4A6E;--slate-soft:#E4EAF1;--signal:#B0761A;--signal-soft:#F6ECD8;
+    --good:#2E6E4E;--good-soft:#DDEEE4;--warn:#9A6410;--warn-soft:#F5E8D2;--crit:#9A3838;--crit-soft:#F2DDDD;--mute:#5C6470;--mute-soft:#E6E9EE;
+    --shadow:0 1px 2px rgba(20,24,31,.05),0 8px 24px -12px rgba(20,24,31,.14);
+    --display:'Newsreader',Georgia,serif;--body:'IBM Plex Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace;
+  }
+  :root:not([data-theme="light"]){@media (prefers-color-scheme:dark){
+    --paper:#0F1216;--surface:#171B21;--surface-2:#1E242C;--ink:#EAEEF3;--ink-2:#B4BDC9;--ink-3:#838E9C;
+    --line:#2A313A;--line-2:#38414C;--slate:#8FB2D6;--slate-soft:#1C2A3A;--signal:#E0A94A;--signal-soft:#2E2513;
+    --good:#6FC095;--good-soft:#16281E;--warn:#DDA043;--warn-soft:#2C2411;--crit:#E28B8B;--crit-soft:#2E1919;--mute:#9AA4B1;--mute-soft:#22272F;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px -14px rgba(0,0,0,.7);
+  }}
+  :root[data-theme="dark"]{
+    --paper:#0F1216;--surface:#171B21;--surface-2:#1E242C;--ink:#EAEEF3;--ink-2:#B4BDC9;--ink-3:#838E9C;
+    --line:#2A313A;--line-2:#38414C;--slate:#8FB2D6;--slate-soft:#1C2A3A;--signal:#E0A94A;--signal-soft:#2E2513;
+    --good:#6FC095;--good-soft:#16281E;--warn:#DDA043;--warn-soft:#2C2411;--crit:#E28B8B;--crit-soft:#2E1919;--mute:#9AA4B1;--mute-soft:#22272F;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px -14px rgba(0,0,0,.7);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.55;-webkit-font-smoothing:antialiased;}
+  header.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--paper) 90%,transparent);backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line);}
+  .bar-inner{max-width:940px;margin:0 auto;padding:11px 22px;display:flex;align-items:baseline;gap:14px;}
+  .bar-mark{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);}
+  .bar-mark span{color:var(--signal);}
+  .bar-tag{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--ink-3);margin-left:auto;}
+  @media (max-width:620px){.bar-tag{display:none;}}
+  main{max-width:940px;margin:0 auto;padding:0 22px;}
+  .wrap{max-width:780px;}
+  section{padding-block:40px;border-top:1px solid var(--line);}
+  section:first-of-type{border-top:none;}
+  .eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--signal);display:flex;align-items:center;gap:10px;margin:0 0 16px;}
+  .eyebrow::before{content:"";width:22px;height:1.5px;background:var(--signal);display:inline-block;}
+  h1{font-family:var(--display);font-weight:500;font-size:clamp(2.1rem,5.4vw,3.3rem);line-height:1.04;letter-spacing:-.015em;margin:0 0 20px;text-wrap:balance;max-width:17ch;}
+  h2{font-family:var(--display);font-weight:500;font-size:clamp(1.5rem,3.4vw,2.05rem);line-height:1.12;margin:0 0 14px;text-wrap:balance;}
+  h3{font-family:var(--body);font-weight:600;font-size:1rem;margin:20px 0 6px;}
+  p{margin:0 0 15px;color:var(--ink-2);max-width:72ch;}
+  p.lead{font-family:var(--display);font-size:clamp(1.12rem,2.2vw,1.4rem);line-height:1.44;color:var(--ink);}
+  strong{color:var(--ink);font-weight:600;}em{font-style:italic;}
+  .caption{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-top:10px;line-height:1.5;}
+
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:30px;}
+  .stat{background:var(--surface);padding:16px 18px;}
+  .stat b{font-family:var(--display);font-size:1.9rem;line-height:1;display:block;font-variant-numeric:tabular-nums;}
+  .stat span{font-size:.82rem;color:var(--ink-2);display:block;margin-top:8px;line-height:1.35;}
+  .stat .src{font-family:var(--mono);font-size:9.5px;color:var(--ink-3);margin-top:6px;}
+  .stat.a b{color:var(--signal);}.stat.b b{color:var(--slate);}.stat.c b{color:var(--crit);}
+  @media(max-width:560px){.stats{grid-template-columns:1fr;}}
+
+  .callout{border-left:3px solid var(--signal);background:var(--signal-soft);padding:16px 20px;border-radius:0 10px 10px 0;margin:20px 0;}
+  .callout p{color:var(--ink);margin:0;max-width:none;}
+  .callout .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--signal);margin-bottom:6px;display:block;}
+  .callout.slate{border-left-color:var(--slate);background:var(--slate-soft);}.callout.slate .k{color:var(--slate);}
+  .callout.good{border-left-color:var(--good);background:var(--good-soft);}.callout.good .k{color:var(--good);}
+  .callout.neutral{border-left-color:var(--line-2);background:var(--surface-2);}.callout.neutral .k{color:var(--ink-3);}
+
+  .dual{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px;}
+  @media(max-width:600px){.dual{grid-template-columns:1fr;}}
+  .box{border:1px solid var(--line);border-radius:12px;padding:15px 17px;background:var(--surface);}
+  .box .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;}
+  .box.pro{border-left:3px solid var(--good);}.box.pro .k{color:var(--good);}
+  .box.con{border-left:3px solid var(--crit);}.box.con .k{color:var(--crit);}
+  .box ul{margin:0;padding-left:16px;}.box li{font-size:.9rem;color:var(--ink-2);margin-bottom:7px;line-height:1.4;}
+  .box li strong{color:var(--ink);}
+
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;margin-top:6px;-webkit-overflow-scrolling:touch;}
+  table.cmp{border-collapse:collapse;width:100%;min-width:620px;font-size:.9rem;}
+  table.cmp th,table.cmp td{text-align:left;padding:12px 15px;border-bottom:1px solid var(--line);vertical-align:top;}
+  table.cmp thead th{font-family:var(--mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);background:var(--surface-2);font-weight:500;}
+  table.cmp tbody tr:last-child td{border-bottom:none;}
+  table.cmp td.name{font-weight:600;color:var(--ink);}
+  table.cmp td.name .sub{color:var(--ink-3);font-size:.82rem;display:block;margin-top:2px;font-weight:400;}
+  table.cmp td.fix{color:var(--good);}
+  table.cmp tbody tr:nth-child(even) td{background:color-mix(in srgb,var(--surface-2) 45%,transparent);}
+  table.cmp td.us{background:var(--signal-soft)!important;}
+
+  ul.clean{list-style:none;padding:0;margin:6px 0 0;}
+  ul.clean li{padding:9px 0 9px 26px;border-top:1px solid var(--line);position:relative;font-size:.94rem;color:var(--ink-2);}
+  ul.clean li:first-child{border-top:none;}
+  ul.clean li::before{content:"→";position:absolute;left:0;top:9px;color:var(--signal);font-family:var(--mono);}
+  ul.clean li strong{color:var(--ink);}
+
+  .phase{display:grid;grid-template-columns:34px 1fr;gap:14px;padding:15px 0;border-top:1px solid var(--line);}
+  .phase:first-child{border-top:none;}
+  .phase .n{font-family:var(--display);font-size:1.4rem;color:var(--signal);line-height:1;}
+  .phase h3{margin:2px 0 4px;}.phase p{margin:0;font-size:.93rem;}
+  .phase .meta{font-family:var(--mono);font-size:10.5px;color:var(--slate);margin-top:5px;}
+
+  .final{background:#141821;border-radius:16px;padding:36px 32px;margin-top:8px;}
+  :root[data-theme="dark"] .final,:root:not([data-theme="light"]) .final{border:1px solid var(--line-2);}
+  .final .eyebrow{color:var(--signal);}.final h2{color:#F6F7F9;}.final p{color:#C6CDD7;}
+  .final .big{font-family:var(--display);font-size:clamp(1.2rem,2.6vw,1.55rem);color:#fff;line-height:1.3;margin:0;}
+  .final .big b{color:var(--signal);font-weight:500;}
+  footer{padding:26px 22px 46px;max-width:940px;margin:0 auto;}
+  footer p{font-family:var(--mono);font-size:11px;color:var(--ink-3);max-width:none;line-height:1.7;}
+</style>
+
+<header class="bar">
+  <div class="bar-inner">
+    <div class="bar-mark">FIELDNOTE<span>.</span></div>
+    <div class="bar-tag">The build case · for the decision-maker · by Trueinfo Labs</div>
+  </div>
+</header>
+
+<main>
+  <!-- HERO -->
+  <section class="wrap">
+    <div class="eyebrow">The build case</div>
+    <h1>A cheap test worth running.</h1>
+    <p class="lead">FieldNote turns the AI lessons buried in executives' public talks, podcasts and posts into a self-serve, evidence-graded library that tells an enterprise team <strong>what actually worked</strong> — in the operators' own words. It's the peer evidence buyers already trust, made searchable and decision-ready.</p>
+    <div class="callout slate">
+      <span class="k">Read this as a skeptic — that's the point</span>
+      <p>This isn't a request to bet the company. It's a request to fund a <strong>~6-week, one-person test</strong>, with almost no code and near-zero spend, that will <strong>prove or kill the idea against real users</strong>. The rest of this document earns that small "yes" — honestly, cons included.</p>
+    </div>
+    <div class="stats">
+      <div class="stat c"><b>95%</b><span>of enterprise GenAI initiatives show no measurable P&amp;L impact</span><span class="src">MIT NANDA, 2025 (integrated-pilot scope)</span></div>
+      <div class="stat a"><b>94%</b><span>of B2B buyers fact-check what AI tells them — they've stopped trusting claims</span><span class="src">TrustRadius, 2026</span></div>
+      <div class="stat b"><b>1,182</b><span>curated real-world AI case studies in ZenML's free library — the category is real and used</span><span class="src">ZenML LLMOps DB, 2026</span></div>
+    </div>
+  </section>
+
+  <!-- PROBLEM -->
+  <section class="wrap">
+    <div class="eyebrow">The problem</div>
+    <h2>Enterprises don't lack AI information. They lack trustworthy peer evidence.</h2>
+    <p>Companies are past "should we use AI" and into "how — and what actually worked for someone like us." But two things are true at once:</p>
+    <ul class="clean">
+      <li><strong>The bets keep failing.</strong> The widely-cited figure is that ~95% of enterprise GenAI initiatives show no measurable P&amp;L impact — mostly for organisational reasons, not technical ones.</li>
+      <li><strong>Buyers have learned to distrust claims.</strong> 94% now fact-check what AI tells them, and they <em>turn to peers</em> precisely because vendor and AI claims can't be trusted; 74% lean on reviews and real deployments to decide.</li>
+      <li><strong>But the peer evidence is scattered and locked.</strong> The honest lessons live in hundreds of conference talks, podcast interviews and posts — and in practitioners' heads. There is no trusted, decision-ready, <em>firsthand</em> place to find "what a company like mine actually did, and what they'd warn me about."</li>
+    </ul>
+    <p>That gap — between an AI question and a confident, defensible decision — is the product.</p>
+  </section>
+
+  <!-- PRODUCT -->
+  <section class="wrap">
+    <div class="eyebrow">What we're building</div>
+    <h2>Firsthand deployment evidence, personalised to your role.</h2>
+    <p>Fully <strong>self-serve</strong>: someone signs up, picks a minimal role-based profile ("Head of CX, retail"), and gets the deployment records that matter to them. Each record is one company's real AI deployment — <strong>in the operator's own public words</strong> (a talk, an interview, a podcast, the company's own post) — written up, graded A–D for evidence strength, with the lesson and, crucially, <strong>its boundaries and what went wrong.</strong></p>
+    <div class="callout"><span class="k">The loop</span><p><strong>Discover</strong> by role / workflow → <strong>Examine</strong> a sourced, graded record with the lesson and the gaps → <strong>Apply</strong> it to your decision. Over time, the record picks up outcomes, so it learns what actually held up.</p></div>
+    <p>Launch domain is <strong>customer support</strong> — one of the clearest near-term enterprise-AI ROI categories, where buyers are actively hunting for proof.</p>
+  </section>
+
+  <!-- MOAT -->
+  <section class="wrap">
+    <div class="eyebrow">Why it's defensible</div>
+    <h2>The UI is copyable. The corpus and the trust are not.</h2>
+    <p>ZenML's free LLMOps database — now <strong>1,182 curated case studies</strong> and heavily used — proves the category has real value. But it's engineering-implementation-focused, free, and neither role-personalised nor decision-oriented. That's the opening.</p>
+    <p>FieldNote's defensibility is a <strong>growing, curated library of firsthand operator <em>lessons</em></strong> — evidence-graded, boundary-marked, role-mapped — plus, over time, a <strong>claims-vs-outcomes ledger</strong> (what the vendor promised vs what actually happened). An LLM clones the interface in a weekend; it cannot reproduce the verified corpus, the editorial trust, or the accumulated outcomes.</p>
+    <div class="callout neutral"><span class="k">The honest version</span><p>On day one there is <strong>no moat</strong> — there's a thin library and a method. The moat is <em>earned</em>: curation labour + a track record that only accrues with time. Early on we win on focus, firsthand candour and trust, not defensibility. A skeptic should hold us to that, not to a fantasy of an instant moat.</p></div>
+  </section>
+
+  <!-- WHY NOW + COMPETITION -->
+  <section class="wrap">
+    <div class="eyebrow">Why now, and where we sit</div>
+    <h2>The timing is real; the incumbents leave a gap.</h2>
+    <p><strong>Why now:</strong> the volume of public, firsthand AI-deployment talks and podcasts has exploded across 2024–26; cheap AI transcription makes "scrubbing" them viable; and enterprises have moved from experimentation to demanding proof.</p>
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th>Option a buyer has today</th><th>What it gives</th><th>Where it falls short</th></tr></thead>
+      <tbody>
+        <tr><td class="name">Gartner / Forrester</td><td>Deep analyst research</td><td>Slow, generic to your firm, $30–500K/yr</td></tr>
+        <tr><td class="name">AlphaSense</td><td>AI search over documents</td><td>Finds what's <em>said</em>, not what to <em>do</em></td></tr>
+        <tr><td class="name">Deloitte / consultancies</td><td>Use-case libraries + engagements</td><td>Consulting-gated, static</td></tr>
+        <tr><td class="name">ZenML / Emerj</td><td>Real case studies (free)</td><td>Engineering-focused; not role/decision-oriented; not firsthand-lessons</td></tr>
+        <tr><td class="name">ChatGPT / general LLM</td><td>Instant, free answers</td><td>Ungrounded — plausible hallucinations, not defensible evidence</td></tr>
+        <tr><td class="name us">FieldNote</td><td class="us">Firsthand, graded, role-personalised, decision-ready</td><td class="us">Combines the gap none of them fills — at self-serve price</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- PROS / CONS -->
+  <section class="wrap">
+    <div class="eyebrow">The honest ledger</div>
+    <h2>Pros and cons — both, plainly.</h2>
+    <div class="dual">
+      <div class="box pro"><div class="k">Why it can work</div><ul>
+        <li><strong>Validated demand</strong> — buyers actively distrust claims and seek peer evidence (94% fact-check AI).</li>
+        <li><strong>Validated category</strong> — ZenML's 1,182-study library shows curated real-world evidence has pull.</li>
+        <li><strong>Clear differentiation</strong> — firsthand lessons + grading + role + decision-readiness that no incumbent combines.</li>
+        <li><strong>Cheap to start</strong> — sources are public; no customer onboarding; content is hand-producible.</li>
+        <li><strong>Compounding asset</strong> — the corpus and outcomes ledger get more defensible with time.</li>
+        <li><strong>Rights posture is favourable</strong> — short excerpts + attribution + transformation is textbook fair-use / research use.</li>
+      </ul></div>
+      <div class="box con"><div class="k">Why it might not</div><ul>
+        <li><strong>Content is the bottleneck</strong> — the scrub is real labour, and the library is worthless empty (cold start).</li>
+        <li><strong>Willingness-to-pay unproven</strong> — "why pay vs free podcasts / ChatGPT?" is the central question.</li>
+        <li><strong>Thin moat early</strong> — defensibility is earned over months, not owned at launch.</li>
+        <li><strong>Coverage gaps</strong> — some workflows (order-status) are genuinely thin in firsthand form.</li>
+        <li><strong>Records decay</strong> — AI moves fast; freshness needs constant upkeep.</li>
+        <li><strong>Founder-network gap</strong> — the team isn't inside enterprise customer-support.</li>
+        <li><strong>Name not cleared</strong> — "FieldNote" collides with the Field Notes brand.</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <!-- BLOCKERS -> OVERRIDES -->
+  <section class="wrap">
+    <div class="eyebrow">The part your boss is stuck on</div>
+    <h2>Every blocker — and how we get past it.</h2>
+    <p>Skepticism usually hides a list of unanswered "but what about…". Here is that list, with a concrete override for each. None of these is a wall.</p>
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th>Blocker</th><th>How we override it</th></tr></thead>
+      <tbody>
+        <tr><td class="name">Empty library / cold start</td><td class="fix">Hand-produce 20–25 firsthand records first — <strong>21 are already sourced.</strong> Prove the record is producible and cheap before anything else.</td></tr>
+        <tr><td class="name">Nobody may pay for it</td><td class="fix">A <strong>$0 validation</strong>: put ~15 scrubbed records + a role picker on a no-code page in front of 10–15 CS leaders. Measure use and willingness <em>before</em> building.</td></tr>
+        <tr><td class="name">"Why not just ChatGPT?"</td><td class="fix">Grounding + verification + boundaries + timestamps. An ungrounded LLM gives plausible hallucinations; FieldNote gives sourced evidence a leader can defend in a boardroom — which is exactly why 94% fact-check AI.</td></tr>
+        <tr><td class="name">Rights / copyright</td><td class="fix">Firsthand + short excerpt + link + timestamp + transformation (grading, cross-company synthesis) is a strong fair-use / research posture; never host the media. A 1-hour IP-lawyer opinion confirms it.</td></tr>
+        <tr><td class="name">Scrub cost &amp; scale</td><td class="fix">Measure minutes-per-record now; semi-automate later (transcription + LLM extraction + human review). Target ≥70% gross margin after automation.</td></tr>
+        <tr><td class="name">Thin moat early</td><td class="fix">Lead on editorial rigour and firsthand candour now; let the outcomes ledger compound. We say openly it's earned — that honesty is the moat's first brick.</td></tr>
+        <tr><td class="name">Coverage gaps</td><td class="fix">Launch narrow (customer support, 2–3 workflows) — depth over breadth. Expand only where users pull.</td></tr>
+        <tr><td class="name">Founder-network gap</td><td class="fix">Firsthand public sources need no network. And every named speaker is a warm right-of-reply / design-partner lead.</td></tr>
+        <tr><td class="name">Name not cleared</td><td class="fix">Renaming is a find-and-replace. Run clearance in parallel; don't let it block the test.</td></tr>
+        <tr><td class="name">The skepticism itself</td><td class="fix">The whole plan below is engineered to be <strong>cheap to disprove.</strong> If it's a bad idea, we find out in weeks, for the cost of one person's time.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- BUILD PLAN -->
+  <section class="wrap">
+    <div class="eyebrow">How to proceed</div>
+    <h2>A de-risked path with a real off-ramp.</h2>
+    <p>Don't build software first. Build <em>evidence</em> first — then let a hard gate decide.</p>
+    <div>
+      <div class="phase"><div class="n">0</div><div><h3>Prove the record (weeks 1–3)</h3><p>Scrub 20–25 firsthand records (21 candidates in hand): confirm the verbatim quote, log the timestamp, grade, mark the boundary. Stand up a no-code self-serve page (role picker + records). <strong>Measure cost-per-record.</strong></p><div class="meta">~1 person · near-zero spend · no engineering</div></div></div>
+      <div class="phase"><div class="n">1</div><div><h3>Put it in front of real buyers (weeks 3–6)</h3><p>Get 10–15 customer-support leaders using it (warm outreach, the named speakers, CX communities). Watch what they actually do with it.</p><div class="meta">measure: repeat use · evidence used in a real decision · willingness to pay</div></div></div>
+      <div class="phase"><div class="n">✓</div><div><h3>The gate — go / no-go</h3><p>Continue only if, say, <strong>≥5 come back, ≥2 say it changed a decision, and ≥2 would pay.</strong> Miss it and we stop — having spent weeks, not quarters.</p><div class="meta">an explicit, pre-agreed kill criterion</div></div></div>
+      <div class="phase"><div class="n">2</div><div><h3>Only then, build (month 2+)</h3><p>The thin self-serve product — record store, search, role feed — plus semi-automated scrubbing. Funded by evidence, not faith.</p><div class="meta">build against proof</div></div></div>
+    </div>
+  </section>
+
+  <!-- WHAT WE HAVE -->
+  <section class="wrap">
+    <div class="eyebrow">We're not starting from zero</div>
+    <h2>Most of Phase 0 is already done.</h2>
+    <ul class="clean">
+      <li><strong>70+ candidate deployments</strong> researched and graded; <strong>21 firsthand records</strong> ready to scrub.</li>
+      <li><strong>The editorial method</strong> — evidence grades A–D, boundary discipline, metric-normalisation, a rights policy.</li>
+      <li><strong>Three worked records</strong> (Klarna, Chime, Lightspeed) as the quality standard, plus a taxonomy and a production tracker.</li>
+      <li><strong>Standing firsthand sources</strong> identified (podcasts, conference channels) that refill the pipeline indefinitely.</li>
+      <li><strong>Honest sizing</strong> — a realistic bottom-up Year-3 range of ~$0.3–3M ARR, built from unit economics, not a borrowed TAM.</li>
+    </ul>
+  </section>
+
+  <!-- THE ASK -->
+  <section>
+    <div class="final wrap" style="max-width:800px;">
+      <div class="eyebrow">The ask</div>
+      <h2 style="max-width:22ch;">Fund a six-week test, not a company.</h2>
+      <p>Green-light one person for ~6 weeks to run Phase 0–1 against the explicit go/no-go gate. It is a small, reversible decision. If it works, we've found a compounding, defensible asset early and cheap. If it doesn't, we've lost weeks — and learned something real about the market either way.</p>
+      <p class="big" style="margin-top:22px;">The question isn't <b>"is this a billion-dollar company?"</b> It's <b>"is it worth six weeks to find out?"</b> — and the honest answer is yes.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>FieldNote — a Trueinfo Labs product · build case, Sep 2026. External anchors: MIT NANDA (2025, GenAI P&amp;L impact); TrustRadius via MarketScale (2026, buyers fact-checking AI); ZenML LLMOps Database (2026, 1,182 case studies); U.S. Copyright Office / Stanford Fair Use Center (fair-use four-factor & transformative use). Figures are indicative and, for external use, should be verified against primary sources. Name "FieldNote" not yet cleared.</p>
+</footer>

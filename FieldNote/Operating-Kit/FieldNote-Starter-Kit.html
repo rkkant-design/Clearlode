@@ -1,0 +1,280 @@
+<title>FieldNote Starter Kit</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  :root{
+    --paper:#F6F7F9;--surface:#FFFFFF;--surface-2:#EEF1F5;--ink:#14181F;--ink-2:#434B57;--ink-3:#6B7482;
+    --line:#DCE1E8;--line-2:#C9D0DA;--slate:#2C4A6E;--slate-soft:#E4EAF1;--signal:#B0761A;--signal-soft:#F6ECD8;
+    --good:#2E6E4E;--good-soft:#DDEEE4;--warn:#9A6410;--warn-soft:#F5E8D2;--crit:#9A3838;--crit-soft:#F2DDDD;--mute:#5C6470;--mute-soft:#E6E9EE;
+    --shadow:0 1px 2px rgba(20,24,31,.05),0 8px 24px -12px rgba(20,24,31,.14);
+    --display:'Newsreader',Georgia,serif;--body:'IBM Plex Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace;
+  }
+  :root:not([data-theme="light"]){@media (prefers-color-scheme:dark){
+    --paper:#0F1216;--surface:#171B21;--surface-2:#1E242C;--ink:#EAEEF3;--ink-2:#B4BDC9;--ink-3:#838E9C;
+    --line:#2A313A;--line-2:#38414C;--slate:#8FB2D6;--slate-soft:#1C2A3A;--signal:#E0A94A;--signal-soft:#2E2513;
+    --good:#6FC095;--good-soft:#16281E;--warn:#DDA043;--warn-soft:#2C2411;--crit:#E28B8B;--crit-soft:#2E1919;--mute:#9AA4B1;--mute-soft:#22272F;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px -14px rgba(0,0,0,.7);
+  }}
+  :root[data-theme="dark"]{
+    --paper:#0F1216;--surface:#171B21;--surface-2:#1E242C;--ink:#EAEEF3;--ink-2:#B4BDC9;--ink-3:#838E9C;
+    --line:#2A313A;--line-2:#38414C;--slate:#8FB2D6;--slate-soft:#1C2A3A;--signal:#E0A94A;--signal-soft:#2E2513;
+    --good:#6FC095;--good-soft:#16281E;--warn:#DDA043;--warn-soft:#2C2411;--crit:#E28B8B;--crit-soft:#2E1919;--mute:#9AA4B1;--mute-soft:#22272F;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px -14px rgba(0,0,0,.7);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.55;-webkit-font-smoothing:antialiased;}
+  header.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--paper) 90%,transparent);backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line);}
+  .bar-inner{max-width:960px;margin:0 auto;padding:11px 22px;display:flex;align-items:baseline;gap:14px;}
+  .bar-mark{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);}
+  .bar-mark span{color:var(--signal);}
+  .bar-tag{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--ink-3);margin-left:auto;}
+  @media (max-width:620px){.bar-tag{display:none;}}
+  main{max-width:960px;margin:0 auto;padding:0 22px;}
+  .wrap{max-width:760px;}
+  section{padding-block:40px;border-top:1px solid var(--line);}
+  section:first-of-type{border-top:none;}
+  .eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--signal);display:flex;align-items:center;gap:10px;margin:0 0 16px;}
+  .eyebrow::before{content:"";width:22px;height:1.5px;background:var(--signal);display:inline-block;}
+  h1{font-family:var(--display);font-weight:500;font-size:clamp(2rem,5vw,3rem);line-height:1.05;letter-spacing:-.015em;margin:0 0 18px;max-width:17ch;}
+  h2{font-family:var(--display);font-weight:500;font-size:clamp(1.45rem,3.2vw,1.95rem);line-height:1.12;margin:0 0 14px;text-wrap:balance;}
+  h3{font-family:var(--body);font-weight:600;font-size:1rem;margin:20px 0 6px;}
+  p{margin:0 0 14px;color:var(--ink-2);max-width:72ch;}
+  p.lead{font-family:var(--display);font-size:clamp(1.1rem,2.1vw,1.3rem);line-height:1.44;color:var(--ink);}
+  strong{color:var(--ink);font-weight:600;}em{font-style:italic;}
+  code{font-family:var(--mono);font-size:.85em;background:var(--surface-2);border:1px solid var(--line);border-radius:5px;padding:1px 5px;color:var(--ink);}
+  .caption{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-top:10px;line-height:1.5;}
+
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;margin-top:6px;-webkit-overflow-scrolling:touch;}
+  table.cmp{border-collapse:collapse;width:100%;min-width:600px;font-size:.9rem;}
+  table.cmp th,table.cmp td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top;}
+  table.cmp thead th{font-family:var(--mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);background:var(--surface-2);font-weight:500;}
+  table.cmp tbody tr:last-child td{border-bottom:none;}
+  table.cmp td.name{font-weight:600;color:var(--ink);white-space:nowrap;}
+  table.cmp td .req{color:var(--crit);font-family:var(--mono);font-size:10px;}
+  table.cmp tbody tr:nth-child(even) td{background:color-mix(in srgb,var(--surface-2) 45%,transparent);}
+
+  .callout{border-left:3px solid var(--signal);background:var(--signal-soft);padding:15px 18px;border-radius:0 10px 10px 0;margin:20px 0;}
+  .callout p{color:var(--ink);margin:0;max-width:none;}
+  .callout .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--signal);margin-bottom:6px;display:block;}
+  .callout.slate{border-left-color:var(--slate);background:var(--slate-soft);}
+  .callout.slate .k{color:var(--slate);}
+
+  ul.clean{list-style:none;padding:0;margin:6px 0 0;}
+  ul.clean li{padding:9px 0 9px 26px;border-top:1px solid var(--line);position:relative;font-size:.94rem;color:var(--ink-2);}
+  ul.clean li:first-child{border-top:none;}
+  ul.clean li::before{content:"→";position:absolute;left:0;top:9px;color:var(--signal);font-family:var(--mono);}
+  ul.clean li strong{color:var(--ink);}
+  ul.check{list-style:none;padding:0;margin:6px 0 0;}
+  ul.check li{padding:8px 0 8px 28px;border-top:1px solid var(--line);position:relative;font-size:.94rem;color:var(--ink-2);}
+  ul.check li:first-child{border-top:none;}
+  ul.check li::before{content:"☐";position:absolute;left:0;top:7px;color:var(--slate);font-size:1.05rem;}
+
+  /* worked example record card */
+  .rec{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;margin-top:6px;}
+  .rec-head{padding:15px 18px;border-bottom:1px solid var(--line);background:var(--surface-2);}
+  .rec-head .kick{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);}
+  .rec-head .t{font-family:var(--display);font-size:1.25rem;font-weight:500;color:var(--ink);margin-top:3px;}
+  .rec-head .tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px;}
+  .tag{font-family:var(--mono);font-size:10.5px;background:var(--surface);border:1px solid var(--line);color:var(--ink-2);padding:2px 8px;border-radius:6px;}
+  .rec-body{display:grid;grid-template-columns:150px 1fr;gap:1px;background:var(--line);}
+  .rk{background:var(--surface-2);padding:11px 14px;font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);}
+  .rv{background:var(--surface);padding:11px 14px;font-size:.9rem;color:var(--ink);line-height:1.45;}
+  .rv .gap{color:var(--crit);font-family:var(--mono);font-size:11px;}
+  .rv .ev{color:var(--slate);font-family:var(--mono);font-size:11px;display:block;margin-top:3px;}
+  @media (max-width:560px){.rec-body{grid-template-columns:1fr;}.rk{padding-bottom:2px;}}
+  .gr{font-family:var(--mono);font-weight:600;font-size:10.5px;padding:2px 7px;border-radius:6px;}
+  .gr.a{background:var(--good-soft);color:var(--good);}.gr.b{background:var(--slate-soft);color:var(--slate);}.gr.c{background:var(--warn-soft);color:var(--warn);}.gr.d{background:var(--mute-soft);color:var(--mute);}
+
+  .taxgroup{margin-top:16px;}
+  .taxgroup .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--slate);margin-bottom:8px;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{font-family:var(--mono);font-size:11.5px;background:var(--surface);border:1px solid var(--line-2);color:var(--ink-2);padding:4px 10px;border-radius:100px;}
+
+  .steps{counter-reset:s;margin-top:8px;}
+  .stepc{display:grid;grid-template-columns:30px 1fr;gap:14px;padding:14px 0;border-top:1px solid var(--line);}
+  .stepc:first-child{border-top:none;}
+  .stepc .n{font-family:var(--display);font-size:1.3rem;color:var(--signal);line-height:1;}
+  .stepc h3{margin:2px 0 3px;}
+  .stepc p{margin:0;font-size:.92rem;}
+  footer{padding:26px 22px 44px;max-width:960px;margin:0 auto;}
+  footer p{font-family:var(--mono);font-size:11px;color:var(--ink-3);max-width:none;line-height:1.7;}
+</style>
+
+<header class="bar">
+  <div class="bar-inner">
+    <div class="bar-mark">FIELDNOTE<span>.</span></div>
+    <div class="bar-tag">Starter kit · Customer Support · Stage 0</div>
+  </div>
+</header>
+
+<main>
+  <section class="wrap">
+    <div class="eyebrow">Starter kit · Customer Support</div>
+    <h1>Build one credible record before you build anything else.</h1>
+    <p class="lead">This is Stage 0. It gives you the four things every FieldNote record depends on — a <strong>template</strong>, a <strong>worked example</strong>, an <strong>editorial method</strong>, and a <strong>rights policy</strong> — so you can hand-produce your first customer-support deployment records and prove the core is real, at near-zero cost.</p>
+    <div class="callout slate">
+      <span class="k">How to use this</span>
+      <p>Copy the template for each deployment you research. Fill it from public sources, follow the editorial checklist, and <strong>time every record</strong>. Your goal this week: 3–5 records that a customer-support transformation lead would call "decision-ready" — and a real number for how long one takes.</p>
+    </div>
+  </section>
+
+  <!-- TEMPLATE -->
+  <section class="wrap">
+    <div class="eyebrow">1 · The deployment-record template</div>
+    <h2>What one record contains.</h2>
+    <p>Every field is either <strong>evidenced</strong> or explicitly marked <strong>missing</strong> — never guessed. A blank is a lie; "not disclosed" is a fact.</p>
+    <div class="tablewrap">
+      <table class="cmp">
+        <thead><tr><th>Field</th><th>What goes here</th><th>Rule</th></tr></thead>
+        <tbody>
+          <tr><td class="name">Company &amp; context</td><td>Name, industry, rough size; is it the deployer or a vendor telling the story?</td><td>Name the teller</td></tr>
+          <tr><td class="name">Deployment</td><td>What it is in one line — e.g. "order-status assistant for chat &amp; email".</td><td>Plain language</td></tr>
+          <tr><td class="name">Workflow</td><td>From the taxonomy (order-status, deflection, agent-assist, triage…).</td><td>Controlled term</td></tr>
+          <tr><td class="name">Deployment stage</td><td>Exploration · pilot · limited production · full production · scaled · rolled back.</td><td>Controlled term</td></tr>
+          <tr><td class="name">Technology</td><td>Model / pattern if disclosed (LLM chat, RAG over KB, agent-assist copilot…).</td><td>"Not named" if absent</td></tr>
+          <tr><td class="name">Reported outcome</td><td>The metric, the number, the <strong>baseline</strong>, the direction, the period.</td><td class="req">baseline or "missing"</td></tr>
+          <tr><td class="name">Cost &amp; ROI</td><td>Any disclosed cost, payback or ROI — usually "not disclosed".</td><td>Never estimate</td></tr>
+          <tr><td class="name">Implementation choices</td><td>Integration, human-in-the-loop design, guardrails, scope of eligible requests.</td><td>Facts only</td></tr>
+          <tr><td class="name">Challenges / what went wrong</td><td>The failure modes and fixes actually reported.</td><td>Attributed</td></tr>
+          <tr><td class="name">Lessons</td><td>The transferable takeaway — <em>with its conditions and limits</em>.</td><td class="req">state the condition</td></tr>
+          <tr><td class="name">Evidence (per claim)</td><td>Source, type, date, speaker/role, short excerpt, link, timestamp.</td><td class="req">every claim</td></tr>
+          <tr><td class="name">Evidence grade</td><td>A–D (see the method section).</td><td>Per claim</td></tr>
+          <tr><td class="name">Boundaries &amp; gaps</td><td>Missing data, conflicting evidence, where the lesson does <em>not</em> apply.</td><td class="req">at least one</td></tr>
+          <tr><td class="name">Provenance</td><td>Captured by, reviewed by, review date, corrections log.</td><td>Versioned</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- WORKED EXAMPLE -->
+  <section class="wrap">
+    <div class="eyebrow">2 · Worked example</div>
+    <h2>The standard, filled in.</h2>
+    <p>A complete record showing how outcomes, evidence and — crucially — <strong>gaps</strong> are handled. This is illustrative and fictional; it demonstrates the format, not a real deployment.</p>
+    <div class="rec">
+      <div class="rec-head">
+        <div class="kick">Illustrative · customer support · limited production</div>
+        <div class="t">Northstar Retail — order-status assistant (chat &amp; email)</div>
+        <div class="tags"><span class="tag">Order-status</span><span class="tag">Retail / e-commerce</span><span class="tag">LLM + RAG over order data</span></div>
+      </div>
+      <div class="rec-body">
+        <div class="rk">Reported outcome</div><div class="rv">Faster handling of order-status contacts. <span class="gap">⚠ Baseline not disclosed — magnitude unquantifiable.</span><span class="ev">Evidence: practitioner interview, ops lead, 12 Aug 2026 · <span class="gr c">Grade C</span> company-reported, single source</span></div>
+        <div class="rk">Cost &amp; ROI</div><div class="rv"><span class="gap">Not disclosed.</span></div>
+        <div class="rk">Implementation</div><div class="rv">Assistant handles order-status &amp; tracking only; anything else routes to an agent. Answers grounded in the order-management system (RAG). <span class="ev">Evidence: same interview · <span class="gr c">Grade C</span></span></div>
+        <div class="rk">Challenge</div><div class="rv">Escalations lost customer context — agents restarted the conversation, frustrating customers. <span class="ev">Evidence: same interview · <span class="gr c">Grade C</span></span></div>
+        <div class="rk">Lesson</div><div class="rv">Pass full conversation context on escalation. <em>Condition:</em> matters most where a human handles exceptions and volume is high. <span class="ev">FieldNote analysis, grounded in the reported challenge</span></div>
+        <div class="rk">Technology</div><div class="rv">Model not named in the source.</div>
+        <div class="rk">Boundaries</div><div class="rv"><span class="gap">Single source · baseline missing · cost missing · independent confirmation pending.</span> Lesson may not transfer to fully-automated (no-human) support.</div>
+        <div class="rk">Provenance</div><div class="rv">Captured 20 Sep 2026 · reviewed by [analyst] · v1 · corrections: none.</div>
+      </div>
+    </div>
+    <p class="caption">Note what makes it trustworthy: three claims, each with a dated source and grade; the outcome is <em>not</em> inflated because the baseline is missing; the lesson carries its condition; and the gaps are stated, not hidden.</p>
+  </section>
+
+  <!-- EDITORIAL METHOD -->
+  <section class="wrap">
+    <div class="eyebrow">3 · Editorial method</div>
+    <h2>How every record is made — and maintained.</h2>
+    <div class="steps">
+      <div class="stepc"><div class="n">1</div><div><h3>Capture the claim</h3><p>Retain the exact excerpt, source date, speaker and role, and a timestamp/link. Quote — don't paraphrase — the load-bearing sentence.</p></div></div>
+      <div class="stepc"><div class="n">2</div><div><h3>Describe the evidence</h3><p>Label it: company-reported, vendor, independent, or estimate. Note corroboration (single source / corroborated / independently confirmed / pending). Assign a grade.</p></div></div>
+      <div class="stepc"><div class="n">3</div><div><h3>Review the context</h3><p>Check definitions, baselines and measurement periods. If a baseline is missing, the outcome is directional at best — say so. Keep every gap visible.</p></div></div>
+      <div class="stepc"><div class="n">4</div><div><h3>Update the record</h3><p>Track corrections, changed outcomes and new evidence over time. A record is a living thing with a version and a corrections log.</p></div></div>
+    </div>
+
+    <h3 style="margin-top:26px">Evidence grades</h3>
+    <div class="tablewrap"><table class="cmp"><tbody>
+      <tr><td class="name"><span class="gr a">A</span></td><td>Independent production evidence — named org, method, measurable result with baseline.</td></tr>
+      <tr><td class="name"><span class="gr b">B</span></td><td>Named case study or credible research with clear methodology.</td></tr>
+      <tr><td class="name"><span class="gr c">C</span></td><td>Company/vendor account or single-source interview — plausible, not independently confirmed.</td></tr>
+      <tr><td class="name"><span class="gr d">D</span></td><td>Announcement, demo or anecdote — not verified.</td></tr>
+    </tbody></table></div>
+
+    <h3 style="margin-top:24px">Pre-publish checklist (every record)</h3>
+    <ul class="check">
+      <li>Every material claim has a dated source, a type and a grade</li>
+      <li>Baselines are present, or explicitly marked "not disclosed"</li>
+      <li>Company vs vendor vs independent is labelled, not blurred</li>
+      <li>At least one boundary / condition / gap is stated</li>
+      <li>Conflicting evidence is noted where it exists</li>
+      <li>Only short excerpts used — linked and attributed, nothing reproduced wholesale</li>
+      <li>A reviewer (not the author) signed off, with a date</li>
+      <li>Time-to-produce recorded</li>
+    </ul>
+  </section>
+
+  <!-- TAXONOMY -->
+  <section class="wrap">
+    <div class="eyebrow">4 · Taxonomy v0 · Customer Support</div>
+    <h2>The controlled vocabulary you tag against.</h2>
+    <p>Tag as you capture. Keep it small; grow it only when a real record doesn't fit. This is a moat asset — treat it with care.</p>
+
+    <div class="taxgroup"><div class="k">Workflows / use-cases</div><div class="chips">
+      <span class="chip">Order-status &amp; tracking</span><span class="chip">Tier-1 FAQ deflection</span><span class="chip">Agent assist / copilot</span><span class="chip">Ticket triage &amp; routing</span><span class="chip">Knowledge-base search</span><span class="chip">Returns &amp; refunds</span><span class="chip">Escalation management</span><span class="chip">QA &amp; conversation analytics</span><span class="chip">Voice / IVR</span><span class="chip">Email / chat automation</span>
+    </div></div>
+
+    <div class="taxgroup"><div class="k">Deployment stage</div><div class="chips">
+      <span class="chip">Exploration</span><span class="chip">Pilot</span><span class="chip">Limited production</span><span class="chip">Full production</span><span class="chip">Scaled</span><span class="chip">Rolled back</span>
+    </div></div>
+
+    <div class="taxgroup"><div class="k">Technology pattern</div><div class="chips">
+      <span class="chip">LLM chat assistant</span><span class="chip">RAG over knowledge base</span><span class="chip">Agent-assist copilot</span><span class="chip">Intent classification / routing</span><span class="chip">Voice / ASR</span><span class="chip">Workflow automation</span>
+    </div></div>
+
+    <div class="taxgroup"><div class="k">Industry</div><div class="chips">
+      <span class="chip">Retail / e-commerce</span><span class="chip">Telecom</span><span class="chip">Banking / fintech</span><span class="chip">Insurance</span><span class="chip">Travel / hospitality</span><span class="chip">SaaS / tech</span><span class="chip">Utilities</span><span class="chip">Healthcare</span>
+    </div></div>
+
+    <div class="taxgroup"><div class="k">Evidence type (firsthand only)</div><div class="chips">
+      <span class="chip">Video talk / keynote</span><span class="chip">Video interview</span><span class="chip">Podcast</span><span class="chip">X post</span><span class="chip">Company blog</span><span class="chip">Company press / earnings</span>
+    </div></div>
+
+    <div class="taxgroup"><div class="k">Outcome metrics to look for</div><div class="chips">
+      <span class="chip">Deflection / containment rate</span><span class="chip">Avg handle time (AHT)</span><span class="chip">First-contact resolution</span><span class="chip">CSAT / NPS</span><span class="chip">Cost per contact</span><span class="chip">Escalation rate</span><span class="chip">Resolution time</span>
+    </div></div>
+  </section>
+
+  <!-- RIGHTS -->
+  <section class="wrap">
+    <div class="eyebrow">5 · Sourcing &amp; rights policy</div>
+    <h2>Firsthand and public — the only sources.</h2>
+    <p>Records come only from the <strong>named practitioner's own words, publicly available</strong>. The test: <em>"Would the named person recognise this as their own public statement?"</em> If yes, it's in. If it's someone else's account of them, it's out.</p>
+    <h3>In — firsthand &amp; public</h3>
+    <ul class="clean">
+      <li><strong>Video</strong> — YouTube talks, conference keynotes, recorded interviews</li>
+      <li><strong>Audio</strong> — podcast interviews</li>
+      <li><strong>X</strong> — the practitioner's own posts</li>
+      <li><strong>The company's own public writing</strong> — its engineering blog, newsroom, press release, an exec's earnings remarks</li>
+    </ul>
+    <h3>Out — someone else's account</h3>
+    <ul class="clean">
+      <li><strong>Vendor case studies</strong> — the vendor's words about a customer</li>
+      <li><strong>Journalist / press articles</strong> — the reporter's words</li>
+      <li><strong>Analyst reports</strong>, and anything gated or licensed</li>
+    </ul>
+    <h3>The discipline</h3>
+    <ul class="clean">
+      <li><strong>Excerpt, link, timestamp.</strong> Transcribe for your own analysis, quote a short excerpt, cite the link and — for video/audio — the <strong>timestamp</strong>. Never republish full transcripts or host the media.</li>
+      <li><strong>Respect the platform.</strong> Honour each platform's terms of service; don't redistribute downloaded video or audio.</li>
+      <li><strong>Quote ≠ analysis.</strong> Keep the speaker's words and FieldNote's interpretation visibly separate.</li>
+      <li><strong>Right of reply.</strong> Named people can respond to material claims; corrections are logged, not silently edited.</li>
+      <li><strong>No fabrication, ever.</strong> Missing data — and unconfirmed timestamps — are marked as such. One invented number or fake timestamp destroys the moat.</li>
+    </ul>
+    <div class="callout"><span class="k">When in doubt</span><p>If it isn't the named person's own public words — or you can't point to the exact video, audio or post it came from — don't publish the claim.</p></div>
+  </section>
+
+  <!-- GATE + START -->
+  <section class="wrap">
+    <div class="eyebrow">The gate &amp; your week</div>
+    <h2>What "decision-ready" means — and where to start.</h2>
+    <p>A record is <strong>decision-ready</strong> when a customer-support transformation lead could act on it <em>without chasing the original sources</em>: every material claim is sourced, dated and graded; baselines are present or marked missing; at least one boundary is stated; conflicts are noted; and a reviewer signed off.</p>
+    <div class="callout slate">
+      <span class="k">Do this week</span>
+      <p><strong>1.</strong> Duplicate the template. <strong>2.</strong> Produce 3–5 records from <strong>firsthand public sources only</strong> — a named operator's talk, interview, podcast or their company's own post — scrubbing the exact quote and logging the timestamp. <strong>3.</strong> Run each through the checklist and <strong>time it.</strong> <strong>4.</strong> Ask two people in a CS role: "could you make a decision from this?" If yes, and a record takes a sane amount of effort, the core is real.</p>
+    </div>
+    <p class="caption">FieldNote — a Trueinfo Labs product · Stage-0 starter kit. Illustrative example data is fictional. Name not yet cleared (collides with the "Field Notes" notebook brand) — confirm before external use.</p>
+  </section>
+</main>
+
+<footer>
+  <p>FieldNote Starter Kit · Customer Support · v1 — the record template, editorial method, taxonomy v0 and rights policy for hand-producing the first deployment records. Build this before any software.</p>
+</footer>

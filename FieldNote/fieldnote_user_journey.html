@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fieldnote User Journey</title>
+  <meta name="description" content="Interactive end-to-end user journey for Fieldnote, from company context to an evidence-backed AI decision.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23173e35'/%3E%3Cpath d='M18 16h30v8H27v8h17v8H27v16h-9z' fill='%23f4f1e8'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      --ink: #edf7f2;
+      --green: #286b59;
+      --green-2: #3e8f76;
+      --cream: #071713;
+      --paper: #10241e;
+      --panel: #0b1d18;
+      --line: #29453c;
+      --muted: #9bb0a8;
+      --gold: #e0ab4f;
+      --rust: #e2795d;
+      --shadow: 0 22px 60px rgba(0,0,0,.34);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; color: var(--ink); background: radial-gradient(circle at 15% 0%, #12372c 0, transparent 28%), radial-gradient(circle at 90% 10%, #2a2112 0, transparent 22%), var(--cream); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.5; }
+    button { font: inherit; }
+    .shell { width: min(1460px, calc(100% - 40px)); margin: 0 auto; padding: 30px 0 48px; }
+    header { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; padding-bottom: 22px; border-bottom: 1px solid var(--line); }
+    .brand { color: var(--green); font-size: .78rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    h1 { margin: 5px 0 5px; font-family: Georgia, "Times New Roman", serif; font-size: clamp(2rem, 4vw, 3.7rem); line-height: 1.02; letter-spacing: -.025em; }
+    .intro { max-width: 760px; margin: 0; color: var(--muted); font-size: 1rem; }
+    .goal { max-width: 390px; padding: 15px 18px; background: #152c25; color: var(--ink); border: 1px solid #355b4e; border-radius: 12px; font-size: .93rem; }
+    .goal strong { color: #8fd5bc; }
+    .workspace { display: grid; grid-template-columns: minmax(0, 1fr) 370px; gap: 26px; margin-top: 28px; align-items: start; }
+    .journey-panel, .detail-panel { background: rgba(11,29,24,.92); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); backdrop-filter: blur(12px); }
+    .journey-panel { padding: 28px; overflow: hidden; }
+    .section-head { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 22px; }
+    h2 { margin: 0; font: 700 clamp(1.35rem, 2vw, 1.9rem)/1.15 Georgia, "Times New Roman", serif; }
+    .hint { color: var(--muted); font-size: .85rem; }
+    .flow { display: grid; grid-template-columns: repeat(5, minmax(130px, 1fr)); gap: 42px 22px; counter-reset: stage; }
+    .stage { position: relative; min-height: 148px; padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: linear-gradient(145deg, #132a23, #0e211b); color: var(--ink); text-align: left; cursor: pointer; transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease, background .18s ease; }
+    .stage:hover { transform: translateY(-3px); border-color: #55a88d; box-shadow: 0 12px 30px rgba(0,0,0,.28); }
+    .stage:focus-visible { outline: 3px solid rgba(202,152,66,.45); outline-offset: 3px; }
+    .stage.active { color: #f5fff9; background: linear-gradient(145deg, #337d67, #225746); border-color: #68b89d; box-shadow: 0 14px 34px rgba(0,0,0,.36), 0 0 0 1px rgba(104,184,157,.18); }
+    .stage::after { content: ""; position: absolute; top: 50%; right: -23px; width: 22px; height: 2px; background: var(--gold); }
+    .stage:nth-child(5)::after, .stage:nth-child(10)::after { display: none; }
+    .stage-number { display: block; margin-bottom: 13px; color: var(--rust); font-size: .76rem; font-weight: 800; letter-spacing: .1em; }
+    .stage.active .stage-number { color: #ffdb9e; }
+    .stage-title { display: block; margin-bottom: 7px; font: 700 1.08rem/1.15 Georgia, "Times New Roman", serif; }
+    .stage-sub { display: block; color: var(--muted); font-size: .84rem; line-height: 1.35; }
+    .stage.active .stage-sub { color: #d7eee5; }
+    .decision-path { margin-top: 30px; padding-top: 26px; border-top: 1px solid var(--line); }
+    .decision-title { margin: 0 0 15px; color: var(--muted); font-size: .76rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .branch { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 12px; align-items: center; }
+    .branch-node { min-height: 86px; padding: 15px; display: grid; place-content: center; text-align: center; border: 1px solid var(--line); border-radius: 12px; background: #132b24; }
+    .branch-node.decision { background: linear-gradient(145deg, #362b18, #211a0f); color: #ffe7b9; border-color: #6b562c; }
+    .branch-arrow { color: var(--gold); font-size: 1.4rem; font-weight: 700; }
+    .outcomes { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 15px; }
+    .outcome { padding: 10px 8px; text-align: center; border: 1px solid #263f37; border-radius: 10px; background: #10231d; color: var(--muted); font-size: .82rem; font-weight: 700; }
+    .outcome:first-child { background: #17392f; color: #9ee0c6; border-color: #2f6856; }
+    .detail-panel { position: sticky; top: 18px; padding: 25px; }
+    .detail-kicker { margin-bottom: 7px; color: var(--rust); font-size: .76rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .detail-panel h2 { font-size: 1.8rem; }
+    .detail-summary { margin: 9px 0 22px; color: var(--muted); }
+    .detail-block { padding: 17px 0; border-top: 1px solid var(--line); }
+    .detail-block h3 { margin: 0 0 7px; color: var(--green); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; }
+    .detail-block p { margin: 0; font-size: .95rem; }
+    .progress-wrap { margin-top: 21px; }
+    .progress-meta { display: flex; justify-content: space-between; margin-bottom: 8px; color: var(--muted); font-size: .78rem; }
+    .progress { height: 7px; overflow: hidden; border-radius: 99px; background: #233c34; }
+    .progress > span { display: block; width: 10%; height: 100%; background: var(--gold); transition: width .25s ease; }
+    .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 22px; }
+    .control { min-height: 43px; border: 1px solid var(--line); border-radius: 10px; background: transparent; color: var(--ink); cursor: pointer; }
+    .control:hover:not(:disabled) { border-color: #66b499; background: #17342b; }
+    .control:disabled { opacity: .4; cursor: not-allowed; }
+    .control.primary { background: var(--green); border-color: var(--green); color: var(--paper); }
+    .control.primary:hover:not(:disabled) { background: var(--green-2); }
+    footer { margin-top: 18px; color: var(--muted); font-size: .8rem; text-align: center; }
+    @media (max-width: 1120px) {
+      .workspace { grid-template-columns: 1fr; }
+      .detail-panel { position: static; }
+      .flow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .stage::after { display: none; }
+    }
+    @media (max-width: 680px) {
+      .shell { width: min(100% - 24px, 1460px); padding-top: 18px; }
+      header { align-items: flex-start; flex-direction: column; }
+      .goal { max-width: none; }
+      .journey-panel, .detail-panel { padding: 19px; border-radius: 14px; }
+      .section-head { align-items: flex-start; flex-direction: column; }
+      .flow { grid-template-columns: 1fr; gap: 13px; }
+      .stage { min-height: 116px; }
+      .branch { grid-template-columns: 1fr; }
+      .branch-arrow { transform: rotate(90deg); text-align: center; }
+      .outcomes { grid-template-columns: 1fr 1fr; }
+      .outcomes .outcome:last-child { grid-column: 1 / -1; }
+    }
+    @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div>
+        <div class="brand">Fieldnote product flow</div>
+        <h1>From an AI question to a defensible decision</h1>
+        <p class="intro">Select a stage to see the user action, Fieldnote response, and tangible output produced at that point.</p>
+      </div>
+      <div class="goal"><strong>End state:</strong> the company can proceed, research further, scale, modify, pause, reject or stop an AI opportunity with evidence behind the decision.</div>
+    </header>
+
+    <div class="workspace">
+      <section class="journey-panel" aria-labelledby="journey-heading">
+        <div class="section-head">
+          <h2 id="journey-heading">End-to-end user journey</h2>
+          <div class="hint">Click any stage or use Previous and Next</div>
+        </div>
+        <div class="flow" id="flow"></div>
+
+        <div class="decision-path">
+          <p class="decision-title">Decision path</p>
+          <div class="branch">
+            <div class="branch-node"><strong>Before the pilot</strong><br>Proceed, research, wait or reject</div>
+            <div class="branch-arrow" aria-hidden="true">→</div>
+            <div class="branch-node decision"><strong>Evidence-backed decision</strong><br>Sources, assumptions and uncertainty remain visible</div>
+            <div class="branch-arrow" aria-hidden="true">→</div>
+            <div class="branch-node"><strong>After the pilot</strong><br>Evaluate results against approved thresholds</div>
+          </div>
+          <div class="outcomes" aria-label="Possible final outcomes">
+            <div class="outcome">Scale</div><div class="outcome">Extend</div><div class="outcome">Modify and retest</div><div class="outcome">Pause</div><div class="outcome">Stop</div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="detail-panel" aria-live="polite" aria-labelledby="detail-title">
+        <div class="detail-kicker" id="detail-kicker">Stage 01</div>
+        <h2 id="detail-title"></h2>
+        <p class="detail-summary" id="detail-summary"></p>
+        <div class="detail-block"><h3>User action</h3><p id="detail-action"></p></div>
+        <div class="detail-block"><h3>What Fieldnote does</h3><p id="detail-system"></p></div>
+        <div class="detail-block"><h3>Output</h3><p id="detail-output"></p></div>
+        <div class="detail-block"><h3>Decision enabled</h3><p id="detail-decision"></p></div>
+        <div class="progress-wrap">
+          <div class="progress-meta"><span>Journey progress</span><span id="progress-label">1 of 10</span></div>
+          <div class="progress" role="progressbar" aria-label="Journey progress" aria-valuemin="1" aria-valuemax="10" aria-valuenow="1"><span id="progress-bar"></span></div>
+        </div>
+        <div class="controls">
+          <button class="control" type="button" id="prev">Previous</button>
+          <button class="control primary" type="button" id="next">Next</button>
+        </div>
+      </aside>
+    </div>
+    <footer>Fieldnote turns fragmented enterprise AI evidence into a company-specific decision and measurable pilot.</footer>
+  </main>
+
+  <script>
+    const stages = [
+      { title: 'Company onboarding', sub: 'Build the relevance profile', summary: 'Fieldnote learns enough about the company to filter irrelevant AI examples.', action: 'Provide industry, geography, size, business functions, priorities, technology environment, AI maturity and constraints.', system: 'Creates a structured company profile that drives relevance scoring and recommendation explanations.', output: 'Company relevance profile.', decision: 'Which use cases and deployment records deserve attention?' },
+      { title: 'Define the need', sub: 'Frame the business problem', summary: 'The journey begins with a business problem rather than a technology.', action: 'Describe the affected workflow, current pain, scale, frequency, owner and expected business impact.', system: 'Converts the input into a structured opportunity statement and identifies missing information.', output: 'Business problem and opportunity statement.', decision: 'Is the problem important and specific enough to investigate?' },
+      { title: 'Discover use cases', sub: 'Find relevant opportunities', summary: 'Fieldnote recommends use cases aligned to the company and the stated problem.', action: 'Review, filter and shortlist relevant AI use cases.', system: 'Ranks use cases using workflow similarity, company fit, evidence strength, maturity, technology compatibility and regulatory fit.', output: 'Ranked use-case shortlist with relevance explanations.', decision: 'Which opportunity should the company investigate first?' },
+      { title: 'Investigate', sub: 'Open the use-case workspace', summary: 'A use case becomes a research workspace rather than a static article.', action: 'Open the use case and review what it achieves, how it works, prerequisites, expected benefits and known limitations.', system: 'Connects the use case to deployment records, technologies, outcomes, challenges and source evidence.', output: 'Detailed use-case assessment.', decision: 'Does this opportunity merit deeper evidence review?' },
+      { title: 'Validate evidence', sub: 'Check confidence and gaps', summary: 'The user sees what is known, who reported it and what remains uncertain.', action: 'Inspect sources, exact claims, confidence explanations, contradictions and missing information.', system: 'Separates facts, company claims, vendor claims, independent outcomes, estimates, analysis and evidence gaps.', output: 'Evidence-confidence assessment.', decision: 'Is the evidence strong enough to influence a business decision?' },
+      { title: 'Compare cases', sub: 'Identify transferable lessons', summary: 'Comparable deployments expose the conditions behind reported outcomes.', action: 'Select cases and compare context, stage, technology, cost, baseline, outcomes, challenges and evidence quality.', system: 'Normalizes common dimensions while warning when cases are not genuinely comparable.', output: 'Comparable deployment set and lessons.', decision: 'Which cases most closely resemble the company?' },
+      { title: 'Assess relevance', sub: 'Understand company fit', summary: 'Fieldnote explains why the opportunity may or may not transfer to this company.', action: 'Review the score breakdown and confirm company assumptions.', system: 'Assesses workflow, industry, technology, data readiness, regulatory fit and evidence confidence.', output: 'Company-specific relevance assessment.', decision: 'Should the company reject, research further or prepare a business case?' },
+      { title: 'Build the case', sub: 'Create the executive brief', summary: 'The research becomes a decision document suitable for leadership review.', action: 'Confirm assumptions, risks, cost considerations, evidence gaps and the recommended next action.', system: 'Generates a source-backed brief linking every major conclusion to supporting deployments and claims.', output: 'Executive brief with recommendation.', decision: 'Proceed to a pilot, gather more evidence, wait or reject?' },
+      { title: 'Design the pilot', sub: 'Set measurable thresholds', summary: 'The opportunity is converted into a controlled experiment.', action: 'Define scope, owners, participants, duration, baseline, thresholds, guardrails, data needs and review date.', system: 'Suggests metrics from comparable cases while requiring company-specific baseline confirmation.', output: 'Saved pilot plan and measurement framework.', decision: 'Is the proposed pilot controlled, measurable and safe to approve?' },
+      { title: 'Measure outcomes', sub: 'Evaluate the pilot', summary: 'Actual results are compared with the approved baseline and success thresholds.', action: 'Record performance, adoption, cost, incidents, feedback, scope changes and supporting evidence.', system: 'Calculates threshold performance, flags guardrail failures and preserves an auditable decision history.', output: 'Pilot outcome review and final recommendation.', decision: 'Scale, extend, modify and retest, pause or stop?' }
+    ];
+
+    const flow = document.getElementById('flow');
+    const detail = {
+      kicker: document.getElementById('detail-kicker'), title: document.getElementById('detail-title'),
+      summary: document.getElementById('detail-summary'), action: document.getElementById('detail-action'),
+      system: document.getElementById('detail-system'), output: document.getElementById('detail-output'),
+      decision: document.getElementById('detail-decision')
+    };
+    const prev = document.getElementById('prev');
+    const next = document.getElementById('next');
+    const bar = document.getElementById('progress-bar');
+    const progress = document.querySelector('.progress');
+    const progressLabel = document.getElementById('progress-label');
+    let selected = 0;
+
+    stages.forEach((stage, index) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'stage';
+      button.dataset.index = index;
+      button.setAttribute('aria-pressed', index === 0 ? 'true' : 'false');
+      button.innerHTML = `<span class="stage-number">${String(index + 1).padStart(2, '0')}</span><span class="stage-title">${stage.title}</span><span class="stage-sub">${stage.sub}</span>`;
+      button.addEventListener('click', () => selectStage(index));
+      flow.appendChild(button);
+    });
+
+    function selectStage(index) {
+      selected = Math.max(0, Math.min(stages.length - 1, index));
+      const stage = stages[selected];
+      document.querySelectorAll('.stage').forEach((button, i) => {
+        const active = i === selected;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+      detail.kicker.textContent = `Stage ${String(selected + 1).padStart(2, '0')}`;
+      detail.title.textContent = stage.title;
+      detail.summary.textContent = stage.summary;
+      detail.action.textContent = stage.action;
+      detail.system.textContent = stage.system;
+      detail.output.textContent = stage.output;
+      detail.decision.textContent = stage.decision;
+      progressLabel.textContent = `${selected + 1} of ${stages.length}`;
+      const percent = ((selected + 1) / stages.length) * 100;
+      bar.style.width = `${percent}%`;
+      progress.setAttribute('aria-valuenow', String(selected + 1));
+      prev.disabled = selected === 0;
+      next.disabled = selected === stages.length - 1;
+    }
+
+    prev.addEventListener('click', () => selectStage(selected - 1));
+    next.addEventListener('click', () => selectStage(selected + 1));
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft') selectStage(selected - 1);
+      if (event.key === 'ArrowRight') selectStage(selected + 1);
+    });
+    selectStage(0);
+  </script>
+</body>
+</html>

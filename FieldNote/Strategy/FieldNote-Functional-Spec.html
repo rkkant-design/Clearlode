@@ -1,0 +1,471 @@
+<title>FieldNote Functional Spec</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  :root{
+    --paper:#F6F7F9;--surface:#FFFFFF;--surface-2:#EEF1F5;--ink:#14181F;--ink-2:#434B57;--ink-3:#6B7482;
+    --line:#DCE1E8;--line-2:#C9D0DA;--slate:#2C4A6E;--slate-soft:#E4EAF1;--signal:#B0761A;--signal-soft:#F6ECD8;
+    --good:#2E6E4E;--good-soft:#DDEEE4;--warn:#9A6410;--warn-soft:#F5E8D2;--crit:#9A3838;--crit-soft:#F2DDDD;--mute:#5C6470;--mute-soft:#E6E9EE;
+    --shadow:0 1px 2px rgba(20,24,31,.05),0 8px 24px -12px rgba(20,24,31,.14);
+    --display:'Newsreader',Georgia,serif;--body:'IBM Plex Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace;
+  }
+  :root:not([data-theme="light"]){@media (prefers-color-scheme:dark){
+    --paper:#0F1216;--surface:#171B21;--surface-2:#1E242C;--ink:#EAEEF3;--ink-2:#B4BDC9;--ink-3:#838E9C;
+    --line:#2A313A;--line-2:#38414C;--slate:#8FB2D6;--slate-soft:#1C2A3A;--signal:#E0A94A;--signal-soft:#2E2513;
+    --good:#6FC095;--good-soft:#16281E;--warn:#DDA043;--warn-soft:#2C2411;--crit:#E28B8B;--crit-soft:#2E1919;--mute:#9AA4B1;--mute-soft:#22272F;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px -14px rgba(0,0,0,.7);
+  }}
+  :root[data-theme="dark"]{
+    --paper:#0F1216;--surface:#171B21;--surface-2:#1E242C;--ink:#EAEEF3;--ink-2:#B4BDC9;--ink-3:#838E9C;
+    --line:#2A313A;--line-2:#38414C;--slate:#8FB2D6;--slate-soft:#1C2A3A;--signal:#E0A94A;--signal-soft:#2E2513;
+    --good:#6FC095;--good-soft:#16281E;--warn:#DDA043;--warn-soft:#2C2411;--crit:#E28B8B;--crit-soft:#2E1919;--mute:#9AA4B1;--mute-soft:#22272F;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px -14px rgba(0,0,0,.7);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.55;-webkit-font-smoothing:antialiased;}
+  header.bar{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--paper) 90%,transparent);backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line);}
+  .bar-inner{max-width:1000px;margin:0 auto;padding:11px 22px;display:flex;align-items:baseline;gap:14px;}
+  .bar-mark{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);}
+  .bar-mark span{color:var(--signal);}
+  .bar-tag{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--ink-3);margin-left:auto;}
+  @media (max-width:640px){.bar-tag{display:none;}}
+  main{max-width:1000px;margin:0 auto;padding:0 22px;}
+  .wrap{max-width:820px;}
+  section{padding-block:38px;border-top:1px solid var(--line);}
+  section:first-of-type{border-top:none;}
+  .eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--signal);display:flex;align-items:center;gap:10px;margin:0 0 15px;}
+  .eyebrow::before{content:"";width:22px;height:1.5px;background:var(--signal);display:inline-block;}
+  .eyebrow .num{color:var(--ink-3);}
+  h1{font-family:var(--display);font-weight:500;font-size:clamp(2rem,5vw,3rem);line-height:1.04;letter-spacing:-.015em;margin:0 0 18px;text-wrap:balance;max-width:18ch;}
+  h2{font-family:var(--display);font-weight:500;font-size:clamp(1.45rem,3.2vw,2rem);line-height:1.12;margin:0 0 14px;text-wrap:balance;}
+  h3{font-family:var(--body);font-weight:600;font-size:1rem;margin:22px 0 6px;}
+  h4{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--slate);margin:18px 0 8px;}
+  p{margin:0 0 14px;color:var(--ink-2);max-width:74ch;}
+  p.lead{font-family:var(--display);font-size:clamp(1.1rem,2.1vw,1.35rem);line-height:1.44;color:var(--ink);}
+  strong{color:var(--ink);font-weight:600;}em{font-style:italic;}
+  code{font-family:var(--mono);font-size:.85em;background:var(--surface-2);padding:1px 5px;border-radius:4px;color:var(--ink);}
+  .caption{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-top:10px;line-height:1.5;}
+
+  /* TOC */
+  .toc{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:26px;}
+  .toc a{background:var(--surface);padding:12px 15px;text-decoration:none;color:var(--ink-2);font-size:.86rem;display:flex;gap:9px;align-items:baseline;transition:background .12s;}
+  .toc a:hover{background:var(--surface-2);color:var(--ink);}
+  .toc a b{font-family:var(--mono);font-size:.72rem;color:var(--signal);}
+  @media(max-width:620px){.toc{grid-template-columns:1fr 1fr;}}
+
+  .callout{border-left:3px solid var(--signal);background:var(--signal-soft);padding:15px 19px;border-radius:0 10px 10px 0;margin:18px 0;}
+  .callout p{color:var(--ink);margin:0;max-width:none;}
+  .callout .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--signal);margin-bottom:6px;display:block;}
+  .callout.slate{border-left-color:var(--slate);background:var(--slate-soft);}.callout.slate .k{color:var(--slate);}
+  .callout.good{border-left-color:var(--good);background:var(--good-soft);}.callout.good .k{color:var(--good);}
+  .callout.crit{border-left-color:var(--crit);background:var(--crit-soft);}.callout.crit .k{color:var(--crit);}
+  .callout.neutral{border-left-color:var(--line-2);background:var(--surface-2);}.callout.neutral .k{color:var(--ink-3);}
+
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;margin:8px 0;-webkit-overflow-scrolling:touch;}
+  table.cmp{border-collapse:collapse;width:100%;min-width:600px;font-size:.88rem;}
+  table.cmp th,table.cmp td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top;}
+  table.cmp thead th{font-family:var(--mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);background:var(--surface-2);font-weight:500;}
+  table.cmp tbody tr:last-child td{border-bottom:none;}
+  table.cmp td.name{font-weight:600;color:var(--ink);white-space:nowrap;}
+  table.cmp td.mono,table.cmp td .mono{font-family:var(--mono);font-size:.82rem;}
+  table.cmp tbody tr:nth-child(even) td{background:color-mix(in srgb,var(--surface-2) 45%,transparent);}
+  .g{display:inline-block;width:20px;height:20px;border-radius:5px;text-align:center;line-height:20px;font-family:var(--mono);font-size:11px;font-weight:500;color:#fff;}
+  .gA{background:var(--good);}.gB{background:var(--slate);}.gC{background:var(--warn);}.gD{background:var(--crit);}
+
+  ul.clean{list-style:none;padding:0;margin:6px 0 0;}
+  ul.clean li{padding:8px 0 8px 24px;border-top:1px solid var(--line);position:relative;font-size:.92rem;color:var(--ink-2);}
+  ul.clean li:first-child{border-top:none;}
+  ul.clean li::before{content:"→";position:absolute;left:0;top:8px;color:var(--signal);font-family:var(--mono);}
+  ul.clean li strong{color:var(--ink);}
+  ul.fr{list-style:none;padding:0;margin:4px 0 0;counter-reset:fr;}
+  ul.fr li{padding:7px 0 7px 46px;position:relative;font-size:.9rem;color:var(--ink-2);border-top:1px solid var(--line);}
+  ul.fr li:first-child{border-top:none;}
+  ul.fr li::before{counter-increment:fr;content:attr(data-id);position:absolute;left:0;top:7px;font-family:var(--mono);font-size:10px;color:var(--slate);background:var(--slate-soft);padding:2px 5px;border-radius:4px;}
+  ul.fr li strong{color:var(--ink);}
+  .must{color:var(--crit);font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.05em;border:1px solid var(--crit);border-radius:4px;padding:0 4px;margin-left:6px;vertical-align:1px;}
+
+  .mods{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px;}
+  @media(max-width:640px){.mods{grid-template-columns:1fr;}}
+  .mod{border:1px solid var(--line);border-radius:12px;padding:15px 17px;background:var(--surface);}
+  .mod .tag{font-family:var(--mono);font-size:10px;color:var(--signal);letter-spacing:.08em;}
+  .mod h3{margin:3px 0 6px;font-size:1.02rem;}
+  .mod p{font-size:.87rem;margin:0;max-width:none;}
+
+  .flow{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:6px;}
+  @media(max-width:640px){.flow{grid-template-columns:1fr;}}
+  .step{border:1px solid var(--line);border-top:3px solid var(--signal);border-radius:10px;padding:14px 16px;background:var(--surface);}
+  .step .n{font-family:var(--mono);font-size:10px;color:var(--signal);letter-spacing:.1em;}
+  .step h3{margin:4px 0 6px;}
+  .step p{font-size:.86rem;margin:0;max-width:none;}
+
+  .diagram{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:18px;margin-top:8px;}
+  svg .bar{stroke:var(--line-2);stroke-width:1;}
+  svg .lab{font-family:var(--body);font-weight:600;fill:#fff;font-size:14px;}
+  svg .sub{font-family:var(--body);fill:#fff;font-size:11px;opacity:.92;}
+  svg .side{font-family:var(--mono);font-size:11px;fill:var(--ink-3);}
+  svg .sidev{font-family:var(--mono);font-size:11.5px;fill:var(--ink);font-weight:500;}
+  svg .arrow{stroke:var(--line-2);stroke-width:1.5;fill:none;}
+  svg .s1{fill:var(--slate);}svg .s2{fill:#3E6187;}svg .s3{fill:var(--signal);}
+  svg .s4{fill:#B0761A;}svg .s5{fill:#8a5a2a;}svg .s6{fill:var(--good);}
+  svg .band{fill:var(--slate-soft);stroke:var(--slate);stroke-width:1;}
+  svg .bandt{font-family:var(--body);fill:var(--ink);font-size:12.5px;font-weight:600;}
+  svg .bands{font-family:var(--mono);fill:var(--slate);font-size:11px;}
+
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:8px;font-size:.88rem;}
+  .kv dt{background:var(--surface-2);padding:9px 13px;font-family:var(--mono);font-size:.78rem;color:var(--ink);border-bottom:1px solid var(--line);border-right:1px solid var(--line);white-space:nowrap;}
+  .kv dd{margin:0;padding:9px 13px;color:var(--ink-2);border-bottom:1px solid var(--line);}
+  .kv dt:last-of-type,.kv dd:last-of-type{border-bottom:none;}
+
+  footer{padding:26px 22px 46px;max-width:1000px;margin:0 auto;}
+  footer p{font-family:var(--mono);font-size:11px;color:var(--ink-3);max-width:none;line-height:1.7;}
+</style>
+
+<header class="bar">
+  <div class="bar-inner">
+    <div class="bar-mark">FIELDNOTE<span>.</span></div>
+    <div class="bar-tag">Functional specification · v1.0 · Trueinfo Labs</div>
+  </div>
+</header>
+
+<main>
+  <!-- 0 OVERVIEW -->
+  <section class="wrap" id="top">
+    <div class="eyebrow">Functional specification · v1.0 · Sep 2026</div>
+    <h1>FieldNote — the product, specified.</h1>
+    <p class="lead">FieldNote watches the AI-deployment talks so a decision-maker doesn't have to. It converts firsthand YouTube and X accounts of real enterprise AI deployments into short, verified, decision-ready records — and delivers them to the right person for near-zero cost of their own attention or tokens.</p>
+    <div class="callout slate">
+      <span class="k">The two constraints that shape every decision here</span>
+      <p><strong>1 · Firsthand only</strong> — a record exists only if a named person from a named company describes their own deployment in their own public words. <strong>2 · The user is token-capped</strong> — the product spends the tokens once, centrally, so the buyer consumes verified answers for almost none of their own.</p>
+    </div>
+    <nav class="toc">
+      <a href="#problem"><b>01</b> Problem &amp; value</a>
+      <a href="#scope"><b>02</b> Scope &amp; users</a>
+      <a href="#workflow"><b>03</b> Ingestion workflow</a>
+      <a href="#modules"><b>04</b> Modules &amp; FRs</a>
+      <a href="#schema"><b>05</b> Record schema</a>
+      <a href="#grades"><b>06</b> Evidence grading</a>
+      <a href="#consume"><b>07</b> Consumption model</a>
+      <a href="#tokens"><b>08</b> Token economics</a>
+      <a href="#nfr"><b>09</b> Non-functional</a>
+      <a href="#arch"><b>10</b> Architecture</a>
+      <a href="#metrics"><b>11</b> Metrics &amp; gates</a>
+      <a href="#roadmap"><b>12</b> Roadmap</a>
+    </nav>
+  </section>
+
+  <!-- 1 PROBLEM -->
+  <section class="wrap" id="problem">
+    <div class="eyebrow"><span class="num">01 ·</span> Problem &amp; value proposition</div>
+    <h2>The buyer is drowning in AI noise and paying to stay confused.</h2>
+    <p>New models and "agentic AI" launches arrive weekly at peak hype. An enterprise decision-maker who wants the one thing that matters — <em>what a company like mine actually deployed, and whether it worked</em> — has only bad options: sift hundreds of hours of talks themselves, or ask an LLM and burn their limited token budget on an answer they then have to fact-check (94% of B2B buyers already do).</p>
+    <p><strong>FieldNote's value:</strong> the expensive, unreliable research is done once, centrally, and verified. The buyer gets a short, sourced, decision-ready record — <em>cheap and trustworthy</em>, against a status quo that is <em>costly and unreliable</em>.</p>
+    <div class="callout"><span class="k">Product promise</span><p>Discover what other enterprises actually did with AI · Understand the problem, models, architecture, challenges, deployment and ROI · Decide what applies to you — without spending your own tokens or trust.</p></div>
+  </section>
+
+  <!-- 2 SCOPE -->
+  <section class="wrap" id="scope">
+    <div class="eyebrow"><span class="num">02 ·</span> Scope, sources &amp; users</div>
+    <h2>Narrow and firsthand at launch.</h2>
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th>Dimension</th><th>In scope (v1)</th><th>Out of scope (v1)</th></tr></thead>
+      <tbody>
+        <tr><td class="name">Domain</td><td>Customer support (tier-1 deflection, order-status, agent-assist / copilot)</td><td>Document processing, software engineering — later domains</td></tr>
+        <tr><td class="name">Sources</td><td><strong>Primary: YouTube.</strong> Secondary: X — as a <em>lead / discovery</em> signal, not a record source</td><td>Vendor case studies, journalist articles, analyst reports (not firsthand)</td></tr>
+        <tr><td class="name">Record type</td><td>Firsthand: named speaker + named company, own public words</td><td>Third-party-authored accounts; anonymous claims</td></tr>
+        <tr><td class="name">User AI usage</td><td>Pre-computed library; core loop costs the user zero tokens</td><td>Open-ended generate-per-query chat metered against the user</td></tr>
+      </tbody>
+    </table></div>
+    <h4>Users &amp; roles</h4>
+    <ul class="clean">
+      <li><strong>Consumer (the buyer)</strong> — a CX / support leader. Creates a minimal role-based profile; browses, filters and reads records. Self-serve; no onboarding call.</li>
+      <li><strong>Analyst / curator (internal)</strong> — runs the pipeline, performs the SCRUB, publishes records. The trust gate.</li>
+      <li><strong>Admin (internal)</strong> — manages the source registry, taxonomy, quotas, users and billing.</li>
+    </ul>
+  </section>
+
+  <!-- 3 WORKFLOW -->
+  <section class="wrap" id="workflow">
+    <div class="eyebrow"><span class="num">03 ·</span> The ingestion workflow</div>
+    <h2>A source-first cascade — cost rises only as confidence rises.</h2>
+    <p>The pipeline is deliberately inverted from "search everything, then filter." It starts from a <strong>curated registry</strong> of high-yield sources and spends expensive tokens only on the small share of videos that survive cheap gates. Volumes below are illustrative of the funnel shape, per month.</p>
+    <div class="diagram">
+      <svg viewBox="0 0 720 600" xmlns="http://www.w3.org/2000/svg" width="100%" role="img" aria-label="Six-stage ingestion funnel from source registry to published records">
+        <!-- Stage 1 -->
+        <rect class="bar s1" x="50" y="20" width="620" height="58" rx="8"/>
+        <text class="lab" x="360" y="44" text-anchor="middle">1 · Source Registry</text>
+        <text class="sub" x="360" y="63" text-anchor="middle">curated channels · playlists · podcasts · X leads</text>
+        <text class="sidev" x="42" y="47" text-anchor="end">config</text>
+        <text class="side" x="42" y="63" text-anchor="end">N sources</text>
+        <path class="arrow" d="M360 78 L360 96 M354 90 L360 96 L366 90"/>
+        <!-- Stage 2 -->
+        <rect class="bar s2" x="90" y="98" width="540" height="58" rx="8"/>
+        <text class="lab" x="360" y="122" text-anchor="middle">2 · Discover — metadata only</text>
+        <text class="sub" x="360" y="141" text-anchor="middle">YouTube Data API · filter title / desc / duration / date</text>
+        <text class="sidev" x="678" y="125">~free</text>
+        <text class="side" x="678" y="141">≈10,000</text>
+        <path class="arrow" d="M360 156 L360 174 M354 168 L360 174 L366 168"/>
+        <!-- Stage 3 -->
+        <rect class="bar s3" x="140" y="176" width="440" height="58" rx="8"/>
+        <text class="lab" x="360" y="200" text-anchor="middle">3 · Cheap Gate</text>
+        <text class="sub" x="360" y="219" text-anchor="middle">free captions + small model: firsthand? fields present?</text>
+        <text class="sidev" x="678" y="203">low $</text>
+        <text class="side" x="678" y="219">≈2,000</text>
+        <path class="arrow" d="M360 234 L360 252 M354 246 L360 252 L366 246"/>
+        <!-- Stage 4 -->
+        <rect class="bar s4" x="185" y="254" width="350" height="58" rx="8"/>
+        <text class="lab" x="360" y="278" text-anchor="middle">4 · Extract</text>
+        <text class="sub" x="360" y="297" text-anchor="middle">capable model → schema · every claim + quote + timestamp</text>
+        <text class="sidev" x="678" y="281">high $*</text>
+        <text class="side" x="678" y="297">≈400</text>
+        <path class="arrow" d="M360 312 L360 330 M354 324 L360 330 L366 324"/>
+        <!-- Stage 5 -->
+        <rect class="bar s5" x="225" y="332" width="270" height="58" rx="8"/>
+        <text class="lab" x="360" y="356" text-anchor="middle">5 · SCRUB (human)</text>
+        <text class="sub" x="360" y="375" text-anchor="middle">confirm quote · timestamp · grade · dedupe → entity</text>
+        <text class="sidev" x="678" y="359">human</text>
+        <text class="side" x="678" y="375">≈80</text>
+        <path class="arrow" d="M360 390 L360 408 M354 402 L360 408 L366 402"/>
+        <!-- Stage 6 -->
+        <rect class="bar s6" x="260" y="410" width="200" height="58" rx="8"/>
+        <text class="lab" x="360" y="434" text-anchor="middle">6 · Publish</text>
+        <text class="sub" x="360" y="453" text-anchor="middle">live · versioned · dated</text>
+        <text class="sidev" x="678" y="437">—</text>
+        <text class="side" x="678" y="453">≈60 / mo</text>
+        <!-- consume band -->
+        <rect class="band" x="50" y="500" width="620" height="72" rx="10"/>
+        <text class="bandt" x="360" y="528" text-anchor="middle">CONSUME · Discover → Examine → Apply</text>
+        <text class="bands" x="360" y="550" text-anchor="middle">pre-computed · search &amp; filter · progressive disclosure</text>
+        <text class="bands" x="360" y="566" text-anchor="middle">user token cost = 0</text>
+        <path class="arrow" d="M360 468 L360 500 M354 494 L360 500 L366 494"/>
+      </svg>
+      <p class="caption">*Stage-4 cost is high per video but incurred on &lt;5% of discovered videos. Volumes illustrative. Free captions before any paid transcription; Whisper is fallback only when captions are disabled.</p>
+    </div>
+  </section>
+
+  <!-- 4 MODULES + FR -->
+  <section class="wrap" id="modules">
+    <div class="eyebrow"><span class="num">04 ·</span> Modules &amp; functional requirements</div>
+    <h2>Nine modules. What each must do.</h2>
+    <div class="mods">
+      <div class="mod"><span class="tag">M1</span><h3>Source Registry</h3><p>The curated whitelist that seeds discovery and keeps signal high.</p></div>
+      <div class="mod"><span class="tag">M2</span><h3>Discovery</h3><p>Pulls new candidate videos on metadata alone — no transcripts, no LLM.</p></div>
+      <div class="mod"><span class="tag">M3</span><h3>Cheap Gate</h3><p>Free captions + small model classify firsthand relevance and field coverage.</p></div>
+      <div class="mod"><span class="tag">M4</span><h3>Extraction</h3><p>Capable model structures survivors into the record schema, grounded in quotes.</p></div>
+      <div class="mod"><span class="tag">M5</span><h3>SCRUB / Review</h3><p>Human confirms every claim, grades evidence, approves for publish.</p></div>
+      <div class="mod"><span class="tag">M6</span><h3>Entity &amp; Library</h3><p>Dedupes into company/deployment entities; the versioned record store.</p></div>
+      <div class="mod"><span class="tag">M7</span><h3>Search &amp; Filter</h3><p>Token-free discovery over structured records by role, workflow, grade.</p></div>
+      <div class="mod"><span class="tag">M8</span><h3>Profile &amp; Fit</h3><p>Role-based profile; maps records to "why this matters to you."</p></div>
+      <div class="mod"><span class="tag">M9</span><h3>Freshness</h3><p>Dating, decay flags and a re-review cadence so records don't rot.</p></div>
+    </div>
+
+    <h4>M1 · Source Registry</h4>
+    <ul class="fr">
+      <li data-id="1.1"><strong>Maintain a curated registry</strong> of sources: YouTube channels, playlists, conference tracks, podcasts, and X handles, each tagged with expected yield and domain. <span class="must">MUST</span></li>
+      <li data-id="1.2">Support source tiers: <strong>Tier A</strong> whitelist (crawled fully) and <strong>Tier B</strong> keyword search (crawled sparingly, quota-budgeted).</li>
+      <li data-id="1.3">Admin can add / disable / re-tier a source and see its historical hit-rate (published records ÷ videos ingested).</li>
+    </ul>
+
+    <h4>M2 · Discovery (metadata only)</h4>
+    <ul class="fr">
+      <li data-id="2.1"><strong>Pull new videos</strong> from Tier-A sources via the YouTube Data API on a schedule; record video ID, title, description, channel, duration, publish date, view count. <span class="must">MUST</span></li>
+      <li data-id="2.2"><strong>Filter on metadata only</strong> — drop shorts, off-topic, and out-of-window items before any transcript or model call. <span class="must">MUST</span></li>
+      <li data-id="2.3"><strong>Budget the API quota</strong> — prefer playlist/channel listing over <code>search</code> (100 units each); alert before the daily 10,000-unit cap.</li>
+      <li data-id="2.4">Deduplicate against already-seen video IDs; never re-ingest.</li>
+    </ul>
+
+    <h4>M3 · Cheap Gate</h4>
+    <ul class="fr">
+      <li data-id="3.1"><strong>Retrieve existing captions</strong> (creator or auto) via the transcript API — free — before any paid transcription. Fall back to Whisper only when captions are disabled. <span class="must">MUST</span></li>
+      <li data-id="3.2"><strong>Classify with a small / cheap model</strong>: is this a firsthand, named-company enterprise deployment? Output Y/N, company, speaker+role, which schema fields are present, and a confidence score. <span class="must">MUST</span></li>
+      <li data-id="3.3">Only items above a confidence threshold pass to Extraction; the rest are archived with the reason.</li>
+      <li data-id="3.4">Cache the caption and gate result by video ID.</li>
+    </ul>
+
+    <h4>M4 · Extraction</h4>
+    <ul class="fr">
+      <li data-id="4.1"><strong>Populate the record schema</strong> (§05) with a capable model from the transcript. <span class="must">MUST</span></li>
+      <li data-id="4.2"><strong>Ground every populated field</strong> with a verbatim quote and a source timestamp. No field may contain a claim without a supporting quote. <span class="must">MUST</span></li>
+      <li data-id="4.3">Fields not evidenced in the source are set to <code>not_disclosed</code> — never inferred or filled from outside knowledge. <span class="must">MUST</span></li>
+      <li data-id="4.4">Normalize outcome metrics to a controlled vocabulary (deflection / resolution / containment / CSAT / handle-time / cost) and flag whether a baseline was stated.</li>
+      <li data-id="4.5">Use prompt caching for the fixed schema + instructions to cut per-record cost.</li>
+    </ul>
+
+    <h4>M5 · SCRUB / Review</h4>
+    <ul class="fr">
+      <li data-id="5.1"><strong>Present each extracted record beside its source</strong> so a human can confirm each quote and timestamp against the video. <span class="must">MUST</span></li>
+      <li data-id="5.2"><strong>Assign an evidence grade</strong> (A–D, §06) per outcome claim and an overall record grade. <span class="must">MUST</span></li>
+      <li data-id="5.3">No record reaches <code>published</code> without passing SCRUB. <span class="must">MUST</span></li>
+      <li data-id="5.4">Capture right-of-reply status and reviewer identity + date.</li>
+    </ul>
+
+    <h4>M6 · Entity &amp; Library</h4>
+    <ul class="fr">
+      <li data-id="6.1"><strong>Resolve to company / deployment entities</strong> — multiple videos about one deployment merge into one entity with several sources, not duplicate records. <span class="must">MUST</span></li>
+      <li data-id="6.2">Store records with full version history; every edit is versioned and dated.</li>
+      <li data-id="6.3">Tag each record against the taxonomy (industry · workflow · technology · deployment stage).</li>
+    </ul>
+
+    <h4>M7 · Search &amp; Filter</h4>
+    <ul class="fr">
+      <li data-id="7.1"><strong>Browse, search and filter</strong> records by workflow, industry, company size, technology, evidence grade and outcome type — over structured fields, <strong>using none of the user's tokens</strong>. <span class="must">MUST</span></li>
+      <li data-id="7.2">Results show the TL;DR layer only, with grade and freshness, so scanning is instant.</li>
+    </ul>
+
+    <h4>M8 · Profile &amp; Fit</h4>
+    <ul class="fr">
+      <li data-id="8.1"><strong>Minimal role-based profile</strong> — role, industry, company size, workflows of interest, goals. No account onboarding call. <span class="must">MUST</span></li>
+      <li data-id="8.2">Surface a personalized feed and, per record, a <strong>"why this matters to you"</strong> fit note derived from the profile.</li>
+      <li data-id="8.3">Any generative fit assistance runs <strong>server-side on FieldNote's tokens</strong>, cached and capped per account — never metered against the user. <span class="must">MUST</span></li>
+    </ul>
+
+    <h4>M9 · Freshness</h4>
+    <ul class="fr">
+      <li data-id="9.1">Every record shows source date and last-reviewed date.</li>
+      <li data-id="9.2"><strong>Flag records past a decay window</strong> (e.g. models/pricing likely stale) for re-review; surface freshness in the UI.</li>
+    </ul>
+  </section>
+
+  <!-- 5 SCHEMA -->
+  <section class="wrap" id="schema">
+    <div class="eyebrow"><span class="num">05 ·</span> The deployment-record schema</div>
+    <h2>One record = one company's firsthand deployment.</h2>
+    <p>This is the product's atomic unit and its output contract. Every field is either evidenced (quote + timestamp) or explicitly <code>not_disclosed</code>.</p>
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th>Field</th><th>Description</th><th>Evidenced?</th></tr></thead>
+      <tbody>
+        <tr><td class="name">record_id</td><td>Unique ID; links to company/deployment entity</td><td>—</td></tr>
+        <tr><td class="name">company</td><td>Name, industry, size band, region</td><td>from source</td></tr>
+        <tr><td class="name">workflow</td><td>Taxonomy: e.g. CS → tier-1 deflection / order-status / agent-assist</td><td>—</td></tr>
+        <tr><td class="name">speaker</td><td>Named person + role/title (the firsthand attribution)</td><td>required</td></tr>
+        <tr><td class="name">source</td><td>Platform, URL, title, channel, publish date, timestamp(s)</td><td>required</td></tr>
+        <tr><td class="name">tldr</td><td>One-line "what they did &amp; whether it worked"</td><td>derived</td></tr>
+        <tr><td class="name">problem</td><td>The problem statement in their words</td><td>quote+ts</td></tr>
+        <tr><td class="name">solution_models</td><td>Named models / tools / vendors used</td><td>quote+ts</td></tr>
+        <tr><td class="name">architecture</td><td>RAG · agentic · human-in-loop · guardrails · integrations</td><td>quote+ts</td></tr>
+        <tr><td class="name">deployment</td><td>Rollout approach, pilot→scale, change management</td><td>quote+ts</td></tr>
+        <tr><td class="name">challenges</td><td>What went wrong / was hard</td><td>quote+ts</td></tr>
+        <tr><td class="name">outcomes</td><td>Metrics (normalized type) + values + <strong>baseline present?</strong></td><td>quote+ts</td></tr>
+        <tr><td class="name">boundaries</td><td>Caveats · what they'd warn a peer about</td><td>quote+ts</td></tr>
+        <tr><td class="name">fit_notes</td><td>Conditions under which it transfers to another org</td><td>analysis</td></tr>
+        <tr><td class="name">evidence_grade</td><td>Per-claim A–D and overall record grade</td><td>reviewer</td></tr>
+        <tr><td class="name">rights</td><td>Excerpt-only · link · no media hosted</td><td>—</td></tr>
+        <tr><td class="name">status / versions</td><td>candidate → in-review → published → archived; dated history</td><td>—</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout crit"><span class="k">Hard rule</span><p>No number, model name, or architecture detail may appear in a record without a supporting verbatim quote and timestamp. A field with no source is <code>not_disclosed</code>, shown as such. This rule is the moat — the moment the product fabricates to look complete, it becomes the untrustworthy thing it replaces.</p></div>
+  </section>
+
+  <!-- 6 GRADES -->
+  <section class="wrap" id="grades">
+    <div class="eyebrow"><span class="num">06 ·</span> Evidence grading</div>
+    <h2>Every outcome carries how much to trust it.</h2>
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th>Grade</th><th>Means</th><th>Typical firsthand signal</th></tr></thead>
+      <tbody>
+        <tr><td><span class="g gA">A</span></td><td>Independent-quality production evidence <strong>with a baseline</strong></td><td>Operator states before/after with a named metric and time window</td></tr>
+        <tr><td><span class="g gB">B</span></td><td>Named first-party disclosure <strong>with numbers</strong>, baseline partial</td><td>Exec gives a figure but not a clean baseline / control</td></tr>
+        <tr><td><span class="g gC">C</span></td><td>Directional claim, <strong>no baseline</strong> / single-source</td><td>"It's been a huge win" with no measure</td></tr>
+        <tr><td><span class="g gD">D</span></td><td>Announcement / aspirational / later walked back</td><td>Launch hype, projected numbers, conflicting statements</td></tr>
+      </tbody>
+    </table></div>
+    <p>Metric hygiene is enforced at grading: <strong>deflection ≠ resolution ≠ containment ≠ handle-rate.</strong> A record that conflates them is graded down until the metric type is pinned to a quote.</p>
+  </section>
+
+  <!-- 7 CONSUME -->
+  <section class="wrap" id="consume">
+    <div class="eyebrow"><span class="num">07 ·</span> The consumption model</div>
+    <h2>Progressive disclosure — respect the user's tokens and attention.</h2>
+    <p>A token-capped buyer will not read a transcript. Records are delivered in three layers; the user drills only when a record earns it. The core loop is <strong>generative-token-free for the user</strong>.</p>
+    <div class="flow">
+      <div class="step"><span class="n">LAYER 1</span><h3>TL;DR</h3><p>One line: what they did, whether it worked, evidence grade, freshness. Enough to triage in a scan.</p></div>
+      <div class="step"><span class="n">LAYER 2</span><h3>Decision card</h3><p>Structured: problem · models · architecture · deployment · challenges · ROI · boundaries · fit-to-you.</p></div>
+      <div class="step"><span class="n">LAYER 3</span><h3>Evidence</h3><p>On demand: the verbatim quotes, timestamps and source links behind every field.</p></div>
+    </div>
+    <h4>The three-verb loop</h4>
+    <div class="flow">
+      <div class="step"><span class="n">01</span><h3>Discover</h3><p>By role/workflow — a personalized feed of relevant records, token-free.</p></div>
+      <div class="step"><span class="n">02</span><h3>Examine</h3><p>A sourced, graded record with the lesson and the boundaries visible.</p></div>
+      <div class="step"><span class="n">03</span><h3>Apply</h3><p>The "why this matters to you" fit note turns a record into a decision input.</p></div>
+    </div>
+  </section>
+
+  <!-- 8 TOKENS -->
+  <section class="wrap" id="tokens">
+    <div class="eyebrow"><span class="num">08 ·</span> Token economics</div>
+    <h2>Two separate budgets. Don't confuse them.</h2>
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th>Economy</th><th>Whose budget</th><th>Design response</th></tr></thead>
+      <tbody>
+        <tr><td class="name">Processing</td><td>FieldNote (cost of goods)</td><td>Source-first cascade · free captions · cheap-gate-then-capable-model · cache by video ID · prompt caching · per-record token budget + monthly cap</td></tr>
+        <tr><td class="name">Consumption</td><td class="us">The user (the binding constraint)</td><td>Pre-computed records · search/filter over structure (no generation on read) · any AI fit-assist runs server-side on FieldNote tokens, cached &amp; capped · never a metered chat box</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout good"><span class="k">The positioning this buys</span><p>"We spent the tokens so you don't have to." A fixed, predictable subscription that returns verified answers — versus the buyer burning a capped, unpredictable budget on answers they can't trust anyway.</p></div>
+  </section>
+
+  <!-- 9 NFR -->
+  <section class="wrap" id="nfr">
+    <div class="eyebrow"><span class="num">09 ·</span> Non-functional requirements</div>
+    <h2>The qualities that make it trustworthy.</h2>
+    <ul class="clean">
+      <li><strong>Trust / accuracy</strong> — zero unsourced claims in published records; 100% of published records have passed human SCRUB.</li>
+      <li><strong>Rights &amp; compliance</strong> — short excerpts + attribution + link + timestamp only; never host or republish full media/transcripts; respect YouTube &amp; X ToS and API quotas; obtain a standing IP opinion on the fair-use posture.</li>
+      <li><strong>Privacy</strong> — minimal profile data; no personal data in URLs; standard auth.</li>
+      <li><strong>Performance</strong> — search/filter and record views return fast from pre-computed data; no user-facing action blocks on an LLM call.</li>
+      <li><strong>Freshness</strong> — records dated; decay-flagged; re-review cadence enforced.</li>
+      <li><strong>Cost control</strong> — processing stays within per-record and monthly token caps; quota alerts before hard limits.</li>
+    </ul>
+  </section>
+
+  <!-- 10 ARCH -->
+  <section class="wrap" id="arch">
+    <div class="eyebrow"><span class="num">10 ·</span> Reference architecture</div>
+    <h2>Serverless, batch-first, thin at the edge.</h2>
+    <p>Heavy work is offline batch (protect margin); the user-facing app is a thin reader over pre-computed data (protect the user's tokens). Aligns with the FieldNote AWS reference architecture.</p>
+    <dl class="kv">
+      <dt>Ingestion</dt><dd>Scheduled jobs (Step Functions / EventBridge) → YouTube Data API + transcript retrieval → object store for raw captions.</dd>
+      <dt>Models</dt><dd>Small/cheap model for the gate; capable model (Claude via Bedrock) for extraction; prompt caching on the fixed schema.</dd>
+      <dt>Human-in-loop</dt><dd>Review queue (task-token pattern) for SCRUB; nothing publishes without it.</dd>
+      <dt>Data</dt><dd>Postgres (records, entities, taxonomy, versions) + pgvector for semantic search over structured records.</dd>
+      <dt>App</dt><dd>Thin web app: auth, profile, search/filter, tiered record views. No per-view generation.</dd>
+      <dt>Fit assist</dt><dd>Optional, server-side, cached, capped — retrieval-grounded over the library, on FieldNote's budget.</dd>
+    </dl>
+    <p class="caption">Concierge/validation phase can run on the lighter Netlify + Supabase stack; AWS is for the production/scale build.</p>
+  </section>
+
+  <!-- 11 METRICS -->
+  <section class="wrap" id="metrics">
+    <div class="eyebrow"><span class="num">11 ·</span> Metrics &amp; go/no-go gates</div>
+    <h2>How we know it's working — and when to stop.</h2>
+    <h4>Content-engine health</h4>
+    <ul class="clean">
+      <li><strong>Yield</strong> — published records ÷ videos discovered (target: cascade keeps this economical).</li>
+      <li><strong>Cost per published record</strong> — total processing tokens ÷ records (must sit inside the per-record budget).</li>
+      <li><strong>Coverage</strong> — records per workflow; watch order-status (thin firsthand).</li>
+    </ul>
+    <h4>Product / demand</h4>
+    <ul class="clean">
+      <li><strong>Repeat use</strong> · <strong>evidence used in a real decision</strong> · <strong>willingness to pay.</strong></li>
+    </ul>
+    <div class="callout"><span class="k">Validation gate (before building the automated pipeline)</span><p>Hand-produce ~20 records (21 candidates already in hand) and put them + a no-code role page in front of 10–15 CS leaders. Proceed only if, e.g., <strong>≥5 repeat users, ≥2 say it changed a decision, ≥2 would pay.</strong> Miss → stop cheaply. Automate M1–M4 only after this passes.</p></div>
+  </section>
+
+  <!-- 12 ROADMAP -->
+  <section class="wrap" id="roadmap">
+    <div class="eyebrow"><span class="num">12 ·</span> Roadmap</div>
+    <h2>Manual first, automate second.</h2>
+    <div class="tablewrap"><table class="cmp">
+      <thead><tr><th>Phase</th><th>What ships</th><th>Build?</th></tr></thead>
+      <tbody>
+        <tr><td class="name">P0 · Validate</td><td>~20 hand-scrubbed records + no-code role page in front of real CS leaders; measure the gate</td><td>Near-zero code</td></tr>
+        <tr><td class="name">P1 · Thin library</td><td>M6–M8 core: record store, search/filter, role feed, tiered views (token-free consume)</td><td>Light stack</td></tr>
+        <tr><td class="name">P2 · Semi-automate</td><td>M1–M5 cascade: registry, discovery, cheap gate, extraction, review queue</td><td>AWS, batch</td></tr>
+        <tr><td class="name">P3 · Scale</td><td>Freshness automation, fit-assist, new workflows then new domains (doc processing, SWE)</td><td>AWS</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout neutral"><span class="k">Open decisions to close</span><p>Consumption model A (pure library) vs B (library + bounded fit-assist) · confirm the canonical prototype file · clear the "FieldNote" name · finalize gate thresholds with the sponsor · confirm X's role stays discovery-only.</p></div>
+  </section>
+</main>
+
+<footer>
+  <p>FieldNote — a Trueinfo Labs product · Functional Specification v1.0 · Sep 2026. Launch domain: customer support. Firsthand sources only (YouTube primary, X as leads). Companion documents: Build Case, Strategy Memo, Starter Kit, Record Tracker, AWS Architecture. Name "FieldNote" not yet cleared.</p>
+</footer>

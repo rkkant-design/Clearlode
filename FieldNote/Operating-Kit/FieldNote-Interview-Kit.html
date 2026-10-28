@@ -1,0 +1,142 @@
+<title>FieldNote Interview Kit</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  :root{
+    --paper:#F6F7F9;--surface:#FFFFFF;--surface-2:#EEF1F5;--ink:#14181F;--ink-2:#434B57;--ink-3:#6B7482;
+    --line:#DCE1E8;--line-2:#C9D0DA;--slate:#2C4A6E;--slate-soft:#E4EAF1;--signal:#B0761A;--signal-soft:#F6ECD8;
+    --good:#2E6E4E;--good-soft:#DDEEE4;--crit:#9A3838;--crit-soft:#F2DDDD;
+    --shadow:0 1px 2px rgba(20,24,31,.05),0 8px 24px -12px rgba(20,24,31,.14);
+    --display:'Newsreader',Georgia,serif;--body:'IBM Plex Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace;
+  }
+  :root:not([data-theme="light"]){@media (prefers-color-scheme:dark){
+    --paper:#0F1216;--surface:#171B21;--surface-2:#1E242C;--ink:#EAEEF3;--ink-2:#B4BDC9;--ink-3:#838E9C;
+    --line:#2A313A;--line-2:#38414C;--slate:#8FB2D6;--slate-soft:#1C2A3A;--signal:#E0A94A;--signal-soft:#2E2513;
+    --good:#6FC095;--good-soft:#16281E;--crit:#E28B8B;--crit-soft:#2E1919;--shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px -14px rgba(0,0,0,.7);
+  }}
+  :root[data-theme="dark"]{
+    --paper:#0F1216;--surface:#171B21;--surface-2:#1E242C;--ink:#EAEEF3;--ink-2:#B4BDC9;--ink-3:#838E9C;
+    --line:#2A313A;--line-2:#38414C;--slate:#8FB2D6;--slate-soft:#1C2A3A;--signal:#E0A94A;--signal-soft:#2E2513;
+    --good:#6FC095;--good-soft:#16281E;--crit:#E28B8B;--crit-soft:#2E1919;--shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px -14px rgba(0,0,0,.7);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.55;-webkit-font-smoothing:antialiased;}
+  header.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--paper) 90%,transparent);backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line);}
+  .bar-inner{max-width:900px;margin:0 auto;padding:11px 22px;display:flex;align-items:baseline;gap:14px;}
+  .bar-mark{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);}
+  .bar-mark span{color:var(--signal);}
+  .bar-tag{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--ink-3);margin-left:auto;}
+  @media (max-width:620px){.bar-tag{display:none;}}
+  main{max-width:900px;margin:0 auto;padding:0 22px;}
+  .wrap{max-width:740px;}
+  section{padding-block:38px;border-top:1px solid var(--line);}
+  section:first-of-type{border-top:none;}
+  .eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--signal);display:flex;align-items:center;gap:10px;margin:0 0 16px;}
+  .eyebrow::before{content:"";width:22px;height:1.5px;background:var(--signal);display:inline-block;}
+  h1{font-family:var(--display);font-weight:500;font-size:clamp(2rem,5vw,2.9rem);line-height:1.05;letter-spacing:-.015em;margin:0 0 18px;max-width:18ch;}
+  h2{font-family:var(--display);font-weight:500;font-size:clamp(1.4rem,3.2vw,1.9rem);line-height:1.12;margin:0 0 12px;}
+  h3{font-family:var(--body);font-weight:600;font-size:1rem;margin:18px 0 6px;}
+  p{margin:0 0 14px;color:var(--ink-2);max-width:72ch;}
+  p.lead{font-family:var(--display);font-size:clamp(1.08rem,2.1vw,1.28rem);line-height:1.44;color:var(--ink);}
+  strong{color:var(--ink);font-weight:600;}em{font-style:italic;}
+  .caption{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-top:10px;line-height:1.5;}
+  ul.clean{list-style:none;padding:0;margin:6px 0 0;}
+  ul.clean li{padding:9px 0 9px 26px;border-top:1px solid var(--line);position:relative;font-size:.94rem;color:var(--ink-2);}
+  ul.clean li:first-child{border-top:none;}
+  ul.clean li::before{content:"→";position:absolute;left:0;top:9px;color:var(--signal);font-family:var(--mono);}
+  ul.clean li strong{color:var(--ink);}
+  .tmpl{background:var(--surface);border:1px solid var(--line-2);border-radius:11px;padding:16px 18px;margin-top:10px;font-size:.92rem;line-height:1.6;color:var(--ink);white-space:pre-wrap;font-family:var(--body);}
+  .tmpl .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);display:block;margin-bottom:8px;}
+  .q{border-left:3px solid var(--slate);padding:12px 0 12px 15px;margin:12px 0;}
+  .q .ask{font-weight:600;color:var(--ink);}
+  .q .pull{font-family:var(--mono);font-size:11px;color:var(--signal);margin-top:5px;}
+  .q .maps{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-top:3px;}
+  .callout{border-left:3px solid var(--signal);background:var(--signal-soft);padding:15px 18px;border-radius:0 10px 10px 0;margin:20px 0;}
+  .callout p{color:var(--ink);margin:0;max-width:none;}
+  .callout .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--signal);margin-bottom:6px;display:block;}
+  code{font-family:var(--mono);font-size:.85em;background:var(--surface-2);border:1px solid var(--line);border-radius:5px;padding:1px 5px;color:var(--ink);}
+  footer{padding:26px 22px 44px;max-width:900px;margin:0 auto;}
+  footer p{font-family:var(--mono);font-size:11px;color:var(--ink-3);max-width:none;line-height:1.7;}
+</style>
+
+<header class="bar">
+  <div class="bar-inner">
+    <div class="bar-mark">FIELDNOTE<span>.</span></div>
+    <div class="bar-tag">Interview kit · Customer Support · Layer 2</div>
+  </div>
+</header>
+
+<main>
+  <section class="wrap">
+    <div class="eyebrow">Interview kit · the moat layer</div>
+    <h1>Get practitioners to tell you what the case studies hide.</h1>
+    <p class="lead">Vendor case studies give you breadth with no baselines. <strong>Interviews give you the truth</strong> — the real starting point, the cost, what broke, and the lesson with its conditions. This kit is how you find those people, get the call, and pull out a record-grade story. Every interviewee is also a design-partner candidate.</p>
+  </section>
+
+  <!-- FIND -->
+  <section class="wrap">
+    <div class="eyebrow">1 · Where to find them</div>
+    <h2>Target the people who actually shipped it.</h2>
+    <p>You want operators, not vendors. Job titles that signal a real deployment owner:</p>
+    <ul class="clean">
+      <li><strong>Titles:</strong> Head/VP/Director of Customer Support · CX Operations · Support Operations · Conversation Design · "AI/Automation Lead, Support" · Customer Experience Transformation</li>
+      <li><strong>LinkedIn search strings:</strong> <code>("customer support" OR CX) AND (AI OR chatbot OR "agent assist" OR deflection)</code> filtered to Director+ · or search a known vendor's name + "we deployed / we rolled out"</li>
+      <li><strong>Communities:</strong> Support Driven (Slack + community), CX Accelerator, RevGenius/CX channels, relevant subreddits, and vendor user-community forums</li>
+      <li><strong>Conference speakers:</strong> anyone who gave a support-AI talk already wants to share — reach out with "loved your talk, can I go deeper?"</li>
+      <li><strong>Warm intros:</strong> ask your network "who do you know running AI in a support org?" — a referral triples your reply rate</li>
+      <li><strong>Podcast guests:</strong> guests on CX/support-AI podcasts are pre-qualified and reachable</li>
+    </ul>
+    <div class="callout"><span class="k">Aim</span><p>Book <strong>3–5 interviews</strong> to start. Send ~20 requests to get there. Each good interview yields one high-grade record <em>and</em> a design-partner conversation.</p></div>
+  </section>
+
+  <!-- OUTREACH -->
+  <section class="wrap">
+    <div class="eyebrow">2 · Outreach templates</div>
+    <h2>Lead with the value exchange, not a pitch.</h2>
+    <p>You're not selling — you're offering to trade their 25 minutes for the synthesized findings across every deployment you study. That's a genuinely good deal for an operator.</p>
+
+    <div class="tmpl"><span class="lbl">Cold LinkedIn / email</span>Hi [Name] — I'm building FieldNote, a research library of real enterprise AI deployments in customer support, so teams can learn from what actually worked instead of vendor hype.
+
+You led [Company]'s support-AI rollout — I'd love 25 minutes to learn what really happened: the baseline you started from, what surprised you, and what you'd tell a peer.
+
+In return you'd get the synthesized findings across every deployment we study, and early access as a design partner. Worth a short call in the next couple of weeks?</div>
+
+    <div class="tmpl"><span class="lbl">Warm intro (forwarded by a mutual)</span>Thanks [Introducer]! [Name], great to meet you. I'm researching how support teams are really deploying AI — order-status, deflection, agent-assist — and turning it into a decision-grade library for other teams. Your work at [Company] is exactly the kind of story I'm trying to get right. 25 minutes, your schedule? Happy to share everything I learn back with you.</div>
+
+    <div class="tmpl"><span class="lbl">Follow-up (one, after ~5 days)</span>Hi [Name] — circling back in case this slipped by. Even 15 minutes would be hugely useful, and you'd get the full cross-company findings in return. If now's bad, is there someone on your team who owned the rollout day-to-day?</div>
+    <p class="caption">Note the last line — it converts a "no" into a referral to the person who actually knows the details.</p>
+  </section>
+
+  <!-- GUIDE -->
+  <section class="wrap">
+    <div class="eyebrow">3 · The interview guide</div>
+    <h2>Twenty-five minutes, six questions, one record.</h2>
+    <p>Open by restating the deal and consent (below). Then work these six — the whole point is to extract what a case study leaves out: the <strong>baseline</strong>, the <strong>cost</strong>, and the <strong>failure</strong>.</p>
+
+    <div class="q"><div class="ask">1. "Walk me through the deployment — what workflow, what stage is it at now, and when did it go live?"</div><div class="maps">→ Deployment · Workflow · Stage · Technology</div></div>
+    <div class="q"><div class="ask">2. "What actually changed — and how did you measure it? What was it <em>before</em> you deployed?"</div><div class="pull">Pull hard for the baseline. "Faster" is worthless without the before-number.</div><div class="maps">→ Reported outcome (+ baseline)</div></div>
+    <div class="q"><div class="ask">3. "Roughly what did it take to build and run — team, time, cost? Has it paid back yet?"</div><div class="pull">You won't always get a number; get the shape of the cost.</div><div class="maps">→ Cost &amp; ROI</div></div>
+    <div class="q"><div class="ask">4. "What went wrong, or surprised you? What did you have to fix after launch?"</div><div class="pull">This is the gold no case study prints. Let them talk; don't fill silence.</div><div class="maps">→ Challenge</div></div>
+    <div class="q"><div class="ask">5. "If a peer were about to do this, what would you tell them to <em>do</em>, to <em>avoid</em>, and when to <em>pause</em>? Where does your experience <em>not</em> apply?"</div><div class="pull">The lesson AND its boundary — both, always.</div><div class="maps">→ Lesson (+ conditions)</div></div>
+    <div class="q"><div class="ask">6. "Anything you can point me to — a talk, a post, metrics you're able to share? And who else should I be talking to?"</div><div class="pull">Evidence to attach + your next two interviews.</div><div class="maps">→ Evidence · Referrals</div></div>
+
+    <div class="callout"><span class="k">Consent — say this up front</span><p>"I'll write this up as a short record. I can attribute it to you and [Company], or keep it anonymous — <em>'a mid-market retailer'</em> — your call. And I'll send you the write-up to check before anything's published." This gets you candor <em>and</em> keeps you clean on rights.</p></div>
+  </section>
+
+  <!-- AFTER -->
+  <section class="wrap">
+    <div class="eyebrow">4 · Turn it into a record</div>
+    <h2>Within an hour of the call.</h2>
+    <ul class="clean">
+      <li><strong>Right after:</strong> drop the six answers into the record template while it's fresh; mark every number's baseline (or "not disclosed")</li>
+      <li><strong>Grade it:</strong> a single candid interview is usually <strong>Grade C</strong> (company-reported, single-source) — it jumps to <strong>B</strong> if a public talk/post corroborates it</li>
+      <li><strong>Cluster:</strong> if you already have a secondary-source record for this company, merge — corroboration raises the grade</li>
+      <li><strong>Boundaries:</strong> write down what they told you does <em>not</em> transfer</li>
+      <li><strong>The design-partner ask:</strong> "This is exactly what I'm building for teams like yours — would you want early access and to shape it?" → that's Stage 2 beginning</li>
+    </ul>
+    <div class="callout"><span class="k">The double win</span><p>Every interview produces a high-grade record <strong>and</strong> a warm design-partner. Your sources and your first users are the same people — which is why Layer 2 is worth the effort Layer 1 can't replace.</p></div>
+  </section>
+</main>
+
+<footer>
+  <p>FieldNote Interview Kit · Customer Support · v1 — companion to the Starter Kit. Get consent, attribute or anonymise per the interviewee's choice, and share write-ups before publishing. A Trueinfo Labs product; name not yet cleared.</p>
+</footer>

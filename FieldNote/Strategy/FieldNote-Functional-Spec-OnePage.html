@@ -1,0 +1,158 @@
+<title>FieldNote Spec — One Page</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  :root{
+    --paper:#F4F1E9;--surface:#FCFAF5;--surface-2:#EBE7DD;--ink:#1B1A15;--ink-2:#4C4A40;--ink-3:#807D70;
+    --line:#E0DBCF;--line-2:#CDC7B8;--slate:#3B372C;--signal:#1F5140;--signal-soft:#E1EAE4;
+    --good:#2E6E4E;--warn:#8C6212;--crit:#8C3A34;
+    --display:'Fraunces',Georgia,serif;--body:'Inter',system-ui,sans-serif;--mono:'IBM Plex Mono',monospace;
+  }
+  :root:not([data-theme="light"]){@media (prefers-color-scheme:dark){
+    --paper:#15140E;--surface:#1E1C14;--surface-2:#26231A;--ink:#EEEADF;--ink-2:#B8B2A2;--ink-3:#847F6E;
+    --line:#302D22;--line-2:#403C2E;--slate:#B7AF9C;--signal:#83BBA3;--signal-soft:#182720;
+    --good:#6FBF95;--warn:#D8A24A;--crit:#E0908A;
+  }}
+  :root[data-theme="dark"]{
+    --paper:#15140E;--surface:#1E1C14;--surface-2:#26231A;--ink:#EEEADF;--ink-2:#B8B2A2;--ink-3:#847F6E;
+    --line:#302D22;--line-2:#403C2E;--slate:#B7AF9C;--signal:#83BBA3;--signal-soft:#182720;
+    --good:#6FBF95;--warn:#D8A24A;--crit:#E0908A;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink-2);font-family:var(--body);font-size:12.5px;line-height:1.42;-webkit-font-smoothing:antialiased;}
+  .sheet{max-width:940px;margin:0 auto;padding:26px 26px 34px;}
+  .mast{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;border-bottom:2px solid var(--ink);padding-bottom:12px;margin-bottom:6px;flex-wrap:wrap;}
+  .mast .l .wm{font-family:var(--display);font-weight:500;font-size:26px;letter-spacing:.01em;color:var(--ink);line-height:1;}
+  .mast .l .wm span{color:var(--signal);}
+  .mast .l .sub{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-top:7px;}
+  .mast .r{font-family:var(--mono);font-size:10px;color:var(--ink-3);text-align:right;line-height:1.7;}
+  .lede{font-family:var(--display);font-size:15px;line-height:1.4;color:var(--ink);margin:12px 0 18px;max-width:none;}
+  .lede b{color:var(--signal);font-weight:500;}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+  .col2{grid-column:span 2;}
+  .col3{grid-column:span 3;}
+  @media(max-width:760px){.grid{grid-template-columns:1fr 1fr;}.col3{grid-column:span 2;}}
+  @media(max-width:520px){.grid{grid-template-columns:1fr;}.col2,.col3{grid-column:span 1;}}
+
+  .box{border:1px solid var(--line);border-radius:9px;background:var(--surface);padding:12px 14px;}
+  .box.acc{border-top:2px solid var(--signal);}
+  h3{font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.11em;text-transform:uppercase;color:var(--signal);margin:0 0 8px;}
+  p{margin:0 0 7px;}
+  p:last-child{margin-bottom:0;}
+  b,strong{color:var(--ink);font-weight:600;}
+  ul{margin:0;padding:0;list-style:none;}
+  li{position:relative;padding-left:13px;margin-bottom:5px;}
+  li::before{content:"";position:absolute;left:0;top:6px;width:4px;height:4px;border-radius:50%;background:var(--signal);}
+  li:last-child{margin-bottom:0;}
+  .kv b{color:var(--ink);}
+  .who b{display:block;color:var(--ink);font-size:12.5px;}
+  .who span{color:var(--ink-3);}
+
+  /* pipeline */
+  .flow{display:flex;gap:0;align-items:stretch;flex-wrap:wrap;}
+  .stp{flex:1;min-width:118px;border:1px solid var(--line);border-radius:8px;padding:9px 10px;margin:3px;background:var(--surface-2);position:relative;}
+  .stp .n{font-family:var(--mono);font-size:9px;color:var(--signal);}
+  .stp b{display:block;color:var(--ink);font-size:12px;margin:2px 0 3px;}
+  .stp span{font-size:10.5px;color:var(--ink-3);line-height:1.3;display:block;}
+  .stp.gate{background:var(--signal-soft);border-color:var(--signal);}
+
+  table.g{border-collapse:collapse;width:100%;font-size:11.5px;}
+  table.g td{padding:3px 0;vertical-align:top;border-bottom:1px solid var(--line);}
+  table.g tr:last-child td{border-bottom:none;}
+  .gr{font-family:var(--mono);font-weight:600;color:#fff;width:16px;height:16px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:9.5px;}
+  .gA{background:var(--good);}.gB{background:var(--slate);}.gC{background:var(--warn);}.gD{background:var(--crit);}
+  td.gc{width:26px;}
+  .io{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .io .in b{color:var(--good);}.io .out b{color:var(--crit);}
+  .foot{font-family:var(--mono);font-size:9.5px;color:var(--ink-3);margin-top:16px;padding-top:10px;border-top:1px solid var(--line);line-height:1.6;}
+</style>
+
+<div class="sheet">
+  <div class="mast">
+    <div class="l">
+      <div class="wm">FieldNote<span>.</span></div>
+      <div class="sub">Functional Specification · one page · v1</div>
+    </div>
+    <div class="r">Trueinfo Labs<br>Launch: Customer Support<br>Go-live 31 Oct 2026</div>
+  </div>
+
+  <p class="lede">A self-serve library of <b>firsthand, verified</b> enterprise AI-deployment records — what teams actually did, in the operators' own words, with the receipts. Sourced from YouTube (primary) and first-party writing; delivered decision-ready and personalized by role, for near-zero cost of the user's own tokens.</p>
+
+  <div class="grid">
+    <div class="box acc">
+      <h3>Purpose</h3>
+      <p>Enterprises distrust AI/vendor claims (94% fact-check them) and want peer evidence. FieldNote does the expensive research once, verifies it, and hands over a short sourced record.</p>
+      <p><b>Cheap + trustworthy</b> vs the status quo of costly + unreliable.</p>
+    </div>
+    <div class="box">
+      <h3>Users</h3>
+      <ul class="who">
+        <li><b>Consumer</b><span>CX/support leader; minimal role profile, self-serve.</span></li>
+        <li><b>Curator</b><span>Runs the pipeline; performs the SCRUB.</span></li>
+        <li><b>Admin</b><span>Registry, taxonomy, users, quotas.</span></li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>Product surfaces</h3>
+      <ul>
+        <li><b>Home</b> — hero, workflow entry, featured record, trust strip.</li>
+        <li><b>Library</b> — search + facets (company·category·models·grade).</li>
+        <li><b>Record</b> — TL;DR → decision card → evidence.</li>
+        <li><b>Ask</b> — grounded, cited chatbot.</li>
+      </ul>
+    </div>
+
+    <div class="box acc col3">
+      <h3>Ingestion workflow — source-first cascade (cost rises only as confidence rises)</h3>
+      <div class="flow">
+        <div class="stp"><span class="n">1</span><b>Registry</b><span>Curated channels · podcasts · playlists</span></div>
+        <div class="stp"><span class="n">2</span><b>Discover</b><span>YouTube API · metadata only · no LLM</span></div>
+        <div class="stp gate"><span class="n">3</span><b>Cheap Gate</b><span>Free captions + small model: firsthand? CS? fields present?</span></div>
+        <div class="stp"><span class="n">4</span><b>Extract</b><span>Capable model → schema · quote+timestamp per field</span></div>
+        <div class="stp"><span class="n">5</span><b>SCRUB</b><span>Human confirms · grades · dedupes</span></div>
+        <div class="stp"><span class="n">6</span><b>Publish</b><span>Entity-resolved · versioned · dated</span></div>
+      </div>
+    </div>
+
+    <div class="box col2">
+      <h3>The record — atomic unit &amp; output contract</h3>
+      <p><b>Fields:</b> company · industry · workflow · <b>named speaker</b> (firsthand) · source (URL + timestamp) · TL;DR · problem · models · architecture · deployment · outcomes (+ baseline?) · boundaries · fit-to-you · evidence grade · status/versions.</p>
+      <p><b>Hard rule:</b> no number, model or claim without a verbatim quote + timestamp. Absent = <b>not_disclosed</b>, shown as such. This rule is the moat.</p>
+    </div>
+    <div class="box">
+      <h3>Evidence grades</h3>
+      <table class="g">
+        <tr><td class="gc"><span class="gr gA">A</span></td><td>Independent/production evidence <b>with baseline</b></td></tr>
+        <tr><td class="gc"><span class="gr gB">B</span></td><td>First-party + numbers, partial baseline</td></tr>
+        <tr><td class="gc"><span class="gr gC">C</span></td><td>Directional, no baseline / single-source</td></tr>
+        <tr><td class="gc"><span class="gr gD">D</span></td><td>Announcement / walked-back / conflicted</td></tr>
+      </table>
+      <p style="margin-top:7px;">Metric hygiene: deflection ≠ resolution ≠ containment.</p>
+    </div>
+
+    <div class="box">
+      <h3>Two token economies</h3>
+      <p><b>Processing (ours):</b> cascade · free captions · cheap-gate-then-capable-model · cache by video ID · per-record cap.</p>
+      <p><b>Consumption (user's):</b> pre-computed, token-free browse. Any AI (the chatbot) runs <b>server-side on our budget</b>, grounded + cited + capped — never metered to the user.</p>
+    </div>
+    <div class="box">
+      <h3>Non-functional &amp; rules</h3>
+      <ul>
+        <li><b>No unverified record ships</b> — human SCRUB mandatory.</li>
+        <li>Rights: short excerpt + link + timestamp; never host media (transformative fair use).</li>
+        <li>Freshness: dated + re-review cadence.</li>
+        <li>Reads return fast from pre-computed data.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>Scope &amp; stack</h3>
+      <div class="io">
+        <div class="in"><b>In (v1)</b><ul><li>Customer support: tier-1 deflection · agent-assist</li><li>Firsthand YouTube + first-party</li><li>~40–60 verified records</li></ul></div>
+        <div class="out"><b>Out (v1)</b><ul><li>1,000 records · other domains</li><li>X as a record source</li><li>Vendor case studies / press</li></ul></div>
+      </div>
+      <p style="margin-top:8px;"><b>Stack:</b> adapt NEO → AWS (Bedrock + Aurora/pgvector); Netlify fallback.</p>
+    </div>
+  </div>
+
+  <div class="foot">FieldNote — a Trueinfo Labs product · Functional Spec (one-page) v1, Sep 2026. Condenses the full Functional Spec, Delivery Plan, Execution Plan &amp; Launch Scope. Loop: Discover → Examine → Apply. Name "FieldNote" not yet cleared.</div>
+</div>

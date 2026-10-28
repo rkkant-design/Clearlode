@@ -1,0 +1,222 @@
+<title>FieldNote Sample Scrub</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  :root{
+    --paper:#F6F7F9;--surface:#FFFFFF;--surface-2:#EEF1F5;--ink:#14181F;--ink-2:#434B57;--ink-3:#6B7482;
+    --line:#DCE1E8;--line-2:#C9D0DA;--slate:#2C4A6E;--slate-soft:#E4EAF1;--signal:#B0761A;--signal-soft:#F6ECD8;
+    --good:#2E6E4E;--good-soft:#DDEEE4;--warn:#9A6410;--warn-soft:#F5E8D2;--crit:#9A3838;--crit-soft:#F2DDDD;--mute:#5C6470;--mute-soft:#E6E9EE;
+    --display:'Newsreader',Georgia,serif;--body:'IBM Plex Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace;
+  }
+  :root:not([data-theme="light"]){@media (prefers-color-scheme:dark){
+    --paper:#0F1216;--surface:#171B21;--surface-2:#1E242C;--ink:#EAEEF3;--ink-2:#B4BDC9;--ink-3:#838E9C;
+    --line:#2A313A;--line-2:#38414C;--slate:#8FB2D6;--slate-soft:#1C2A3A;--signal:#E0A94A;--signal-soft:#2E2513;
+    --good:#6FC095;--good-soft:#16281E;--warn:#DDA043;--warn-soft:#2C2411;--crit:#E28B8B;--crit-soft:#2E1919;--mute:#9AA4B1;--mute-soft:#22272F;
+  }}
+  :root[data-theme="dark"]{
+    --paper:#0F1216;--surface:#171B21;--surface-2:#1E242C;--ink:#EAEEF3;--ink-2:#B4BDC9;--ink-3:#838E9C;
+    --line:#2A313A;--line-2:#38414C;--slate:#8FB2D6;--slate-soft:#1C2A3A;--signal:#E0A94A;--signal-soft:#2E2513;
+    --good:#6FC095;--good-soft:#16281E;--warn:#DDA043;--warn-soft:#2C2411;--crit:#E28B8B;--crit-soft:#2E1919;--mute:#9AA4B1;--mute-soft:#22272F;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.55;-webkit-font-smoothing:antialiased;}
+  header.bar{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--paper) 90%,transparent);backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line);}
+  .bar-inner{max-width:860px;margin:0 auto;padding:11px 22px;display:flex;align-items:baseline;gap:14px;}
+  .bar-mark{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);}
+  .bar-mark span{color:var(--signal);}
+  .bar-tag{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-left:auto;}
+  @media (max-width:620px){.bar-tag{display:none;}}
+  main{max-width:860px;margin:0 auto;padding:0 22px;}
+  .wrap{max-width:760px;}
+  section{padding-block:34px;border-top:1px solid var(--line);}
+  section:first-of-type{border-top:none;}
+  .eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--signal);display:flex;align-items:center;gap:10px;margin:0 0 15px;}
+  .eyebrow::before{content:"";width:22px;height:1.5px;background:var(--signal);display:inline-block;}
+  h1{font-family:var(--display);font-weight:500;font-size:clamp(2rem,5vw,2.9rem);line-height:1.05;letter-spacing:-.015em;margin:0 0 16px;text-wrap:balance;max-width:18ch;}
+  h2{font-family:var(--display);font-weight:500;font-size:clamp(1.4rem,3vw,1.9rem);line-height:1.12;margin:0 0 10px;text-wrap:balance;}
+  p{margin:0 0 14px;color:var(--ink-2);max-width:74ch;}
+  p.lead{font-family:var(--display);font-size:clamp(1.08rem,2vw,1.3rem);line-height:1.44;color:var(--ink);}
+  strong{color:var(--ink);font-weight:600;}em{font-style:italic;}
+  code{font-family:var(--mono);font-size:.85em;background:var(--surface-2);padding:1px 5px;border-radius:4px;color:var(--ink);}
+
+  /* pipeline trace */
+  .trace{list-style:none;padding:0;margin:8px 0 0;counter-reset:st;}
+  .trace li{position:relative;padding:11px 0 11px 42px;border-top:1px solid var(--line);font-size:.9rem;color:var(--ink-2);}
+  .trace li:first-child{border-top:none;}
+  .trace li::before{counter-increment:st;content:counter(st);position:absolute;left:0;top:11px;width:24px;height:24px;border-radius:50%;background:var(--slate-soft);color:var(--slate);font-family:var(--mono);font-size:11px;font-weight:500;display:flex;align-items:center;justify-content:center;}
+  .trace li strong{color:var(--ink);}
+  .trace .r{font-family:var(--mono);font-size:10px;color:var(--good);}
+
+  .callout{border-left:3px solid var(--signal);background:var(--signal-soft);padding:14px 18px;border-radius:0 10px 10px 0;margin:16px 0;}
+  .callout p{color:var(--ink);margin:0;max-width:none;}
+  .callout .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--signal);margin-bottom:6px;display:block;}
+  .callout.crit{border-left-color:var(--crit);background:var(--crit-soft);}.callout.crit .k{color:var(--crit);}
+  .callout.slate{border-left-color:var(--slate);background:var(--slate-soft);}.callout.slate .k{color:var(--slate);}
+  .callout.good{border-left-color:var(--good);background:var(--good-soft);}.callout.good .k{color:var(--good);}
+
+  /* record card */
+  .rec{border:1px solid var(--line-2);border-radius:16px;background:var(--surface);overflow:hidden;margin-top:16px;box-shadow:0 8px 24px -16px rgba(20,24,31,.2);}
+  .rec .top{padding:18px 22px;border-bottom:1px solid var(--line);background:var(--surface-2);}
+  .rec .idline{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-family:var(--mono);font-size:10px;color:var(--ink-3);letter-spacing:.04em;margin-bottom:8px;}
+  .grade{font-family:var(--mono);font-weight:600;font-size:11px;color:#fff;width:20px;height:20px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;}
+  .gA{background:var(--good);}.gB{background:var(--slate);}.gC{background:var(--warn);}.gD{background:var(--crit);}
+  .rec h3{font-family:var(--display);font-weight:500;font-size:1.4rem;margin:0;color:var(--ink);line-height:1.15;}
+  .rec .sub{font-size:.86rem;color:var(--ink-2);margin-top:5px;}
+  .rec .body{padding:6px 22px 20px;}
+  .field{padding:14px 0;border-bottom:1px solid var(--line);}
+  .field:last-child{border-bottom:none;}
+  .field .lab{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);margin-bottom:6px;}
+  .field p{margin:0;font-size:.92rem;color:var(--ink-2);}
+  .quote{border-left:2px solid var(--signal);padding:4px 0 4px 13px;margin:8px 0;font-family:var(--display);font-style:italic;color:var(--ink);font-size:.98rem;line-height:1.4;}
+  .quote .cite{display:block;font-family:var(--mono);font-style:normal;font-size:10px;color:var(--ink-3);margin-top:5px;letter-spacing:.02em;}
+  .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:4px 0;}
+  .metrics div{background:var(--surface);padding:10px 12px;}
+  .metrics b{font-family:var(--display);font-size:1.25rem;display:block;line-height:1;color:var(--ink);}
+  .metrics span{font-size:.72rem;color:var(--ink-2);display:block;margin-top:5px;line-height:1.3;}
+  @media(max-width:560px){.metrics{grid-template-columns:1fr;}}
+  .flag{font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.03em;padding:2px 7px;border-radius:20px;text-transform:uppercase;}
+  .flag.warn{background:var(--warn-soft);color:var(--warn);}
+  .flag.crit{background:var(--crit-soft);color:var(--crit);}
+  .flag.good{background:var(--good-soft);color:var(--good);}
+  .srcs{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);line-height:1.7;}
+  .srcs a{color:var(--slate);}
+
+  ul.clean{list-style:none;padding:0;margin:6px 0 0;}
+  ul.clean li{padding:8px 0 8px 24px;border-top:1px solid var(--line);position:relative;font-size:.92rem;color:var(--ink-2);}
+  ul.clean li:first-child{border-top:none;}
+  ul.clean li::before{content:"→";position:absolute;left:0;top:8px;color:var(--signal);font-family:var(--mono);}
+  ul.clean li strong{color:var(--ink);}
+  .verdict{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px;}
+  @media(max-width:600px){.verdict{grid-template-columns:1fr;}}
+  .vbox{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--surface);}
+  .vbox .k{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;}
+  .vbox.w{border-top:3px solid var(--good);}.vbox.w .k{color:var(--good);}
+  .vbox.g{border-top:3px solid var(--warn);}.vbox.g .k{color:var(--warn);}
+  .vbox ul{margin:0;padding-left:16px;}.vbox li{font-size:.87rem;color:var(--ink-2);margin-bottom:6px;}
+
+  footer{padding:26px 22px 46px;max-width:860px;margin:0 auto;}
+  footer p{font-family:var(--mono);font-size:11px;color:var(--ink-3);max-width:none;line-height:1.7;}
+</style>
+
+<header class="bar">
+  <div class="bar-inner">
+    <div class="bar-mark">FIELDNOTE<span>.</span></div>
+    <div class="bar-tag">Sample scrub · does the parsing work?</div>
+  </div>
+</header>
+
+<main>
+  <!-- INTRO -->
+  <section class="wrap">
+    <div class="eyebrow">Sample scrub · real sources, real quotes</div>
+    <h1>Two records, scrubbed from live sources.</h1>
+    <p class="lead">This is a genuine test run: real firsthand sources, real verbatim quotes, real timestamps — nothing fabricated. It shows both what the parsing produces and, just as important, what a human still has to catch.</p>
+    <div class="callout good"><span class="k">Headline finding</span><p>The parsing works — a messy 51-minute podcast + a press release became a clean structured record. But the scrub immediately caught a <strong>conflicting metric across two firsthand sources</strong> (resolution time "before" = 11 min vs 14 min). That single catch is the entire argument for keeping a human in the loop.</p></div>
+  </section>
+
+  <!-- HOW WE GOT IT -->
+  <section class="wrap">
+    <div class="eyebrow">How we got it — the actual steps</div>
+    <h2>Source-first, not keyword-first.</h2>
+    <ol class="trace">
+      <li><strong>Skipped open keyword search.</strong> A YouTube search for "customer support AI agent" returned Shorts, influencers and an ad — near-zero firsthand enterprise content. <span class="r">confirms the source-first rule</span></li>
+      <li><strong>Went to a known firsthand source</strong> — Sequoia's "Training Data" podcast — and opened the Klarna CEO episode. <span class="r">registry &gt; search</span></li>
+      <li><strong>Pulled the transcript from YouTube directly</strong> — the "Show transcript" panel + official chapter markers gave timestamped text, free, no audio, no paid transcription. <span class="r">captions API path</span></li>
+      <li><strong>Fetched the first-party press release</strong> for the hard numbers, in Klarna's own words. <span class="r">first-party = in scope</span></li>
+      <li><strong>Extracted into the record schema</strong>, attaching a verbatim quote + source to every field. <span class="r">grounding rule</span></li>
+      <li><strong>Scrubbed:</strong> cross-checked numbers, caught the 11-vs-14-minute conflict, graded the evidence, flagged the walk-back as needing firsthand confirmation. <span class="r">the human step</span></li>
+    </ol>
+  </section>
+
+  <!-- RECORD 1 -->
+  <section class="wrap">
+    <div class="eyebrow">Record 01 · the result</div>
+    <div class="rec">
+      <div class="top">
+        <div class="idline"><span class="grade gB">B</span> FN-CS-0001 · CUSTOMER SUPPORT › TIER-1 DEFLECTION · FINTECH · <span class="flag good">firsthand ✓</span> <span class="flag warn">metric conflict</span></div>
+        <h3>Klarna automates two-thirds of support chats with an OpenAI assistant</h3>
+        <div class="sub">Speaker: <strong>Sebastian Siemiatkowski, Co-founder &amp; CEO, Klarna</strong> · first-party press release + firsthand podcast</div>
+      </div>
+      <div class="body">
+        <div class="field"><div class="lab">TL;DR</div><p>Klarna deployed an OpenAI-powered assistant that handled ~two-thirds of customer-service chats within a month, at CSAT on par with humans — but the "before" baseline is stated two different ways across sources, and quality issues surfaced later (see Record 02).</p></div>
+
+        <div class="field"><div class="lab">Problem</div><p>High volume of repetitive customer-service contacts across 23 markets and 35+ languages; long resolution times and heavy reliance on ~700 outsourced full-time agents.</p></div>
+
+        <div class="field"><div class="lab">Solution &amp; models</div><p>A customer-facing AI assistant built on <strong>OpenAI</strong> models, evolved from internal "co-pilots" that first assisted agents on complex tasks (e.g. dispute resolution) before going client-facing.</p>
+          <div class="quote">"It's basically an employee that turns out to work every day and has forgotten everything about what Klarna is, how it works."<span class="cite">Siemiatkowski · Sequoia "Training Data" (YouTube, m3niSE-8ZvE) · §"How we built this" 8:51</span></div>
+        </div>
+
+        <div class="field"><div class="lab">Outcomes</div>
+          <div class="metrics">
+            <div><b>~2/3</b><span>of CS chats handled, first month</span></div>
+            <div><b>2.3M</b><span>conversations</span></div>
+            <div><b>~700</b><span>FTE agents' work equivalent</span></div>
+            <div><b>25%</b><span>drop in repeat inquiries</span></div>
+            <div><b>&lt;2 min</b><span>resolution (was 11 min* / 14 min*)</span></div>
+            <div><b>~$40M</b><span>projected 2024 profit impact</span></div>
+          </div>
+          <p style="margin-top:8px;"><span class="flag warn">*conflict</span> The "before" resolution time is <strong>11 minutes</strong> in the press release but <strong>14 minutes</strong> in the CEO's spoken account. Reported as a range pending stream re-confirmation — not silently averaged.</p>
+        </div>
+
+        <div class="field"><div class="lab">Deployment approach &amp; boundaries</div><p>Rapid build via a direct OpenAI relationship ("a joint Slack channel"); success gated on documentation quality; a hard transparency rule.</p>
+          <div class="quote">"One of the rules that we agreed on was, that the customer should always know if they speak to AI or if they speak to a human."<span class="cite">Siemiatkowski · Sequoia "Training Data" · §"AI &amp; customer perception" ~7:23</span></div>
+          <div class="quote">"Shit in, shit out — if you feed data models with bad things, you're going to get bad results."<span class="cite">Siemiatkowski · Sequoia "Training Data" · §"Detailed instructions for AI success" ~10:21</span></div>
+        </div>
+
+        <div class="field"><div class="lab">Evidence grade — B</div><p>Named first-party disclosure with numbers, corroborated across a press release and the CEO's own firsthand account. Held below A because there is <strong>no clean baseline/control</strong>, the "before" metric conflicts, and the figures are company-reported (the $40M is explicitly "projected"). Metric hygiene: "handled" ≠ resolved — the two-thirds figure is contact <em>containment</em>, not verified resolution.</p></div>
+
+        <div class="field"><div class="lab">Sources</div><p class="srcs">
+          ▸ Klarna press release, 27 Feb 2024 — <a>klarna.com/international/press/klarna-ai-assistant-…</a> (first-party)<br>
+          ▸ "Klarna CEO … on Getting AI to Do the Work of 700 CS Reps," Sequoia Training Data, YouTube <a>m3niSE-8ZvE</a>, 23 Jul 2024, 51:35 (firsthand video) · chapters: 8:51, 10:46, 14:22
+        </p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RECORD 2 -->
+  <section class="wrap">
+    <div class="eyebrow">Record 02 · the boundary the scrub demands</div>
+    <div class="rec">
+      <div class="top">
+        <div class="idline"><span class="grade gD">D</span> FN-CS-0002 · CUSTOMER SUPPORT › TIER-1 DEFLECTION · FINTECH · <span class="flag crit">needs firsthand confirmation</span></div>
+        <h3>Klarna walks back the AI-only push and reinvests in human support</h3>
+        <div class="sub">Attributed to <strong>Sebastian Siemiatkowski</strong> · 2025 — currently journalist-reported, not yet firsthand-verified</div>
+      </div>
+      <div class="body">
+        <div class="field"><div class="lab">TL;DR</div><p>~A year after the win, Klarna reportedly acknowledged the aggressive AI cost-cutting hurt service quality and began rehiring human agents — while keeping AI at roughly two-thirds of volume. This is the <em>boundary</em> that makes Record 01 honest.</p></div>
+
+        <div class="field"><div class="lab">Reported claim</div>
+          <div class="quote">The AI-driven cost cutting "ended up with lower quality"; "really investing in the quality of the human support is the way of the future for us."<span class="cite">Attributed to Siemiatkowski via Bloomberg / CX Dive, May 2025 — SECONDARY, journalist-reported</span></div>
+        </div>
+
+        <div class="field"><div class="lab">Why this is Grade D — for now</div><p>Under FieldNote's firsthand rule this quote is <strong>out of scope until confirmed at source.</strong> It reaches us through journalists, not the operator's own public words. <strong>Do not publish</strong> until we locate the firsthand clip (interview / earnings remark) and log its timestamp — at which point it may upgrade to A/B as a genuine, valuable "we went too far" record.</p></div>
+
+        <div class="field"><div class="lab">Scrub action</div><p><span class="flag crit">HOLD</span> Assigned for firsthand sourcing: find Siemiatkowski saying this on video/podcast/earnings. If found → upgrade + publish paired with Record 01. If not found → do not publish the quote; keep only the neutral, corroborated fact that Klarna resumed human hiring.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VERDICT -->
+  <section class="wrap">
+    <div class="eyebrow">Parsing verdict</div>
+    <h2>Does it work? Yes — with the human step intact.</h2>
+    <div class="verdict">
+      <div class="vbox w"><div class="k">What worked</div><ul>
+        <li>Structured extraction from a 51-min transcript + PR into the full schema.</li>
+        <li>Real <strong>verbatim quotes</strong> attached to problem, models, deployment, boundaries.</li>
+        <li>Free timestamped transcript straight from YouTube — no paid transcription.</li>
+        <li>First-party + firsthand sources cross-corroborated the headline numbers.</li>
+      </ul></div>
+      <div class="vbox g"><div class="k">What still needs a human</div><ul>
+        <li><strong>Metric conflict</strong> (11 vs 14 min) — a machine would have picked one silently.</li>
+        <li><strong>Exact second-level timestamps</strong> — chapters give sections; the stream confirms the second.</li>
+        <li><strong>Metric hygiene</strong> — "handled" is containment, not resolution; must be labelled.</li>
+        <li><strong>Firsthand test</strong> — the walk-back quote fails it today; held, not published.</li>
+      </ul></div>
+    </div>
+    <div class="callout slate"><span class="k">The takeaway for the build</span><p>Auto-extraction gets you ~80% of a record cheaply. The last 20% — reconciling conflicts, pinning timestamps, enforcing the firsthand rule and metric hygiene — is the SCRUB, and it's exactly the part that makes FieldNote trustworthy. The pipeline should be built to <em>hand a human a pre-filled draft</em>, never to auto-publish.</p></div>
+  </section>
+</main>
+
+<footer>
+  <p>FieldNote — a Trueinfo Labs product · Sample scrub, Sep 2026. Sources: Klarna first-party press release (27 Feb 2024); Sequoia "Training Data" podcast, YouTube m3niSE-8ZvE (23 Jul 2024). Walk-back quote is journalist-reported (Bloomberg/CX Dive, 2025) and held pending firsthand confirmation. Quotes verbatim; section timestamps from official YouTube chapters, exact timestamps to be confirmed on stream during formal SCRUB.</p>
+</footer>
